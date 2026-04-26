@@ -2,182 +2,226 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra PRO</title>
+<title>Psoas Ultra PRO v19</title>
 
+<!-- APP MODE -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Psoas Ultra">
 
-<link rel="apple-touch-icon" href="images/icon.png">
-<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="/psoas-app/images/icon.png">
+<link rel="manifest" href="/psoas-app/manifest.json">
 
 <style>
 body {
     margin:0;
-    font-family: Arial;
-    background: linear-gradient(#0b1a2f,#0f2c50);
-    color:white;
+    font-family:Arial;
+    background:#f2f2f2;
+    color:#000;
     text-align:center;
 }
 
-.light {
-    background:#f2f2f2;
-    color:black;
+.container {
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    justify-content:space-between;
 }
 
+/* HEADER */
+.header {
+    padding:10px;
+}
+
+/* IMAGE */
 img {
-    width:100%;
-    height:45vh;
+    width:95%;
+    height:40vh;
     object-fit:contain;
+    border-radius:12px;
 }
 
+/* TIMER */
 .timer {
     font-size:80px;
+    margin-top:10px;
+}
+
+/* PROGRESS */
+.progress {
+    width:80%;
+    height:10px;
+    background:#ccc;
+    margin:10px auto;
+    border-radius:10px;
 }
 
 .progress-bar {
-    height:10px;
-    background:limegreen;
+    height:100%;
     width:0%;
+    background:limegreen;
 }
 
+/* BUTTONS */
 button {
+    padding:12px 18px;
+    margin:5px;
+    border:none;
+    border-radius:10px;
+    color:white;
+}
+
+.start { background:green; }
+.pause { background:red; }
+.skip { background:orange; }
+.reset { background:gray; }
+
+/* PHASE BUTTONS */
+.phase {
+    background:#999;
+}
+
+.phase.active {
+    background:purple;
+}
+
+/* FOOTER */
+.controls {
+    margin-bottom:15px;
+}
+
+/* CALENDAR */
+.calendar {
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:4px;
     padding:10px;
-    margin:4px;
 }
 
-#calendar div {
-    display:inline-block;
-    width:12px;
-    height:12px;
-    margin:2px;
+.day {
+    width:10px;
+    height:10px;
+    background:#bbb;
     border-radius:3px;
-    background:#444;
 }
 
-.active-day {
-    background:limegreen !important;
+.day.done {
+    background:limegreen;
 }
+
 </style>
 </head>
 
 <body>
 
-<h2 id="phaseTitle"></h2>
-<h3 id="exerciseTitle"></h3>
+<div class="container">
+
+<div class="header">
+    <h2 id="phaseTitle"></h2>
+    <h3 id="exerciseTitle"></h3>
+    <p id="nextExercise"></p>
+</div>
 
 <img id="exerciseImage">
 
-<div class="progress-bar" id="progressBar"></div>
+<div class="progress">
+    <div class="progress-bar" id="progressBar"></div>
+</div>
 
-<div class="timer" id="timer"></div>
-
-<div id="points"></div>
-<div id="level"></div>
-<div id="badges"></div>
-
-<h4>Kalender</h4>
-<div id="calendar"></div>
+<div class="timer" id="timer">0</div>
 
 <div>
-<button onclick="startTimer()">Start</button>
-<button onclick="pauseTimer()">Pause</button>
-<button onclick="nextExercise()">Skip</button>
-<button onclick="toggleMode()">Mode</button>
+    <div>Punkte: <span id="points">0</span></div>
+    <div>Level: <span id="level">1</span></div>
+</div>
+
+<div class="calendar" id="calendar"></div>
+
+<div class="controls">
+
+    <button class="start" onclick="startTimer()">Start</button>
+    <button class="pause" onclick="pauseTimer()">Pause</button>
+    <button class="skip" onclick="nextExercise()">Skip</button>
+    <button class="reset" onclick="resetAll()">Reset</button>
+
+    <br>
+
+    <button id="btnPhase1" class="phase" onclick="setPhase(1)">Phase 1</button>
+    <button id="btnPhase2" class="phase" onclick="setPhase(2)">Phase 2</button>
+
+</div>
+
 </div>
 
 <script>
 
-// =============================
 // STATE
-// =============================
-let current = 0;
-let phaseIndex = 0;
+let phaseIndex = localStorage.getItem("phaseIndex") || 0;
+let current = localStorage.getItem("current") || 0;
+
 let timer = null;
 let timeLeft = 0;
 
-let points = parseInt(localStorage.getItem("points")) || 0;
-let history = JSON.parse(localStorage.getItem("history")) || [];
+let points = localStorage.getItem("points") || 0;
+let level = localStorage.getItem("level") || 1;
 
 // =============================
-// ÜBUNGEN
+// 📦 ÜBUNGEN
 // =============================
 const phases = [
+
 [
-{name:"Bauchatmung",img:"images/phase1.jpg",time:60,speech:"Atme ruhig"},
-{name:"Knie zur Brust",img:"images/phase1.jpg",time:40,speech:"Zieh Knie ran"}
+{name:"Bauchatmung", img:"images/phase1.jpg", time:120},
+{name:"Knie zur Brust", img:"images/phase1.jpg", time:45},
+{name:"Mini-Becken-Kippung", img:"images/phase1.jpg", time:40},
+{name:"Hüftbeuger Dehnung", img:"images/phase1.jpg", time:40},
+{name:"Glute Bridge", img:"images/phase1.jpg", time:40},
+{name:"Adduktor Dehnung", img:"images/phase1.jpg", time:45}
 ],
+
 [
-{name:"Dead Bug",img:"images/phase2.jpg",time:40,speech:"Kontrolliert bewegen"},
-{name:"Ausfallschritt",img:"images/phase2.jpg",time:40,speech:"Seitlich bewegen"}
+{name:"Bauchatmung", img:"images/phase2.jpg", time:60},
+{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", time:40},
+{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", time:40},
+{name:"Dead Bug", img:"images/phase2.jpg", time:40},
+{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", time:40},
+{name:"Adduktor & Hüfte", img:"images/phase2.jpg", time:40}
 ]
+
 ];
 
 // =============================
-// LEVEL SYSTEM
+// 🔊 SOUND
 // =============================
-function getLevel() {
-    return Math.floor(points / 200) + 1;
-}
-
-// =============================
-// BADGES
-// =============================
-function getBadges() {
-
-    let badges = [];
-
-    if (history.length >= 1) badges.push("🔥 Start");
-    if (history.length >= 7) badges.push("💪 7 Tage");
-    if (points >= 1000) badges.push("🏆 1000 Punkte");
-
-    return badges.join(" | ");
-}
-
-// =============================
-// SOUND
-// =============================
-const sound = new Audio("https://actions.google.com/sounds/v1/cartoon/pop.ogg");
-
-// =============================
-// VIBRATION
-// =============================
-function vibrate() {
-    if (navigator.vibrate) navigator.vibrate(100);
-}
-
-// =============================
-// SPRACHE
-// =============================
-function speak(text, cb) {
-    speechSynthesis.cancel();
-    let msg = new SpeechSynthesisUtterance(text);
-    msg.lang="de-DE";
-    msg.onend = cb;
-    speechSynthesis.speak(msg);
+function beep() {
+    const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    audio.play();
 }
 
 // =============================
 function startTimer() {
-
     if (timer) return;
 
-    let ex = phases[phaseIndex][current];
+    timer = setInterval(() => {
 
-    sound.play();
-    vibrate();
+        timeLeft--;
+        updateUI();
 
-    speak(ex.speech, () => {
-        timer = setInterval(() => {
+        if (timeLeft <= 0) {
+            beep();
+            nextExercise();
+        }
 
-            timeLeft--;
-            updateUI();
+    }, 1000);
+}
 
-            if (timeLeft <= 0) nextExercise();
-
-        },1000);
-    });
+// =============================
+function pauseTimer() {
+    clearInterval(timer);
+    timer = null;
 }
 
 // =============================
@@ -186,94 +230,141 @@ function nextExercise() {
     clearInterval(timer);
     timer = null;
 
-    points += 10;
-
     current++;
 
     if (current >= phases[phaseIndex].length) {
 
-        points += 100;
+        // ✅ TRAINING FERTIG
+        points = parseInt(points) + 10;
 
-        history.push(new Date().toDateString());
+        if (points >= level * 50) {
+            level++;
+        }
 
-        localStorage.setItem("history", JSON.stringify(history));
+        saveStats();
+        markDayDone();
 
-        alert("Fertig! Punkte: " + points);
+        alert("Training fertig 💪");
 
         current = 0;
     }
 
-    save();
+    saveState();
     loadExercise();
 }
 
 // =============================
-function save() {
-    localStorage.setItem("points", points);
+function resetAll() {
+    clearInterval(timer);
+    current = 0;
+    phaseIndex = 0;
+    saveState();
+    loadExercise();
+}
+
+// =============================
+function setPhase(p) {
+    phaseIndex = p - 1;
+    current = 0;
+    saveState();
+    loadExercise();
 }
 
 // =============================
 function updateUI() {
 
-    let total = phases[phaseIndex][current].time;
+    const total = phases[phaseIndex][current].time;
+    const progress = ((total - timeLeft) / total) * 100;
 
     document.getElementById("timer").innerText = timeLeft;
-    document.getElementById("progressBar").style.width =
-        ((total-timeLeft)/total*100)+"%";
-
-    document.getElementById("points").innerText =
-        "Punkte: " + points;
-
-    document.getElementById("level").innerText =
-        "Level: " + getLevel();
-
-    document.getElementById("badges").innerText =
-        getBadges();
+    document.getElementById("progressBar").style.width = progress + "%";
 }
 
 // =============================
 function loadExercise() {
 
-    let ex = phases[phaseIndex][current];
+    phaseIndex = parseInt(phaseIndex);
+    current = parseInt(current);
+
+    const ex = phases[phaseIndex][current];
+
+    document.getElementById("phaseTitle").innerText =
+        "Phase " + (phaseIndex + 1);
 
     document.getElementById("exerciseTitle").innerText = ex.name;
-    document.getElementById("phaseTitle").innerText =
-        "Phase " + (phaseIndex+1);
+
+    document.getElementById("nextExercise").innerText =
+        current + 1 < phases[phaseIndex].length
+        ? "Als nächstes: " + phases[phaseIndex][current + 1].name
+        : "Letzte Übung";
 
     document.getElementById("exerciseImage").src = ex.img;
 
     timeLeft = ex.time;
-
     updateUI();
-    drawCalendar();
+    updatePhaseButtons();
+    updateStats();
 }
 
 // =============================
-// KALENDER
-// =============================
-function drawCalendar() {
+function updatePhaseButtons() {
 
-    let cal = document.getElementById("calendar");
+    document.getElementById("btnPhase1").classList.remove("active");
+    document.getElementById("btnPhase2").classList.remove("active");
+
+    if (phaseIndex == 0) {
+        document.getElementById("btnPhase1").classList.add("active");
+    } else {
+        document.getElementById("btnPhase2").classList.add("active");
+    }
+}
+
+// =============================
+function saveState() {
+    localStorage.setItem("phaseIndex", phaseIndex);
+    localStorage.setItem("current", current);
+}
+
+// =============================
+function saveStats() {
+    localStorage.setItem("points", points);
+    localStorage.setItem("level", level);
+}
+
+// =============================
+function updateStats() {
+    document.getElementById("points").innerText = points;
+    document.getElementById("level").innerText = level;
+}
+
+// =============================
+// 📅 KALENDER
+// =============================
+function createCalendar() {
+
+    const cal = document.getElementById("calendar");
     cal.innerHTML = "";
 
-    for (let i=0;i<30;i++) {
+    for (let i = 0; i < 30; i++) {
+        const d = document.createElement("div");
+        d.classList.add("day");
 
-        let d = document.createElement("div");
-
-        if (history.includes(new Date(Date.now()-i*86400000).toDateString())) {
-            d.classList.add("active-day");
+        if (localStorage.getItem("day_" + i)) {
+            d.classList.add("done");
         }
 
         cal.appendChild(d);
     }
 }
 
-// =============================
-function toggleMode() {
-    document.body.classList.toggle("light");
+function markDayDone() {
+    const today = new Date().getDate();
+    localStorage.setItem("day_" + today, true);
+    createCalendar();
 }
 
 // =============================
+createCalendar();
 loadExercise();
 
 </script>
