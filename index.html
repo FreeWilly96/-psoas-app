@@ -4,11 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra PRO v14</title>
+<title>Psoas Ultra PRO</title>
 
-<!-- ✅ APP ICON -->
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="images/icon.png">
+<!-- 📱 APP MODE -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Psoas Ultra">
+
+<link rel="apple-touch-icon" sizes="180x180" href="/psoas-app/images/icon.png">
+<link rel="manifest" href="/psoas-app/manifest.json">
 
 <style>
 body {
@@ -19,15 +23,23 @@ body {
     text-align: center;
 }
 
+.container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
 img {
-    width: 90%;
-    max-width: 500px;
+    width: 95%;
+    height: 45vh;
+    object-fit: contain;
     border-radius: 12px;
-    margin: 20px auto;
+    margin: 10px auto;
 }
 
 .timer {
-    font-size: 70px;
+    font-size: 90px;
 }
 
 .progress {
@@ -49,42 +61,54 @@ button {
     margin: 5px;
     border-radius: 10px;
     border: none;
+    color: white;
 }
 
-.start { background: green; color:white; }
-.pause { background: red; color:white; }
-.skip { background: orange; color:white; }
-.reset { background: gray; color:white; }
-.phase { background: purple; color:white; }
+.start { background: green; }
+.pause { background: red; }
+.skip { background: orange; }
+.reset { background: gray; }
+.phase { background: purple; }
 
+.controls {
+    margin-bottom: 20px;
+}
 </style>
 </head>
 
 <body>
 
+<div class="container">
+
+<div>
 <h2 id="phaseTitle"></h2>
 <h3 id="exerciseTitle"></h3>
 <p id="nextExercise"></p>
+</div>
 
 <img id="exerciseImage">
 
 <div class="progress">
-    <div class="progress-bar" id="progressBar"></div>
+<div class="progress-bar" id="progressBar"></div>
 </div>
 
 <div class="timer" id="timer">0</div>
 
+<div class="controls">
 <button class="start" onclick="startTimer()">Start</button>
 <button class="pause" onclick="pauseTimer()">Pause</button>
 <button class="skip" onclick="nextExercise()">Skip</button>
 <button class="reset" onclick="resetAll()">Reset</button>
 <button class="phase" onclick="setPhase(1)">Phase 1</button>
 <button class="phase" onclick="setPhase(2)">Phase 2</button>
+</div>
+
+</div>
 
 <script>
 
 // =============================
-// STATE
+// 🔥 STATE
 // =============================
 let phaseIndex = 0;
 let current = 0;
@@ -92,7 +116,92 @@ let timer = null;
 let timeLeft = 0;
 
 // =============================
-// 🔊 SPRACHE (fix + sauber)
+// 📦 ÜBUNGEN
+// =============================
+const phases = [
+
+[
+{
+name:"Bauchatmung",
+img:"images/phase1.jpg",
+time:120,
+speech:"Bauchatmung. Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Tief in den Bauch atmen. Fünf Sekunden ein, sieben Sekunden aus."
+},
+{
+name:"Knie zur Brust",
+img:"images/phase1.jpg",
+time:45,
+speech:"Knie zur Brust. Ein Knie zur Brust ziehen und halten. Anderes Bein bleibt entspannt. Ruhig weiteratmen."
+},
+{
+name:"Mini-Becken-Kippung",
+img:"images/phase1.jpg",
+time:40,
+speech:"Mini Becken Kippung. Unteren Rücken in den Boden drücken. Spannung halten und lösen. Kleine ruhige Bewegung."
+},
+{
+name:"Hüftbeuger Dehnung",
+img:"images/phase1.jpg",
+time:40,
+speech:"Hüftbeuger Dehnung. Halbkniestand. Becken kippen. Gesäß anspannen. Dehnung vorne spüren."
+},
+{
+name:"Glute Bridge",
+img:"images/phase1.jpg",
+time:40,
+speech:"Glute Bridge. Hüfte nach oben drücken. Gesäß anspannen. Kurz halten und langsam absenken."
+},
+{
+name:"Adduktor Dehnung",
+img:"images/phase1.jpg",
+time:45,
+speech:"Adduktor Dehnung. Breiter Stand. Gewicht zur Seite verlagern. Dehnung spüren."
+}
+],
+
+[
+{
+name:"Bauchatmung",
+img:"images/phase2.jpg",
+time:60,
+speech:"Bauchatmung zur Aktivierung. Ruhig atmen und Spannung aufbauen."
+},
+{
+name:"Dynamische Hüftöffnung",
+img:"images/phase2.jpg",
+time:40,
+speech:"Dynamische Hüftöffnung. Ausfallschritt. Hüfte nach vorne und zurück bewegen."
+},
+{
+name:"Glute Bridge einbeinig",
+img:"images/phase2.jpg",
+time:40,
+speech:"Einbeinige Glute Bridge. Hüfte anheben und stabil halten."
+},
+{
+name:"Dead Bug",
+img:"images/phase2.jpg",
+time:40,
+speech:"Dead Bug. Gegengleich Arm und Bein bewegen. Rumpf stabil halten."
+},
+{
+name:"Seitliche Ausfallschritte",
+img:"images/phase2.jpg",
+time:40,
+speech:"Seitliche Ausfallschritte. Schritt zur Seite. Hüfte nach hinten."
+},
+{
+name:"Adduktor & Hüfte Kombi",
+img:"images/phase2.jpg",
+time:40,
+speech:"Adduktor und Hüfte kombinieren. Dehnung halten und kleine Bewegungen ausführen."
+}
+]
+
+];
+
+// =============================
+// 🔊 SPRACHE
 // =============================
 function speak(text, callback) {
 
@@ -109,171 +218,33 @@ function speak(text, callback) {
 }
 
 // =============================
-// 🧠 ÜBUNGEN MIT ANSAGE TEXT
-// =============================
-const phases = [
-
-/* ================= PHASE 1 ================= */
-[
-{
-name:"Bauchatmung",
-img:"images/phase1.jpg",
-time:120,
-speech:`Bauchatmung. Nervensystem beruhigen.
-Rückenlage, Füße aufgestellt.
-Eine Hand auf den Bauch, eine auf die Brust.
-Langsam in den Bauch atmen.
-5 Sekunden ein, 7 Sekunden aus.`
-},
-
-{
-name:"Knie zur Brust links",
-img:"images/phase1.jpg",
-time:45,
-speech:`Knie zur Brust links.
-Ein Knie zur Brust ziehen und halten.
-Anderes Bein bleibt locker.
-Ruhig weiter atmen.`
-},
-
-{
-name:"Knie zur Brust rechts",
-img:"images/phase1.jpg",
-time:45,
-speech:`Knie zur Brust rechts.
-Ein Knie zur Brust ziehen und halten.
-Anderes Bein bleibt locker.
-Ruhig weiter atmen.`
-},
-
-{
-name:"Mini Becken Kippung",
-img:"images/phase1.jpg",
-time:40,
-speech:`Mini Becken Kippung.
-Unterer Rücken in den Boden drücken.
-Becken leicht kippen.
-Spannung kurz halten und lösen.`
-},
-
-{
-name:"Hüftbeuger Dehnung",
-img:"images/phase1.jpg",
-time:40,
-speech:`Hüftbeuger Dehnung.
-Halbkniestand.
-Gesäß anspannen.
-Dehnung vorne in der Hüfte spüren.`
-},
-
-{
-name:"Glute Bridge",
-img:"images/phase1.jpg",
-time:40,
-speech:`Glute Bridge.
-Hüfte nach oben drücken.
-Gesäß anspannen.
-Langsam wieder absenken.`
-},
-
-{
-name:"Adduktor Dehnung",
-img:"images/phase1.jpg",
-time:40,
-speech:`Adduktor Dehnung.
-Breiter Stand.
-Gewicht zur Seite verlagern.
-Dehnung in der Leiste spüren.`
-}
-],
-
-/* ================= PHASE 2 ================= */
-[
-{
-name:"Bauchatmung",
-img:"images/phase2.jpg",
-time:60,
-speech:`Bauchatmung zur Vorbereitung.
-Ruhig in den Bauch atmen.`
-},
-
-{
-name:"Dynamische Hüftöffnung links",
-img:"images/phase2.jpg",
-time:40,
-speech:`Dynamische Hüftöffnung links.
-Hüfte nach vorne schieben.
-Dann zurück.
-Bewegung kontrolliert.`
-},
-
-{
-name:"Dynamische Hüftöffnung rechts",
-img:"images/phase2.jpg",
-time:40,
-speech:`Dynamische Hüftöffnung rechts.
-Hüfte nach vorne schieben.
-Dann zurück.
-Bewegung kontrolliert.`
-},
-
-{
-name:"Dead Bug",
-img:"images/phase2.jpg",
-time:40,
-speech:`Dead Bug.
-Gegengleich Arm und Bein strecken.
-Ruhig und kontrolliert.`
-},
-
-{
-name:"Seitliche Ausfallschritte",
-img:"images/phase2.jpg",
-time:40,
-speech:`Seitliche Ausfallschritte.
-Schritt zur Seite.
-Hüfte nach hinten.
-Andere Seite bleibt gestreckt.`
-},
-
-{
-name:"Adduktor Hüfte kombinieren",
-img:"images/phase2.jpg",
-time:40,
-speech:`Adduktor und Hüfte kombinieren.
-Dehnung halten.
-Kleine Bewegungen nach oben und unten.`
-}
-]
-
-];
-
-// =============================
-function setPhase(p) {
-    phaseIndex = p - 1;
-    current = 0;
-    loadExercise();
-}
-
+// ▶️ START (WICHTIG FIX!)
 // =============================
 function startTimer() {
 
     if (timer) return;
 
-    speak(phases[phaseIndex][current].speech, () => {
+    const ex = phases[phaseIndex][current];
 
-        speak("Start");
+    // 👉 Erst Ansage, dann Start
+    speak(ex.speech, () => {
 
-        timer = setInterval(() => {
-
-            timeLeft--;
-            updateUI();
-
-            if (timeLeft <= 0) nextExercise();
-
-        }, 1000);
+        startRealTimer();
 
     });
+}
+
+// =============================
+function startRealTimer() {
+
+    timer = setInterval(() => {
+
+        timeLeft--;
+        updateUI();
+
+        if (timeLeft <= 0) nextExercise();
+
+    }, 1000);
 }
 
 // =============================
@@ -292,6 +263,7 @@ function nextExercise() {
     current++;
 
     if (current >= phases[phaseIndex].length) {
+
         alert("Fertig 💪");
         resetAll();
         return;
@@ -304,6 +276,13 @@ function nextExercise() {
 function resetAll() {
     clearInterval(timer);
     phaseIndex = 0;
+    current = 0;
+    loadExercise();
+}
+
+// =============================
+function setPhase(p) {
+    phaseIndex = p - 1;
     current = 0;
     loadExercise();
 }
@@ -336,7 +315,6 @@ function loadExercise() {
     }
 
     let img = document.getElementById("exerciseImage");
-
     img.src = ex.img;
 
     img.onerror = () => {
