@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra PRO v8.1</title>
+<title>Psoas Ultra PRO v9</title>
 
 <style>
 body {
@@ -20,13 +20,11 @@ img {
     max-width: 500px;
     border-radius: 12px;
     margin: 20px auto;
-    opacity: 0;
-    transition: 0.5s;
 }
 
-img.loaded { opacity: 1; }
-
-.timer { font-size: 70px; }
+.timer {
+    font-size: 70px;
+}
 
 .progress {
     width: 80%;
@@ -43,7 +41,7 @@ img.loaded { opacity: 1; }
 }
 
 button {
-    padding: 10px 15px;
+    padding: 12px 18px;
     margin: 5px;
     border-radius: 10px;
     border: none;
@@ -72,17 +70,11 @@ button {
 
 <div class="timer" id="timer">0</div>
 
-<br>
-
-<button class="phase" onclick="startPhase(0)">Phase 1</button>
-<button class="phase" onclick="startPhase(1)">Phase 2</button>
-
-<br>
-
 <button class="start" onclick="startTimer()">Start</button>
 <button class="pause" onclick="pauseTimer()">Pause</button>
 <button class="skip" onclick="nextExercise()">Skip</button>
 <button class="reset" onclick="resetAll()">Reset</button>
+<button class="phase" onclick="goPhase2()">Phase 2</button>
 
 <script>
 
@@ -91,7 +83,10 @@ button {
 // =============================
 let phaseIndex = 0;
 let current = 0;
+let timer = null;
+let timeLeft = 0;
 
+// =============================
 const phases = [
 
     [
@@ -109,39 +104,55 @@ const phases = [
 
 ];
 
-let timeLeft = 0;
-let timer = null;
-
+// =============================
+// 🔊 STABILE SPRACHE (iOS FIX)
 // =============================
 function speak(text) {
+
     speechSynthesis.cancel();
+
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = "de-DE";
+
+    // wichtig für iOS
+    msg.rate = 1;
+    msg.pitch = 1;
+
     speechSynthesis.speak(msg);
 }
 
 // =============================
-// 👉 PHASE MANUELL STARTEN
-// =============================
-function startPhase(p) {
-
-    clearInterval(timer);
-    timer = null;
-
-    phaseIndex = p;
-    current = 0;
-
-    speak("Phase " + (p + 1));
-
-    loadExercise();
-}
-
+// COUNTDOWN MIT ANSAGE
 // =============================
 function startTimer() {
 
     if (timer) return;
 
-    speak("Start");
+    speak("Bereit");
+
+    let count = 3;
+
+    const cd = setInterval(() => {
+
+        document.getElementById("timer").innerText = count;
+        speak(count.toString());
+
+        count--;
+
+        if (count === 0) {
+            clearInterval(cd);
+            startRealTimer();
+        }
+
+    }, 1000);
+}
+
+// =============================
+function startRealTimer() {
+
+    const ex = phases[phaseIndex][current];
+
+    speak(ex.name); // 👉 HIER IST DER WICHTIGE FIX
 
     timer = setInterval(() => {
 
@@ -165,6 +176,8 @@ function nextExercise() {
 
     clearInterval(timer);
     timer = null;
+
+    speak("Wechsel");
 
     current++;
 
@@ -193,7 +206,20 @@ function resetAll() {
     phaseIndex = 0;
     current = 0;
 
-    speak("Reset");
+    loadExercise();
+}
+
+// =============================
+// 👉 BUTTON PHASE 2
+// =============================
+function goPhase2() {
+
+    clearInterval(timer);
+
+    phaseIndex = 1;
+    current = 0;
+
+    speak("Phase 2 gestartet");
 
     loadExercise();
 }
@@ -226,15 +252,12 @@ function loadExercise() {
             (phaseIndex === 0) ? "Als nächstes: Phase 2" : "Letzte Übung";
     }
 
-    let img = document.getElementById("exerciseImage");
-
-    img.classList.remove("loaded");
+    // Bild laden
+    const img = document.getElementById("exerciseImage");
     img.src = ex.img;
 
-    img.onload = () => img.classList.add("loaded");
-
     img.onerror = () => {
-        console.log("❌ Bild fehlt:", ex.img);
+        console.log("Bild fehlt:", ex.img);
         img.src = "images/phase1.jpg";
     };
 
