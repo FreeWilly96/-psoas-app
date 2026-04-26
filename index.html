@@ -18,9 +18,7 @@ body {
     padding: 20px;
 }
 
-h1 {
-    margin-top: 10px;
-}
+h1 { margin-top: 10px; }
 
 img {
     width: 90%;
@@ -31,20 +29,40 @@ img {
 
 .timer {
     font-size: 60px;
-    margin: 20px 0;
+    margin: 10px 0;
+}
+
+.progress-bar {
+    width: 90%;
+    height: 10px;
+    background: #1e293b;
+    margin: 15px auto;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    width: 0%;
+    background: #22c55e;
 }
 
 button {
-    padding: 15px 25px;
-    margin: 10px;
+    padding: 12px 20px;
+    margin: 5px;
     border: none;
     border-radius: 10px;
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
 }
 
 .start { background: #22c55e; color: white; }
 .pause { background: #ef4444; color: white; }
+.skip { background: #3b82f6; color: white; }
+
+.phase {
+    margin-top: 10px;
+}
 </style>
 </head>
 
@@ -54,14 +72,26 @@ button {
 
 <h1>Psoas Ultra</h1>
 
+<div class="phase">
+<button onclick="setPhase(1)">Phase 1</button>
+<button onclick="setPhase(2)">Phase 2</button>
+</div>
+
 <h2 id="exercise">Bereit?</h2>
 
 <img id="image" src="images/phase1.jpg">
 
 <div class="timer" id="timer">0</div>
 
+<div class="progress-bar">
+    <div class="progress" id="progress"></div>
+</div>
+
+<div>
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
+<button class="skip" onclick="skip()">Weiter</button>
+</div>
 
 </div>
 
@@ -89,34 +119,52 @@ const phase2 = [
     {name: "Adduktor Aktivierung", time: 50}
 ];
 
-// 👉 HIER PHASE WECHSELN
-let currentPhase = 2; // 1 oder 2
-
-let exercises = currentPhase === 1 ? phase1 : phase2;
-
-
 // =========================
-// LOGIK
+// STATE
 // =========================
+
+let currentPhase = localStorage.getItem("phase") || 1;
+let exercises = currentPhase == 1 ? phase1 : phase2;
 
 let index = 0;
 let time = exercises[0].time;
+let totalTime = exercises[0].time;
 let interval = null;
+
+
+// =========================
+// FUNKTIONEN
+// =========================
+
+function setPhase(p) {
+    currentPhase = p;
+    localStorage.setItem("phase", p);
+
+    exercises = p == 1 ? phase1 : phase2;
+
+    index = 0;
+    time = exercises[0].time;
+    totalTime = time;
+
+    updateUI();
+}
 
 function updateUI() {
 
     document.getElementById("exercise").innerText = exercises[index].name;
     document.getElementById("timer").innerText = time;
 
-    // Bild wechseln
-    if (currentPhase === 1) {
-        document.getElementById("image").src = "images/phase1.jpg";
-    } else {
-        document.getElementById("image").src = "images/phase2.jpg";
-    }
+    // Fortschritt
+    let percent = ((totalTime - time) / totalTime) * 100;
+    document.getElementById("progress").style.width = percent + "%";
+
+    // Bild
+    document.getElementById("image").src =
+        currentPhase == 1 ? "images/phase1.jpg" : "images/phase2.jpg";
 }
 
 function start() {
+
     if (interval) return;
 
     interval = setInterval(() => {
@@ -124,6 +172,7 @@ function start() {
         time--;
 
         if (time <= 0) {
+            beep();
             nextExercise();
         }
 
@@ -137,18 +186,52 @@ function pause() {
     interval = null;
 }
 
+function skip() {
+    beep();
+    nextExercise();
+}
+
 function nextExercise() {
 
     index++;
 
     if (index >= exercises.length) {
-        alert("Fertig! 💪");
-        pause();
+        finish();
         return;
     }
 
     time = exercises[index].time;
+    totalTime = time;
 }
+
+function finish() {
+
+    pause();
+
+    localStorage.setItem("lastDone", new Date().toLocaleDateString());
+
+    alert("Fertig! 💪 Stark gemacht!");
+}
+
+
+// =========================
+// SOUND
+// =========================
+
+function beep() {
+    let ctx = new (window.AudioContext || window.webkitAudioContext)();
+    let osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    osc.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+}
+
+
+// =========================
+// INIT
+// =========================
 
 updateUI();
 
