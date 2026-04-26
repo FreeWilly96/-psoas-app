@@ -1,10 +1,113 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Psoas Ultra</title>
+
+<style>
+body {
+    font-family: -apple-system;
+    margin:0;
+    background:#0f172a;
+    color:white;
+    text-align:center;
+}
+
+.header {
+    padding:20px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.timer {
+    font-size:70px;
+    margin:20px;
+}
+
+.exercise {
+    font-size:26px;
+    margin-top:20px;
+}
+
+button {
+    padding:15px;
+    margin:10px;
+    border-radius:12px;
+    border:none;
+    font-size:18px;
+    background:#22c55e;
+    color:white;
+}
+</style>
+</head>
+
 <body>
-<h1>Psoas Ultra</h1>
+
+<div class="header">Psoas Ultra Routine</div>
+
+<div class="exercise" id="exercise">Bereit</div>
+<div class="timer" id="timer">0</div>
+
 <button onclick="start()">Start</button>
+<button onclick="pause()">Pause</button>
+
 <script>
-function start(){ alert("App läuft!"); }
+
+let plan = [
+ {name:"Bauchatmung", time:60},
+ {name:"Knie zur Brust links", time:45},
+ {name:"Knie zur Brust rechts", time:45},
+ {name:"Becken kippen", time:60},
+ {name:"Glute Bridge", time:60},
+ {name:"Adduktor Stretch links", time:45},
+ {name:"Adduktor Stretch rechts", time:45}
+];
+
+let i = 0;
+let t = 0;
+let interval;
+
+function speak(text){
+ let msg = new SpeechSynthesisUtterance(text);
+ msg.lang = "de-DE";
+ speechSynthesis.speak(msg);
+}
+
+function start(){
+ i = 0;
+ next();
+}
+
+function next(){
+ if(i >= plan.length){
+   speak("Training abgeschlossen");
+   document.getElementById("exercise").innerText = "Fertig";
+   return;
+ }
+
+ let ex = plan[i];
+ document.getElementById("exercise").innerText = ex.name;
+ speak(ex.name);
+
+ t = ex.time;
+
+ interval = setInterval(()=>{
+   t--;
+   document.getElementById("timer").innerText = t;
+
+   if(t <= 0){
+     clearInterval(interval);
+     i++;
+     next();
+   }
+ },1000);
+}
+
+function pause(){
+ clearInterval(interval);
+}
+
 </script>
+
 </body>
 </html>
