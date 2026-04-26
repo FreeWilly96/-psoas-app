@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra+ FIX</title>
+<title>Psoas Ultra FINAL</title>
 
 <style>
 body {
@@ -22,7 +22,9 @@ img {
     margin: 20px auto;
 }
 
-.timer { font-size: 70px; }
+.timer {
+    font-size: 70px;
+}
 
 button {
     padding: 12px 18px;
@@ -30,8 +32,11 @@ button {
     border-radius: 10px;
     border: none;
 }
+
 .start { background: green; }
 .pause { background: red; }
+.skip { background: orange; }
+
 </style>
 </head>
 
@@ -41,52 +46,60 @@ button {
 <h3 id="exerciseTitle"></h3>
 <p id="nextExercise"></p>
 
-<img id="exerciseImage" src="">
+<img id="exerciseImage">
 
 <div class="timer" id="timer">40</div>
 
 <button class="start" onclick="startTimer()">Start</button>
 <button class="pause" onclick="pauseTimer()">Pause</button>
+<button class="skip" onclick="nextExercise()">Skip</button>
 
 <script>
 
 // =============================
-// ⚠️ IMMER BEI 0 STARTEN (FIX)
+// 👉 IMMER PHASE 1 START
 // =============================
-let current = 0;
+let week = 1;
 
 // =============================
-let week = 2;
-
+// ÜBUNGEN
 // =============================
+const phase1 = [
+    {name:"Bauchatmung", img:"phase1.jpg", time:60},
+    {name:"Knie zur Brust links", img:"phase1.jpg", time:40},
+    {name:"Knie zur Brust rechts", img:"phase1.jpg", time:40},
+    {name:"Mini-Becken-Kippung", img:"phase1.jpg", time:40},
+];
+
 const phase2 = [
     {name:"Hüftöffnung links", img:"phase2.jpg", time:40},
     {name:"Hüftöffnung rechts", img:"phase2.jpg", time:40},
-    {name:"Dead Bug", img:"phase2.jpg", time:40}
+    {name:"Dead Bug", img:"phase2.jpg", time:40},
 ];
 
-const exercises = phase2;
+// 👉 PHASE AUTOMATIK
+const exercises = (week === 1) ? phase1 : phase2;
 
 // =============================
+let current = 0;
 let timeLeft = exercises[current].time;
 let timer = null;
 
 // =============================
-// 🔊 AUDIO FIX (iOS SAFE)
+// 🔊 SPRACHE (iOS FIX)
 // =============================
 function speak(text) {
-
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = "de-DE";
 
-    // HARTE iOS Aktivierung
     speechSynthesis.cancel();
+
     setTimeout(() => {
         speechSynthesis.speak(msg);
     }, 100);
 }
 
-// 👉 WICHTIG: direkt an Start koppeln!
+// =============================
 function startTimer() {
 
     if (timer) return;
@@ -121,7 +134,7 @@ function nextExercise() {
     current++;
 
     if (current >= exercises.length) {
-        alert("Fertig");
+        alert("Fertig!");
         current = 0;
     }
 
@@ -134,20 +147,27 @@ function loadExercise() {
     let ex = exercises[current];
 
     document.getElementById("exerciseTitle").innerText = ex.name;
-    document.getElementById("phaseTitle").innerText = "Phase 2";
+    document.getElementById("phaseTitle").innerText =
+        (week === 1) ? "Phase 1" : "Phase 2";
 
     if (current + 1 < exercises.length) {
         document.getElementById("nextExercise").innerText =
             "Als nächstes: " + exercises[current + 1].name;
+    } else {
+        document.getElementById("nextExercise").innerText =
+            "Letzte Übung";
     }
 
-    // 🖼️ IMAGE FIX + ERROR DEBUG
+    // =============================
+    // 🖼️ IMAGE MIT FALLBACK
+    // =============================
     let img = document.getElementById("exerciseImage");
+
     img.src = ex.img;
 
     img.onerror = function() {
         img.src = "";
-        alert("Bild fehlt: " + ex.img);
+        console.log("Bild fehlt:", ex.img);
     };
 
     timeLeft = ex.time;
