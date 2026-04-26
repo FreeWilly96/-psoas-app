@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <title>Psoas Ultra PRO</title>
 
@@ -11,8 +11,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Psoas Ultra">
 
-<link rel="apple-touch-icon" sizes="180x180" href="/psoas-app/images/icon.png">
-<link rel="manifest" href="/psoas-app/manifest.json">
+<!-- 🔥 ICON FIX -->
+<link rel="apple-touch-icon" sizes="180x180" href="images/icon.png?v=3">
+<link rel="icon" href="images/icon.png?v=3">
+
+<!-- 📦 MANIFEST -->
+<link rel="manifest" href="manifest.json">
+
+<!-- 🎨 SPLASHSCREEN (iOS Trick) -->
+<link rel="apple-touch-startup-image" href="images/icon.png">
 
 <style>
 body {
@@ -25,26 +32,30 @@ body {
 
 .container {
     height: 100vh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
+/* 🔥 BILD GROSS + APP LOOK */
 img {
-    width: 95%;
-    height: 45vh;
+    width: 100%;
+    height: 50vh;
     object-fit: contain;
-    border-radius: 12px;
+    border-radius: 16px;
     margin: 10px auto;
 }
 
 .timer {
     font-size: 90px;
+    font-weight: bold;
 }
 
 .progress {
-    width: 80%;
-    height: 10px;
+    width: 85%;
+    height: 12px;
     background: #333;
     margin: 10px auto;
     border-radius: 10px;
@@ -54,24 +65,26 @@ img {
     height: 100%;
     width: 0%;
     background: limegreen;
+    border-radius: 10px;
 }
 
 button {
     padding: 12px 18px;
     margin: 5px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: none;
     color: white;
+    font-size: 14px;
 }
 
-.start { background: green; }
-.pause { background: red; }
-.skip { background: orange; }
+.start { background: #00c853; }
+.pause { background: #ff1744; }
+.skip { background: #ff9100; }
 .reset { background: gray; }
 .phase { background: purple; }
 
 .controls {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 </style>
 </head>
@@ -125,37 +138,37 @@ const phases = [
 name:"Bauchatmung",
 img:"images/phase1.jpg",
 time:120,
-speech:"Bauchatmung. Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Tief in den Bauch atmen. Fünf Sekunden ein, sieben Sekunden aus."
+speech:"Bauchatmung. Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Fünf Sekunden ein, sieben Sekunden aus."
 },
 {
 name:"Knie zur Brust",
 img:"images/phase1.jpg",
 time:45,
-speech:"Knie zur Brust. Ein Knie zur Brust ziehen und halten. Anderes Bein bleibt entspannt. Ruhig weiteratmen."
+speech:"Knie zur Brust. Ein Knie zur Brust ziehen und halten. Ruhig atmen."
 },
 {
 name:"Mini-Becken-Kippung",
 img:"images/phase1.jpg",
 time:40,
-speech:"Mini Becken Kippung. Unteren Rücken in den Boden drücken. Spannung halten und lösen. Kleine ruhige Bewegung."
+speech:"Becken kippen. Rücken in den Boden drücken und lösen."
 },
 {
 name:"Hüftbeuger Dehnung",
 img:"images/phase1.jpg",
 time:40,
-speech:"Hüftbeuger Dehnung. Halbkniestand. Becken kippen. Gesäß anspannen. Dehnung vorne spüren."
+speech:"Hüftbeuger dehnen. Becken kippen. Spannung halten."
 },
 {
 name:"Glute Bridge",
 img:"images/phase1.jpg",
 time:40,
-speech:"Glute Bridge. Hüfte nach oben drücken. Gesäß anspannen. Kurz halten und langsam absenken."
+speech:"Glute Bridge. Hüfte anheben. Gesäß anspannen."
 },
 {
 name:"Adduktor Dehnung",
 img:"images/phase1.jpg",
 time:45,
-speech:"Adduktor Dehnung. Breiter Stand. Gewicht zur Seite verlagern. Dehnung spüren."
+speech:"Adduktor Dehnung. Gewicht zur Seite verlagern."
 }
 ],
 
@@ -164,44 +177,44 @@ speech:"Adduktor Dehnung. Breiter Stand. Gewicht zur Seite verlagern. Dehnung sp
 name:"Bauchatmung",
 img:"images/phase2.jpg",
 time:60,
-speech:"Bauchatmung zur Aktivierung. Ruhig atmen und Spannung aufbauen."
+speech:"Bauchatmung zur Aktivierung."
 },
 {
 name:"Dynamische Hüftöffnung",
 img:"images/phase2.jpg",
 time:40,
-speech:"Dynamische Hüftöffnung. Ausfallschritt. Hüfte nach vorne und zurück bewegen."
+speech:"Hüfte vor und zurück bewegen."
 },
 {
 name:"Glute Bridge einbeinig",
 img:"images/phase2.jpg",
 time:40,
-speech:"Einbeinige Glute Bridge. Hüfte anheben und stabil halten."
+speech:"Einbeinige Glute Bridge. Stabil halten."
 },
 {
 name:"Dead Bug",
 img:"images/phase2.jpg",
 time:40,
-speech:"Dead Bug. Gegengleich Arm und Bein bewegen. Rumpf stabil halten."
+speech:"Dead Bug. Gegengleich bewegen."
 },
 {
 name:"Seitliche Ausfallschritte",
 img:"images/phase2.jpg",
 time:40,
-speech:"Seitliche Ausfallschritte. Schritt zur Seite. Hüfte nach hinten."
+speech:"Seitlich ausfallen. Hüfte nach hinten."
 },
 {
 name:"Adduktor & Hüfte Kombi",
 img:"images/phase2.jpg",
 time:40,
-speech:"Adduktor und Hüfte kombinieren. Dehnung halten und kleine Bewegungen ausführen."
+speech:"Dehnung halten und kleine Bewegungen."
 }
 ]
 
 ];
 
 // =============================
-// 🔊 SPRACHE
+// 🔊 SPRACHE (FIX iOS)
 // =============================
 function speak(text, callback) {
 
@@ -210,7 +223,7 @@ function speak(text, callback) {
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = "de-DE";
 
-    msg.onend = function() {
+    msg.onend = () => {
         if (callback) callback();
     };
 
@@ -218,19 +231,15 @@ function speak(text, callback) {
 }
 
 // =============================
-// ▶️ START (WICHTIG FIX!)
-// =============================
 function startTimer() {
 
     if (timer) return;
 
     const ex = phases[phaseIndex][current];
 
-    // 👉 Erst Ansage, dann Start
+    // 👉 Erst Ansage dann Start
     speak(ex.speech, () => {
-
         startRealTimer();
-
     });
 }
 
@@ -263,7 +272,6 @@ function nextExercise() {
     current++;
 
     if (current >= phases[phaseIndex].length) {
-
         alert("Fertig 💪");
         resetAll();
         return;
