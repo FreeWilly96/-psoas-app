@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra FINAL</title>
+<title>Psoas Ultra V6 PRO</title>
 
 <style>
 body {
@@ -24,6 +24,22 @@ img {
 
 .timer {
     font-size: 70px;
+    margin: 10px;
+}
+
+.progress {
+    width: 80%;
+    height: 10px;
+    background: #333;
+    margin: 10px auto;
+    border-radius: 10px;
+}
+
+.bar {
+    height: 100%;
+    background: #2ecc71;
+    width: 0%;
+    border-radius: 10px;
 }
 
 button {
@@ -31,11 +47,13 @@ button {
     margin: 5px;
     border-radius: 10px;
     border: none;
+    color: white;
 }
 
 .start { background: green; }
 .pause { background: red; }
 .skip { background: orange; }
+.reset { background: gray; }
 
 </style>
 </head>
@@ -50,49 +68,55 @@ button {
 
 <div class="timer" id="timer">40</div>
 
+<div class="progress">
+    <div class="bar" id="progressBar"></div>
+</div>
+
+<p id="percent"></p>
+
 <button class="start" onclick="startTimer()">Start</button>
 <button class="pause" onclick="pauseTimer()">Pause</button>
 <button class="skip" onclick="nextExercise()">Skip</button>
+<button class="reset" onclick="resetAll()">Reset</button>
 
 <script>
 
 // =============================
-// 👉 IMMER PHASE 1 START
+// START IMMER BEI PHASE 1
 // =============================
 let week = 1;
+let current = 0;
+let timer = null;
+let timeLeft = 0;
 
 // =============================
 // ÜBUNGEN
 // =============================
 const phase1 = [
-    {name:"Bauchatmung", img:"phase1.jpg", time:60},
-    {name:"Knie zur Brust links", img:"phase1.jpg", time:40},
-    {name:"Knie zur Brust rechts", img:"phase1.jpg", time:40},
-    {name:"Mini-Becken-Kippung", img:"phase1.jpg", time:40},
+    {name:"Bauchatmung", img:"images/phase1.jpg", time:60},
+    {name:"Knie zur Brust links", img:"images/phase1.jpg", time:40},
+    {name:"Knie zur Brust rechts", img:"images/phase1.jpg", time:40},
+    {name:"Mini-Becken-Kippung", img:"images/phase1.jpg", time:40},
 ];
 
 const phase2 = [
-    {name:"Hüftöffnung links", img:"phase2.jpg", time:40},
-    {name:"Hüftöffnung rechts", img:"phase2.jpg", time:40},
-    {name:"Dead Bug", img:"phase2.jpg", time:40},
+    {name:"Hüftöffnung links", img:"images/phase2.jpg", time:40},
+    {name:"Hüftöffnung rechts", img:"images/phase2.jpg", time:40},
+    {name:"Dead Bug", img:"images/phase2.jpg", time:40},
 ];
 
-// 👉 PHASE AUTOMATIK
-const exercises = (week === 1) ? phase1 : phase2;
-
 // =============================
-let current = 0;
-let timeLeft = exercises[current].time;
-let timer = null;
+function getExercises() {
+    return (week === 1) ? phase1 : phase2;
+}
 
 // =============================
 // 🔊 SPRACHE (iOS FIX)
 // =============================
 function speak(text) {
+    speechSynthesis.cancel();
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = "de-DE";
-
-    speechSynthesis.cancel();
 
     setTimeout(() => {
         speechSynthesis.speak(msg);
@@ -110,6 +134,8 @@ function startTimer() {
 
         timeLeft--;
         document.getElementById("timer").innerText = timeLeft;
+
+        updateProgress();
 
         if (timeLeft <= 0) nextExercise();
 
@@ -133,9 +159,17 @@ function nextExercise() {
 
     current++;
 
-    if (current >= exercises.length) {
-        alert("Fertig!");
-        current = 0;
+    if (current >= getExercises().length) {
+
+        if (week === 1) {
+            week = 2;
+            current = 0;
+            speak("Phase 2 startet");
+        } else {
+            alert("Fertig!");
+            resetAll();
+            return;
+        }
     }
 
     loadExercise();
@@ -144,34 +178,56 @@ function nextExercise() {
 // =============================
 function loadExercise() {
 
+    let exercises = getExercises();
     let ex = exercises[current];
 
-    document.getElementById("exerciseTitle").innerText = ex.name;
     document.getElementById("phaseTitle").innerText =
         (week === 1) ? "Phase 1" : "Phase 2";
+
+    document.getElementById("exerciseTitle").innerText = ex.name;
 
     if (current + 1 < exercises.length) {
         document.getElementById("nextExercise").innerText =
             "Als nächstes: " + exercises[current + 1].name;
     } else {
         document.getElementById("nextExercise").innerText =
-            "Letzte Übung";
+            (week === 1) ? "Phase 2 kommt" : "Letzte Übung";
     }
 
     // =============================
-    // 🖼️ IMAGE MIT FALLBACK
+    // BILD LADEN (FEHLERFIX)
     // =============================
     let img = document.getElementById("exerciseImage");
-
-    img.src = ex.img;
 
     img.onerror = function() {
         img.src = "";
         console.log("Bild fehlt:", ex.img);
     };
 
+    img.src = ex.img + "?v=" + new Date().getTime();
+
     timeLeft = ex.time;
     document.getElementById("timer").innerText = timeLeft;
+
+    updateProgress();
+}
+
+// =============================
+function updateProgress() {
+
+    let total = getExercises().length;
+    let percent = ((current) / total) * 100;
+
+    document.getElementById("progressBar").style.width = percent + "%";
+    document.getElementById("percent").innerText = Math.round(percent) + "%";
+}
+
+// =============================
+function resetAll() {
+    pauseTimer();
+    week = 1;
+    current = 0;
+    loadExercise();
 }
 
 // =============================
