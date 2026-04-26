@@ -6,13 +6,18 @@
 
 <title>Psoas Ultra PRO v20</title>
 
-<!-- APP MODE -->
+<!-- 📱 APP MODE -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Psoas Ultra">
 
-<link rel="apple-touch-icon" sizes="180x180" href="/psoas-app/images/icon.png">
-<link rel="manifest" href="/psoas-app/manifest.json">
+<!-- ✅ ICON FIX (WICHTIG) -->
+<link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
+<link rel="apple-touch-icon-precomposed" href="images/icon.png">
+<link rel="icon" href="images/icon.png">
+
+<!-- Manifest -->
+<link rel="manifest" href="manifest.json">
 
 <style>
 body {
@@ -73,7 +78,6 @@ button {
 .stats {
     font-size:14px;
 }
-
 </style>
 </head>
 
@@ -131,7 +135,7 @@ let timer = null;
 let timeLeft = 0;
 
 // =============================
-// ÜBUNGEN + COACH TEXT
+// ÜBUNGEN
 // =============================
 const phases = [
 
@@ -140,45 +144,45 @@ const phases = [
 speech:"Bauchatmung. Ruhig in den Bauch einatmen. Langsam ausatmen."},
 
 {name:"Knie zur Brust", img:"images/phase1.jpg", time:45,
-speech:"Knie zur Brust ziehen. Halten und entspannen."},
+speech:"Knie zur Brust ziehen und entspannen."},
 
 {name:"Mini Becken Kippung", img:"images/phase1.jpg", time:40,
-speech:"Becken kippen. Rücken in den Boden drücken und lösen."},
+speech:"Becken kippen und lösen."},
 
 {name:"Hüftbeuger Dehnung", img:"images/phase1.jpg", time:40,
-speech:"Hüfte nach vorne schieben. Dehnung spüren."},
+speech:"Hüfte nach vorne schieben."},
 
 {name:"Glute Bridge", img:"images/phase1.jpg", time:40,
-speech:"Hüfte anheben. Gesäß anspannen."},
+speech:"Hüfte anheben und halten."},
 
 {name:"Adduktor Dehnung", img:"images/phase1.jpg", time:45,
-speech:"Zur Seite lehnen. Dehnung in der Leiste spüren."}
+speech:"Zur Seite lehnen und Dehnung spüren."}
 ],
 
 [
 {name:"Bauchatmung", img:"images/phase2.jpg", time:60,
-speech:"Aktivierende Atmung. Spannung aufbauen."},
+speech:"Aktivierende Atmung."},
 
 {name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", time:40,
-speech:"Vor und zurück bewegen. Hüfte öffnen."},
+speech:"Hüfte vor und zurück bewegen."},
 
 {name:"Glute Bridge einbeinig", img:"images/phase2.jpg", time:40,
-speech:"Ein Bein anheben. Hüfte stabil halten."},
+speech:"Einbeinige Brücke halten."},
 
 {name:"Dead Bug", img:"images/phase2.jpg", time:40,
 speech:"Arm und Bein gegengleich bewegen."},
 
 {name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", time:40,
-speech:"Schritt zur Seite. Hüfte nach hinten."},
+speech:"Seitlich ausweichen."},
 
 {name:"Adduktor und Hüfte", img:"images/phase2.jpg", time:40,
-speech:"Dehnung und kleine Bewegungen kombinieren."}
+speech:"Dehnung und Bewegung kombinieren."}
 ]
 
 ];
 
 // =============================
-// 🔊 COACH VOICE
+// 🔊 SPEAK
 // =============================
 function speak(text, callback) {
 
@@ -207,7 +211,6 @@ function startTimer() {
 
     const ex = phases[phaseIndex][current];
 
-    // 👉 erst Ansage dann Start
     speak(ex.speech, () => {
 
         timer = setInterval(() => {
@@ -246,32 +249,14 @@ function nextExercise() {
 
         if (points >= level * 50) level++;
 
-        autoSwitchPhase();
-
-        saveStats();
-
         alert("Training abgeschlossen 💪");
 
         current = 0;
     }
 
     saveState();
+    saveStats();
     loadExercise();
-}
-
-// =============================
-// 🧠 INTELLIGENTER PLAN
-// =============================
-function autoSwitchPhase() {
-
-    // 👉 Anfänger: Phase 1 öfter
-    if (sessions < 3) {
-        phaseIndex = 0;
-    }
-    // 👉 Fortgeschritten: Phase 2 öfter
-    else {
-        phaseIndex = 1;
-    }
 }
 
 // =============================
