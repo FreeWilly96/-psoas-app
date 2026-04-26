@@ -6,6 +6,10 @@
 
 <title>Psoas Ultra PRO v14</title>
 
+<!-- ✅ APP ICON -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="images/icon.png">
+
 <style>
 body {
     margin: 0;
@@ -52,6 +56,7 @@ button {
 .skip { background: orange; color:white; }
 .reset { background: gray; color:white; }
 .phase { background: purple; color:white; }
+
 </style>
 </head>
 
@@ -73,14 +78,13 @@ button {
 <button class="pause" onclick="pauseTimer()">Pause</button>
 <button class="skip" onclick="nextExercise()">Skip</button>
 <button class="reset" onclick="resetAll()">Reset</button>
-<br>
-<button class="phase" onclick="setPhase(0)">Phase 1</button>
-<button class="phase" onclick="setPhase(1)">Phase 2</button>
+<button class="phase" onclick="setPhase(1)">Phase 1</button>
+<button class="phase" onclick="setPhase(2)">Phase 2</button>
 
 <script>
 
 // =============================
-// 🔥 STATE
+// STATE
 // =============================
 let phaseIndex = 0;
 let current = 0;
@@ -88,16 +92,16 @@ let timer = null;
 let timeLeft = 0;
 
 // =============================
-// 🔊 iOS SPEECH FIX
+// 🔊 SPRACHE (fix + sauber)
 // =============================
-function speakSequence(text, callback) {
+function speak(text, callback) {
 
     speechSynthesis.cancel();
 
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = "de-DE";
 
-    msg.onend = () => {
+    msg.onend = function() {
         if (callback) callback();
     };
 
@@ -105,7 +109,7 @@ function speakSequence(text, callback) {
 }
 
 // =============================
-// 📦 ÜBUNGEN (KOMPLETT!)
+// 🧠 ÜBUNGEN MIT ANSAGE TEXT
 // =============================
 const phases = [
 
@@ -117,10 +121,9 @@ img:"images/phase1.jpg",
 time:120,
 speech:`Bauchatmung. Nervensystem beruhigen.
 Rückenlage, Füße aufgestellt.
-Eine Hand auf Bauch, eine auf Brust.
-Langsam in den Bauch einatmen.
-5 Sekunden ein, 7 Sekunden aus.
-2 Minuten.`
+Eine Hand auf den Bauch, eine auf die Brust.
+Langsam in den Bauch atmen.
+5 Sekunden ein, 7 Sekunden aus.`
 },
 
 {
@@ -128,10 +131,9 @@ name:"Knie zur Brust links",
 img:"images/phase1.jpg",
 time:45,
 speech:`Knie zur Brust links.
-Ein Knie zur Brust ziehen.
+Ein Knie zur Brust ziehen und halten.
 Anderes Bein bleibt locker.
-Tief weiteratmen.
-45 Sekunden.`
+Ruhig weiter atmen.`
 },
 
 {
@@ -139,31 +141,29 @@ name:"Knie zur Brust rechts",
 img:"images/phase1.jpg",
 time:45,
 speech:`Knie zur Brust rechts.
-Ein Knie zur Brust ziehen.
-Anderes Bein locker lassen.
-45 Sekunden.`
+Ein Knie zur Brust ziehen und halten.
+Anderes Bein bleibt locker.
+Ruhig weiter atmen.`
 },
 
 {
-name:"Mini-Becken-Kippung",
+name:"Mini Becken Kippung",
 img:"images/phase1.jpg",
 time:40,
 speech:`Mini Becken Kippung.
 Unterer Rücken in den Boden drücken.
-Becken kippen.
-Kurz halten und lösen.
-Ruhige kleine Bewegung.`
+Becken leicht kippen.
+Spannung kurz halten und lösen.`
 },
 
 {
-name:"Hüftbeuger-Dehnung",
+name:"Hüftbeuger Dehnung",
 img:"images/phase1.jpg",
 time:40,
 speech:`Hüftbeuger Dehnung.
 Halbkniestand.
 Gesäß anspannen.
-Becken leicht kippen.
-Dehnung vorne spüren.`
+Dehnung vorne in der Hüfte spüren.`
 },
 
 {
@@ -173,18 +173,17 @@ time:40,
 speech:`Glute Bridge.
 Hüfte nach oben drücken.
 Gesäß anspannen.
-Kurz halten.
-Langsam absenken.`
+Langsam wieder absenken.`
 },
 
 {
-name:"Adduktor-Dehnung",
+name:"Adduktor Dehnung",
 img:"images/phase1.jpg",
-time:45,
+time:40,
 speech:`Adduktor Dehnung.
 Breiter Stand.
 Gewicht zur Seite verlagern.
-Andere Seite gestreckt lassen.`
+Dehnung in der Leiste spüren.`
 }
 ],
 
@@ -194,9 +193,8 @@ Andere Seite gestreckt lassen.`
 name:"Bauchatmung",
 img:"images/phase2.jpg",
 time:60,
-speech:`Bauchatmung.
-Ruhig in den Bauch atmen.
-Körper entspannen.`
+speech:`Bauchatmung zur Vorbereitung.
+Ruhig in den Bauch atmen.`
 },
 
 {
@@ -204,9 +202,9 @@ name:"Dynamische Hüftöffnung links",
 img:"images/phase2.jpg",
 time:40,
 speech:`Dynamische Hüftöffnung links.
-Ausfallschritt Position.
 Hüfte nach vorne schieben.
-Dann zurück bewegen.`
+Dann zurück.
+Bewegung kontrolliert.`
 },
 
 {
@@ -214,7 +212,9 @@ name:"Dynamische Hüftöffnung rechts",
 img:"images/phase2.jpg",
 time:40,
 speech:`Dynamische Hüftöffnung rechts.
-Hüfte vor und zurück bewegen.`
+Hüfte nach vorne schieben.
+Dann zurück.
+Bewegung kontrolliert.`
 },
 
 {
@@ -222,8 +222,8 @@ name:"Dead Bug",
 img:"images/phase2.jpg",
 time:40,
 speech:`Dead Bug.
-Arm und gegenüberliegendes Bein strecken.
-Ruhig kontrolliert bewegen.`
+Gegengleich Arm und Bein strecken.
+Ruhig und kontrolliert.`
 },
 
 {
@@ -232,28 +232,17 @@ img:"images/phase2.jpg",
 time:40,
 speech:`Seitliche Ausfallschritte.
 Schritt zur Seite.
-Hüfte nach hinten schieben.
-Andere Seite gestreckt lassen.`
+Hüfte nach hinten.
+Andere Seite bleibt gestreckt.`
 },
 
 {
-name:"Glute Bridge einbeinig",
+name:"Adduktor Hüfte kombinieren",
 img:"images/phase2.jpg",
 time:40,
-speech:`Glute Bridge einbeinig.
-Hüfte anheben.
-Gesäß anspannen.
-Kurz halten.`
-},
-
-{
-name:"Adduktor & Hüfte kombinieren",
-img:"images/phase2.jpg",
-time:40,
-speech:`Adduktor Hüfte kombinieren.
-In Dehnung gehen.
-Kleine Wippbewegungen.
-Ruhig weiter atmen.`
+speech:`Adduktor und Hüfte kombinieren.
+Dehnung halten.
+Kleine Bewegungen nach oben und unten.`
 }
 ]
 
@@ -261,7 +250,7 @@ Ruhig weiter atmen.`
 
 // =============================
 function setPhase(p) {
-    phaseIndex = p;
+    phaseIndex = p - 1;
     current = 0;
     loadExercise();
 }
@@ -271,36 +260,27 @@ function startTimer() {
 
     if (timer) return;
 
-    const ex = phases[phaseIndex][current];
+    speak(phases[phaseIndex][current].speech, () => {
 
-    // 👉 ERST ANSAGE, DANN TIMER
-    speakSequence(ex.speech, () => {
+        speak("Start");
 
-        speakSequence("3 2 1 Start", () => {
-            runTimer();
-        });
+        timer = setInterval(() => {
+
+            timeLeft--;
+            updateUI();
+
+            if (timeLeft <= 0) nextExercise();
+
+        }, 1000);
 
     });
-}
-
-// =============================
-function runTimer() {
-
-    timer = setInterval(() => {
-
-        timeLeft--;
-        updateUI();
-
-        if (timeLeft <= 0) nextExercise();
-
-    }, 1000);
 }
 
 // =============================
 function pauseTimer() {
     clearInterval(timer);
     timer = null;
-    speakSequence("Pause");
+    speak("Pause");
 }
 
 // =============================
@@ -323,6 +303,7 @@ function nextExercise() {
 // =============================
 function resetAll() {
     clearInterval(timer);
+    phaseIndex = 0;
     current = 0;
     loadExercise();
 }
@@ -351,11 +332,16 @@ function loadExercise() {
         document.getElementById("nextExercise").innerText =
             "Als nächstes: " + phases[phaseIndex][current + 1].name;
     } else {
-        document.getElementById("nextExercise").innerText =
-            "Letzte Übung";
+        document.getElementById("nextExercise").innerText = "Letzte Übung";
     }
 
-    document.getElementById("exerciseImage").src = ex.img;
+    let img = document.getElementById("exerciseImage");
+
+    img.src = ex.img;
+
+    img.onerror = () => {
+        console.log("Bild fehlt:", ex.img);
+    };
 
     timeLeft = ex.time;
     updateUI();
