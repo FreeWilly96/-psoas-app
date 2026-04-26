@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra+ PRO V5</title>
+<title>Psoas Ultra+ FIX</title>
 
 <style>
 body {
@@ -22,36 +22,16 @@ img {
     margin: 20px auto;
 }
 
-.timer {
-    font-size: 80px;
-}
-
-.progress-bar {
-    width: 90%;
-    height: 10px;
-    background: #333;
-    margin: 10px auto;
-    border-radius: 10px;
-}
-
-.progress {
-    height: 100%;
-    width: 0%;
-    background: #28a745;
-}
+.timer { font-size: 70px; }
 
 button {
-    padding: 12px 20px;
+    padding: 12px 18px;
     margin: 5px;
-    border: none;
     border-radius: 10px;
-    font-size: 16px;
+    border: none;
 }
-
-.start { background: #28a745; }
-.pause { background: #dc3545; }
-.skip { background: #ffc107; }
-.reset { background: #6c757d; }
+.start { background: green; }
+.pause { background: red; }
 </style>
 </head>
 
@@ -61,137 +41,52 @@ button {
 <h3 id="exerciseTitle"></h3>
 <p id="nextExercise"></p>
 
-<img id="exerciseImage">
+<img id="exerciseImage" src="">
 
 <div class="timer" id="timer">40</div>
 
-<div class="progress-bar">
-    <div class="progress" id="progress"></div>
-</div>
-
-<p id="percent"></p>
-
 <button class="start" onclick="startTimer()">Start</button>
 <button class="pause" onclick="pauseTimer()">Pause</button>
-<button class="skip" onclick="nextExercise()">Skip</button>
-<button class="reset" onclick="resetAll()">Reset</button>
 
 <script>
 
 // =============================
-// EINSTELLUNG
+// ⚠️ IMMER BEI 0 STARTEN (FIX)
+// =============================
+let current = 0;
+
 // =============================
 let week = 2;
 
 // =============================
-// ÜBUNGEN
-// =============================
-const phase1 = [
-    {name:"Bauchatmung", img:"phase1.jpg", time:60},
-    {name:"Knie links", img:"phase1.jpg", time:40},
-    {name:"Knie rechts", img:"phase1.jpg", time:40},
-];
-
 const phase2 = [
     {name:"Hüftöffnung links", img:"phase2.jpg", time:40},
     {name:"Hüftöffnung rechts", img:"phase2.jpg", time:40},
-    {name:"Dead Bug", img:"phase2.jpg", time:40},
+    {name:"Dead Bug", img:"phase2.jpg", time:40}
 ];
 
-const exercises = (week === 1) ? phase1 : phase2;
+const exercises = phase2;
 
 // =============================
-let current = localStorage.getItem("current") || 0;
-current = parseInt(current);
-
 let timeLeft = exercises[current].time;
 let timer = null;
 
 // =============================
-// 🔊 AUDIO FIX (iOS!)
-// =============================
-let audioEnabled = false;
-
-function enableAudio() {
-    audioEnabled = true;
-    speak("Audio aktiviert");
-}
-
-// 👉 WICHTIG: erster Klick aktiviert Audio
-document.body.addEventListener("click", enableAudio, { once: true });
-
+// 🔊 AUDIO FIX (iOS SAFE)
 // =============================
 function speak(text) {
 
-    if (!audioEnabled) return;
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = "de-DE";
 
-    try {
-        let msg = new SpeechSynthesisUtterance(text);
-        msg.lang = "de-DE";
-        speechSynthesis.cancel();
+    // HARTE iOS Aktivierung
+    speechSynthesis.cancel();
+    setTimeout(() => {
         speechSynthesis.speak(msg);
-    } catch {
-        beep();
-    }
+    }, 100);
 }
 
-// =============================
-// 🔔 FALLBACK SOUND
-// =============================
-function beep() {
-    let ctx = new (window.AudioContext || window.webkitAudioContext)();
-    let osc = ctx.createOscillator();
-    osc.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.2);
-}
-
-// =============================
-function vibrate() {
-    if (navigator.vibrate) navigator.vibrate(200);
-}
-
-// =============================
-function loadExercise() {
-
-    let ex = exercises[current];
-
-    document.getElementById("exerciseTitle").innerText = ex.name;
-
-    document.getElementById("phaseTitle").innerText =
-        (week === 1) ? "Phase 1" : "Phase 2";
-
-    document.getElementById("exerciseImage").src = ex.img;
-
-    if (current + 1 < exercises.length) {
-        document.getElementById("nextExercise").innerText =
-            "Als nächstes: " + exercises[current + 1].name;
-    } else {
-        document.getElementById("nextExercise").innerText = "Letzte Übung";
-    }
-
-    timeLeft = ex.time;
-    updateTimer();
-    updateProgress();
-
-    speak(ex.name);
-
-    localStorage.setItem("current", current);
-}
-
-// =============================
-function updateTimer() {
-    document.getElementById("timer").innerText = timeLeft;
-}
-
-// =============================
-function updateProgress() {
-    let percent = (current / exercises.length) * 100;
-    document.getElementById("progress").style.width = percent + "%";
-    document.getElementById("percent").innerText = Math.round(percent) + "%";
-}
-
-// =============================
+// 👉 WICHTIG: direkt an Start koppeln!
 function startTimer() {
 
     if (timer) return;
@@ -201,11 +96,9 @@ function startTimer() {
     timer = setInterval(() => {
 
         timeLeft--;
-        updateTimer();
+        document.getElementById("timer").innerText = timeLeft;
 
-        if (timeLeft <= 0) {
-            nextExercise();
-        }
+        if (timeLeft <= 0) nextExercise();
 
     }, 1000);
 }
@@ -223,26 +116,42 @@ function nextExercise() {
     clearInterval(timer);
     timer = null;
 
-    vibrate();
     speak("Wechsel");
 
     current++;
 
     if (current >= exercises.length) {
-        speak("Fertig");
-        alert("Training beendet");
-        resetAll();
-        return;
+        alert("Fertig");
+        current = 0;
     }
 
     loadExercise();
 }
 
 // =============================
-function resetAll() {
-    current = 0;
-    localStorage.removeItem("current");
-    loadExercise();
+function loadExercise() {
+
+    let ex = exercises[current];
+
+    document.getElementById("exerciseTitle").innerText = ex.name;
+    document.getElementById("phaseTitle").innerText = "Phase 2";
+
+    if (current + 1 < exercises.length) {
+        document.getElementById("nextExercise").innerText =
+            "Als nächstes: " + exercises[current + 1].name;
+    }
+
+    // 🖼️ IMAGE FIX + ERROR DEBUG
+    let img = document.getElementById("exerciseImage");
+    img.src = ex.img;
+
+    img.onerror = function() {
+        img.src = "";
+        alert("Bild fehlt: " + ex.img);
+    };
+
+    timeLeft = ex.time;
+    document.getElementById("timer").innerText = timeLeft;
 }
 
 // =============================
