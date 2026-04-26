@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra V6 PRO</title>
+<title>Psoas Ultra PRO v7</title>
 
 <style>
 body {
@@ -33,13 +33,13 @@ img {
     background: #333;
     margin: 10px auto;
     border-radius: 10px;
+    overflow: hidden;
 }
 
-.bar {
+.progress-bar {
     height: 100%;
-    background: #2ecc71;
     width: 0%;
-    border-radius: 10px;
+    background: limegreen;
 }
 
 button {
@@ -47,13 +47,13 @@ button {
     margin: 5px;
     border-radius: 10px;
     border: none;
-    color: white;
+    font-size: 16px;
 }
 
-.start { background: green; }
-.pause { background: red; }
-.skip { background: orange; }
-.reset { background: gray; }
+.start { background: green; color:white; }
+.pause { background: red; color:white; }
+.skip { background: orange; color:white; }
+.reset { background: gray; color:white; }
 
 </style>
 </head>
@@ -66,13 +66,11 @@ button {
 
 <img id="exerciseImage">
 
-<div class="timer" id="timer">40</div>
-
 <div class="progress">
-    <div class="bar" id="progressBar"></div>
+    <div class="progress-bar" id="progressBar"></div>
 </div>
 
-<p id="percent"></p>
+<div class="timer" id="timer">0</div>
 
 <button class="start" onclick="startTimer()">Start</button>
 <button class="pause" onclick="pauseTimer()">Pause</button>
@@ -82,45 +80,58 @@ button {
 <script>
 
 // =============================
-// START IMMER BEI PHASE 1
+// 👉 START IMMER PHASE 1
 // =============================
-let week = 1;
+let phaseIndex = 0;
+
+// =============================
+// ÜBUNGEN (FIXED PATH)
+// =============================
+const phases = [
+
+    // PHASE 1
+    [
+        {name:"Bauchatmung", img:"images/phase1.jpg", time:60},
+        {name:"Knie zur Brust links", img:"images/phase1.jpg", time:40},
+        {name:"Knie zur Brust rechts", img:"images/phase1.jpg", time:40},
+        {name:"Mini-Becken-Kippung", img:"images/phase1.jpg", time:40},
+    ],
+
+    // PHASE 2
+    [
+        {name:"Hüftöffnung links", img:"images/phase2.jpg", time:40},
+        {name:"Hüftöffnung rechts", img:"images/phase2.jpg", time:40},
+        {name:"Dead Bug", img:"images/phase2.jpg", time:40},
+    ]
+];
+
 let current = 0;
-let timer = null;
 let timeLeft = 0;
+let timer = null;
 
 // =============================
-// ÜBUNGEN
-// =============================
-const phase1 = [
-    {name:"Bauchatmung", img:"images/phase1.jpg", time:60},
-    {name:"Knie zur Brust links", img:"images/phase1.jpg", time:40},
-    {name:"Knie zur Brust rechts", img:"images/phase1.jpg", time:40},
-    {name:"Mini-Becken-Kippung", img:"images/phase1.jpg", time:40},
-];
-
-const phase2 = [
-    {name:"Hüftöffnung links", img:"images/phase2.jpg", time:40},
-    {name:"Hüftöffnung rechts", img:"images/phase2.jpg", time:40},
-    {name:"Dead Bug", img:"images/phase2.jpg", time:40},
-];
-
-// =============================
-function getExercises() {
-    return (week === 1) ? phase1 : phase2;
-}
-
-// =============================
-// 🔊 SPRACHE (iOS FIX)
+// 🔊 SPRACHE (iOS STABIL)
 // =============================
 function speak(text) {
+
     speechSynthesis.cancel();
+
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = "de-DE";
 
     setTimeout(() => {
         speechSynthesis.speak(msg);
     }, 100);
+}
+
+// =============================
+// 🚀 PRELOAD BILDER
+// =============================
+function preloadImages() {
+    phases.flat().forEach(ex => {
+        const img = new Image();
+        img.src = ex.img;
+    });
 }
 
 // =============================
@@ -133,9 +144,7 @@ function startTimer() {
     timer = setInterval(() => {
 
         timeLeft--;
-        document.getElementById("timer").innerText = timeLeft;
-
-        updateProgress();
+        updateUI();
 
         if (timeLeft <= 0) nextExercise();
 
@@ -159,78 +168,80 @@ function nextExercise() {
 
     current++;
 
-    if (current >= getExercises().length) {
+    if (current >= phases[phaseIndex].length) {
 
-        if (week === 1) {
-            week = 2;
-            current = 0;
-            speak("Phase 2 startet");
-        } else {
-            alert("Fertig!");
+        phaseIndex++;
+
+        if (phaseIndex >= phases.length) {
+            alert("Training beendet 💪");
             resetAll();
             return;
         }
+
+        current = 0;
+        speak("Phase 2");
     }
 
     loadExercise();
+}
+
+// =============================
+function resetAll() {
+
+    clearInterval(timer);
+    timer = null;
+
+    phaseIndex = 0;
+    current = 0;
+
+    loadExercise();
+}
+
+// =============================
+function updateUI() {
+
+    const total = phases[phaseIndex][current].time;
+    const progress = ((total - timeLeft) / total) * 100;
+
+    document.getElementById("timer").innerText = timeLeft;
+    document.getElementById("progressBar").style.width = progress + "%";
 }
 
 // =============================
 function loadExercise() {
 
-    let exercises = getExercises();
-    let ex = exercises[current];
+    const ex = phases[phaseIndex][current];
 
     document.getElementById("phaseTitle").innerText =
-        (week === 1) ? "Phase 1" : "Phase 2";
+        "Phase " + (phaseIndex + 1);
 
     document.getElementById("exerciseTitle").innerText = ex.name;
 
-    if (current + 1 < exercises.length) {
+    // 👉 NEXT TEXT
+    if (current + 1 < phases[phaseIndex].length) {
         document.getElementById("nextExercise").innerText =
-            "Als nächstes: " + exercises[current + 1].name;
+            "Als nächstes: " + phases[phaseIndex][current + 1].name;
     } else {
         document.getElementById("nextExercise").innerText =
-            (week === 1) ? "Phase 2 kommt" : "Letzte Übung";
+            (phaseIndex === 0) ? "Als nächstes: Phase 2" : "Letzte Übung";
     }
 
-    // =============================
-    // BILD LADEN (FEHLERFIX)
-    // =============================
+    // 👉 IMAGE FIX
     let img = document.getElementById("exerciseImage");
 
+    img.src = ex.img;
+
     img.onerror = function() {
-        img.src = "";
-        console.log("Bild fehlt:", ex.img);
+        console.log("❌ Bild fehlt:", ex.img);
+        img.src = "images/phase1.jpg"; // fallback
     };
 
-    img.src = ex.img + "?v=" + new Date().getTime();
-
     timeLeft = ex.time;
-    document.getElementById("timer").innerText = timeLeft;
-
-    updateProgress();
+    updateUI();
 }
 
 // =============================
-function updateProgress() {
-
-    let total = getExercises().length;
-    let percent = ((current) / total) * 100;
-
-    document.getElementById("progressBar").style.width = percent + "%";
-    document.getElementById("percent").innerText = Math.round(percent) + "%";
-}
-
-// =============================
-function resetAll() {
-    pauseTimer();
-    week = 1;
-    current = 0;
-    loadExercise();
-}
-
-// =============================
+preloadImages();
 loadExercise();
 
 </script>
