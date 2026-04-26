@@ -6,20 +6,13 @@
 
 <title>Psoas Ultra PRO</title>
 
-<!-- 📱 APP MODE -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Psoas Ultra">
 
-<!-- 🔥 ICON FIX -->
-<link rel="apple-touch-icon" sizes="180x180" href="images/icon.png?v=3">
-<link rel="icon" href="images/icon.png?v=3">
-
-<!-- 📦 MANIFEST -->
+<link rel="apple-touch-icon" sizes="180x180" href="images/icon.png?v=4">
+<link rel="icon" href="images/icon.png?v=4">
 <link rel="manifest" href="manifest.json">
-
-<!-- 🎨 SPLASHSCREEN (iOS Trick) -->
-<link rel="apple-touch-startup-image" href="images/icon.png">
 
 <style>
 body {
@@ -39,13 +32,11 @@ body {
     justify-content: space-between;
 }
 
-/* 🔥 BILD GROSS + APP LOOK */
 img {
     width: 100%;
     height: 50vh;
     object-fit: contain;
     border-radius: 16px;
-    margin: 10px auto;
 }
 
 .timer {
@@ -65,26 +56,24 @@ img {
     height: 100%;
     width: 0%;
     background: limegreen;
-    border-radius: 10px;
 }
 
 button {
-    padding: 12px 18px;
-    margin: 5px;
-    border-radius: 12px;
+    padding: 12px;
+    margin: 4px;
+    border-radius: 10px;
     border: none;
     color: white;
-    font-size: 14px;
 }
 
-.start { background: #00c853; }
-.pause { background: #ff1744; }
-.skip { background: #ff9100; }
+.start { background: green; }
+.pause { background: red; }
+.skip { background: orange; }
 .reset { background: gray; }
 .phase { background: purple; }
 
 .controls {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 </style>
 </head>
@@ -97,6 +86,7 @@ button {
 <h2 id="phaseTitle"></h2>
 <h3 id="exerciseTitle"></h3>
 <p id="nextExercise"></p>
+<p id="dayInfo"></p>
 </div>
 
 <img id="exerciseImage">
@@ -121,10 +111,31 @@ button {
 <script>
 
 // =============================
-// 🔥 STATE
+// 🔊 SOUND ENGINE
 // =============================
-let phaseIndex = 0;
-let current = 0;
+const soundStart = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+const soundSwitch = new Audio("https://actions.google.com/sounds/v1/cartoon/pop.ogg");
+const soundEnd = new Audio("https://actions.google.com/sounds/v1/cartoon/concussive_drum_hit.ogg");
+
+// =============================
+// 📅 DAILY PLAN
+// =============================
+const today = new Date().getDay(); // 0=Sonntag
+
+// 👉 automatisch Phase wählen
+let phaseIndex = (today % 2 === 0) ? 0 : 1;
+
+// =============================
+// 💾 PROGRESS SPEICHERN
+// =============================
+let current = localStorage.getItem("current") ? parseInt(localStorage.getItem("current")) : 0;
+let savedPhase = localStorage.getItem("phase");
+
+if (savedPhase !== null) {
+    phaseIndex = parseInt(savedPhase);
+}
+
+// =============================
 let timer = null;
 let timeLeft = 0;
 
@@ -134,92 +145,30 @@ let timeLeft = 0;
 const phases = [
 
 [
-{
-name:"Bauchatmung",
-img:"images/phase1.jpg",
-time:120,
-speech:"Bauchatmung. Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Fünf Sekunden ein, sieben Sekunden aus."
-},
-{
-name:"Knie zur Brust",
-img:"images/phase1.jpg",
-time:45,
-speech:"Knie zur Brust. Ein Knie zur Brust ziehen und halten. Ruhig atmen."
-},
-{
-name:"Mini-Becken-Kippung",
-img:"images/phase1.jpg",
-time:40,
-speech:"Becken kippen. Rücken in den Boden drücken und lösen."
-},
-{
-name:"Hüftbeuger Dehnung",
-img:"images/phase1.jpg",
-time:40,
-speech:"Hüftbeuger dehnen. Becken kippen. Spannung halten."
-},
-{
-name:"Glute Bridge",
-img:"images/phase1.jpg",
-time:40,
-speech:"Glute Bridge. Hüfte anheben. Gesäß anspannen."
-},
-{
-name:"Adduktor Dehnung",
-img:"images/phase1.jpg",
-time:45,
-speech:"Adduktor Dehnung. Gewicht zur Seite verlagern."
-}
+{ name:"Bauchatmung", img:"images/phase1.jpg", time:120, speech:"Bauchatmung. Tief ein und ausatmen." },
+{ name:"Knie zur Brust", img:"images/phase1.jpg", time:45, speech:"Knie zur Brust ziehen und halten." },
+{ name:"Mini-Becken-Kippung", img:"images/phase1.jpg", time:40, speech:"Becken kippen und lösen." },
+{ name:"Hüftbeuger Dehnung", img:"images/phase1.jpg", time:40, speech:"Hüftbeuger dehnen." },
+{ name:"Glute Bridge", img:"images/phase1.jpg", time:40, speech:"Hüfte anheben und halten." },
+{ name:"Adduktor Dehnung", img:"images/phase1.jpg", time:45, speech:"Dehnung in der Leiste." }
 ],
 
 [
-{
-name:"Bauchatmung",
-img:"images/phase2.jpg",
-time:60,
-speech:"Bauchatmung zur Aktivierung."
-},
-{
-name:"Dynamische Hüftöffnung",
-img:"images/phase2.jpg",
-time:40,
-speech:"Hüfte vor und zurück bewegen."
-},
-{
-name:"Glute Bridge einbeinig",
-img:"images/phase2.jpg",
-time:40,
-speech:"Einbeinige Glute Bridge. Stabil halten."
-},
-{
-name:"Dead Bug",
-img:"images/phase2.jpg",
-time:40,
-speech:"Dead Bug. Gegengleich bewegen."
-},
-{
-name:"Seitliche Ausfallschritte",
-img:"images/phase2.jpg",
-time:40,
-speech:"Seitlich ausfallen. Hüfte nach hinten."
-},
-{
-name:"Adduktor & Hüfte Kombi",
-img:"images/phase2.jpg",
-time:40,
-speech:"Dehnung halten und kleine Bewegungen."
-}
+{ name:"Bauchatmung", img:"images/phase2.jpg", time:60, speech:"Aktivierende Atmung." },
+{ name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", time:40, speech:"Hüfte vor und zurück." },
+{ name:"Glute Bridge einbeinig", img:"images/phase2.jpg", time:40, speech:"Einbeinige Bridge." },
+{ name:"Dead Bug", img:"images/phase2.jpg", time:40, speech:"Stabil bewegen." },
+{ name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", time:40, speech:"Seitlich bewegen." },
+{ name:"Adduktor & Hüfte Kombi", img:"images/phase2.jpg", time:40, speech:"Dehnen und aktivieren." }
 ]
 
 ];
 
 // =============================
-// 🔊 SPRACHE (FIX iOS)
+// 🔊 SPRACHE
 // =============================
 function speak(text, callback) {
-
     speechSynthesis.cancel();
-
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = "de-DE";
 
@@ -237,7 +186,8 @@ function startTimer() {
 
     const ex = phases[phaseIndex][current];
 
-    // 👉 Erst Ansage dann Start
+    soundStart.play();
+
     speak(ex.speech, () => {
         startRealTimer();
     });
@@ -260,7 +210,6 @@ function startRealTimer() {
 function pauseTimer() {
     clearInterval(timer);
     timer = null;
-    speak("Pause");
 }
 
 // =============================
@@ -269,22 +218,35 @@ function nextExercise() {
     clearInterval(timer);
     timer = null;
 
+    soundSwitch.play();
+
     current++;
 
     if (current >= phases[phaseIndex].length) {
-        alert("Fertig 💪");
+
+        soundEnd.play();
+
+        localStorage.removeItem("current");
+        alert("Training fertig 💪");
         resetAll();
         return;
     }
 
+    saveProgress();
     loadExercise();
+}
+
+// =============================
+function saveProgress() {
+    localStorage.setItem("current", current);
+    localStorage.setItem("phase", phaseIndex);
 }
 
 // =============================
 function resetAll() {
     clearInterval(timer);
-    phaseIndex = 0;
     current = 0;
+    saveProgress();
     loadExercise();
 }
 
@@ -292,6 +254,7 @@ function resetAll() {
 function setPhase(p) {
     phaseIndex = p - 1;
     current = 0;
+    saveProgress();
     loadExercise();
 }
 
@@ -310,10 +273,11 @@ function loadExercise() {
 
     const ex = phases[phaseIndex][current];
 
-    document.getElementById("phaseTitle").innerText =
-        "Phase " + (phaseIndex + 1);
-
+    document.getElementById("phaseTitle").innerText = "Phase " + (phaseIndex + 1);
     document.getElementById("exerciseTitle").innerText = ex.name;
+
+    document.getElementById("dayInfo").innerText =
+        "Tagesplan: " + (today % 2 === 0 ? "Regeneration" : "Aktivierung");
 
     if (current + 1 < phases[phaseIndex].length) {
         document.getElementById("nextExercise").innerText =
@@ -322,12 +286,7 @@ function loadExercise() {
         document.getElementById("nextExercise").innerText = "Letzte Übung";
     }
 
-    let img = document.getElementById("exerciseImage");
-    img.src = ex.img;
-
-    img.onerror = () => {
-        console.log("Bild fehlt:", ex.img);
-    };
+    document.getElementById("exerciseImage").src = ex.img;
 
     timeLeft = ex.time;
     updateUI();
