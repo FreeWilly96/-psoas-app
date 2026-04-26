@@ -1,6 +1,20 @@
 {
-  "name": "Psoas Ultra",
+  "name": "Psoas Ultra PRO",
   "short_name": "Psoas",
   "start_url": "index.html",
-  "display": "standalone"
+  "display": "standalone",
+  "background_color": "#0b1a2f",
+  "theme_color": "#0b1a2f",
+  "icons": [
+    {
+      "src": "images/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
