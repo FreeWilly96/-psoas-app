@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra PRO v9</title>
+<title>Psoas Ultra PRO v10</title>
 
 <style>
 body {
@@ -79,14 +79,13 @@ button {
 <script>
 
 // =============================
-// STATE
-// =============================
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
 let timeLeft = 0;
 
 // =============================
+// 👉 PHASEN (FIX: Bauchatmung in Phase 2!)
 const phases = [
 
     [
@@ -97,6 +96,7 @@ const phases = [
     ],
 
     [
+        {name:"Bauchatmung", img:"images/phase2.jpg", time:40}, // 👉 FIX
         {name:"Hüftöffnung links", img:"images/phase2.jpg", time:40},
         {name:"Hüftöffnung rechts", img:"images/phase2.jpg", time:40},
         {name:"Dead Bug", img:"images/phase2.jpg", time:40},
@@ -105,8 +105,7 @@ const phases = [
 ];
 
 // =============================
-// 🔊 STABILE SPRACHE (iOS FIX)
-// =============================
+// 🔊 STABILE SPRACHE
 function speak(text) {
 
     speechSynthesis.cancel();
@@ -114,15 +113,9 @@ function speak(text) {
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = "de-DE";
 
-    // wichtig für iOS
-    msg.rate = 1;
-    msg.pitch = 1;
-
     speechSynthesis.speak(msg);
 }
 
-// =============================
-// COUNTDOWN MIT ANSAGE
 // =============================
 function startTimer() {
 
@@ -150,10 +143,6 @@ function startTimer() {
 // =============================
 function startRealTimer() {
 
-    const ex = phases[phaseIndex][current];
-
-    speak(ex.name); // 👉 HIER IST DER WICHTIGE FIX
-
     timer = setInterval(() => {
 
         timeLeft--;
@@ -176,8 +165,6 @@ function nextExercise() {
 
     clearInterval(timer);
     timer = null;
-
-    speak("Wechsel");
 
     current++;
 
@@ -210,8 +197,6 @@ function resetAll() {
 }
 
 // =============================
-// 👉 BUTTON PHASE 2
-// =============================
 function goPhase2() {
 
     clearInterval(timer);
@@ -219,7 +204,7 @@ function goPhase2() {
     phaseIndex = 1;
     current = 0;
 
-    speak("Phase 2 gestartet");
+    speak("Phase 2");
 
     loadExercise();
 }
@@ -244,6 +229,9 @@ function loadExercise() {
 
     document.getElementById("exerciseTitle").innerText = ex.name;
 
+    // 👉 🔥 HIER IST DER WICHTIGE FIX
+    speak(ex.name);
+
     if (current + 1 < phases[phaseIndex].length) {
         document.getElementById("nextExercise").innerText =
             "Als nächstes: " + phases[phaseIndex][current + 1].name;
@@ -252,7 +240,6 @@ function loadExercise() {
             (phaseIndex === 0) ? "Als nächstes: Phase 2" : "Letzte Übung";
     }
 
-    // Bild laden
     const img = document.getElementById("exerciseImage");
     img.src = ex.img;
 
