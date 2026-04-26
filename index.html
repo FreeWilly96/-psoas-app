@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra PRO v19</title>
+<title>Psoas Ultra PRO v20</title>
 
 <!-- APP MODE -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,7 +19,6 @@ body {
     margin:0;
     font-family:Arial;
     background:#f2f2f2;
-    color:#000;
     text-align:center;
 }
 
@@ -30,26 +29,17 @@ body {
     justify-content:space-between;
 }
 
-/* HEADER */
-.header {
-    padding:10px;
-}
-
-/* IMAGE */
 img {
     width:95%;
-    height:40vh;
+    height:42vh;
     object-fit:contain;
     border-radius:12px;
 }
 
-/* TIMER */
 .timer {
-    font-size:80px;
-    margin-top:10px;
+    font-size:85px;
 }
 
-/* PROGRESS */
 .progress {
     width:80%;
     height:10px;
@@ -64,9 +54,8 @@ img {
     background:limegreen;
 }
 
-/* BUTTONS */
 button {
-    padding:12px 18px;
+    padding:12px;
     margin:5px;
     border:none;
     border-radius:10px;
@@ -78,38 +67,11 @@ button {
 .skip { background:orange; }
 .reset { background:gray; }
 
-/* PHASE BUTTONS */
-.phase {
-    background:#999;
-}
+.phase { background:#999; }
+.phase.active { background:purple; }
 
-.phase.active {
-    background:purple;
-}
-
-/* FOOTER */
-.controls {
-    margin-bottom:15px;
-}
-
-/* CALENDAR */
-.calendar {
-    display:flex;
-    justify-content:center;
-    flex-wrap:wrap;
-    gap:4px;
-    padding:10px;
-}
-
-.day {
-    width:10px;
-    height:10px;
-    background:#bbb;
-    border-radius:3px;
-}
-
-.day.done {
-    background:limegreen;
+.stats {
+    font-size:14px;
 }
 
 </style>
@@ -119,103 +81,148 @@ button {
 
 <div class="container">
 
-<div class="header">
-    <h2 id="phaseTitle"></h2>
-    <h3 id="exerciseTitle"></h3>
-    <p id="nextExercise"></p>
+<div>
+<h2 id="phaseTitle"></h2>
+<h3 id="exerciseTitle"></h3>
+<p id="nextExercise"></p>
 </div>
 
 <img id="exerciseImage">
 
 <div class="progress">
-    <div class="progress-bar" id="progressBar"></div>
+<div class="progress-bar" id="progressBar"></div>
 </div>
 
 <div class="timer" id="timer">0</div>
 
-<div>
-    <div>Punkte: <span id="points">0</span></div>
-    <div>Level: <span id="level">1</span></div>
+<div class="stats">
+Punkte: <span id="points">0</span> |
+Level: <span id="level">1</span> |
+Trainings: <span id="sessions">0</span>
 </div>
 
-<div class="calendar" id="calendar"></div>
+<div>
+<button class="start" onclick="startTimer()">Start</button>
+<button class="pause" onclick="pauseTimer()">Pause</button>
+<button class="skip" onclick="nextExercise()">Skip</button>
+<button class="reset" onclick="resetAll()">Reset</button>
+</div>
 
-<div class="controls">
-
-    <button class="start" onclick="startTimer()">Start</button>
-    <button class="pause" onclick="pauseTimer()">Pause</button>
-    <button class="skip" onclick="nextExercise()">Skip</button>
-    <button class="reset" onclick="resetAll()">Reset</button>
-
-    <br>
-
-    <button id="btnPhase1" class="phase" onclick="setPhase(1)">Phase 1</button>
-    <button id="btnPhase2" class="phase" onclick="setPhase(2)">Phase 2</button>
-
+<div>
+<button id="p1" class="phase" onclick="setPhase(1)">Phase 1</button>
+<button id="p2" class="phase" onclick="setPhase(2)">Phase 2</button>
 </div>
 
 </div>
 
 <script>
 
+// =============================
 // STATE
-let phaseIndex = localStorage.getItem("phaseIndex") || 0;
-let current = localStorage.getItem("current") || 0;
+// =============================
+let phaseIndex = parseInt(localStorage.getItem("phaseIndex")) || 0;
+let current = parseInt(localStorage.getItem("current")) || 0;
+
+let points = parseInt(localStorage.getItem("points")) || 0;
+let level = parseInt(localStorage.getItem("level")) || 1;
+let sessions = parseInt(localStorage.getItem("sessions")) || 0;
 
 let timer = null;
 let timeLeft = 0;
 
-let points = localStorage.getItem("points") || 0;
-let level = localStorage.getItem("level") || 1;
-
 // =============================
-// 📦 ÜBUNGEN
+// ÜBUNGEN + COACH TEXT
 // =============================
 const phases = [
 
 [
-{name:"Bauchatmung", img:"images/phase1.jpg", time:120},
-{name:"Knie zur Brust", img:"images/phase1.jpg", time:45},
-{name:"Mini-Becken-Kippung", img:"images/phase1.jpg", time:40},
-{name:"Hüftbeuger Dehnung", img:"images/phase1.jpg", time:40},
-{name:"Glute Bridge", img:"images/phase1.jpg", time:40},
-{name:"Adduktor Dehnung", img:"images/phase1.jpg", time:45}
+{name:"Bauchatmung", img:"images/phase1.jpg", time:120,
+speech:"Bauchatmung. Ruhig in den Bauch einatmen. Langsam ausatmen."},
+
+{name:"Knie zur Brust", img:"images/phase1.jpg", time:45,
+speech:"Knie zur Brust ziehen. Halten und entspannen."},
+
+{name:"Mini Becken Kippung", img:"images/phase1.jpg", time:40,
+speech:"Becken kippen. Rücken in den Boden drücken und lösen."},
+
+{name:"Hüftbeuger Dehnung", img:"images/phase1.jpg", time:40,
+speech:"Hüfte nach vorne schieben. Dehnung spüren."},
+
+{name:"Glute Bridge", img:"images/phase1.jpg", time:40,
+speech:"Hüfte anheben. Gesäß anspannen."},
+
+{name:"Adduktor Dehnung", img:"images/phase1.jpg", time:45,
+speech:"Zur Seite lehnen. Dehnung in der Leiste spüren."}
 ],
 
 [
-{name:"Bauchatmung", img:"images/phase2.jpg", time:60},
-{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", time:40},
-{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", time:40},
-{name:"Dead Bug", img:"images/phase2.jpg", time:40},
-{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", time:40},
-{name:"Adduktor & Hüfte", img:"images/phase2.jpg", time:40}
+{name:"Bauchatmung", img:"images/phase2.jpg", time:60,
+speech:"Aktivierende Atmung. Spannung aufbauen."},
+
+{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", time:40,
+speech:"Vor und zurück bewegen. Hüfte öffnen."},
+
+{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", time:40,
+speech:"Ein Bein anheben. Hüfte stabil halten."},
+
+{name:"Dead Bug", img:"images/phase2.jpg", time:40,
+speech:"Arm und Bein gegengleich bewegen."},
+
+{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", time:40,
+speech:"Schritt zur Seite. Hüfte nach hinten."},
+
+{name:"Adduktor und Hüfte", img:"images/phase2.jpg", time:40,
+speech:"Dehnung und kleine Bewegungen kombinieren."}
 ]
 
 ];
 
 // =============================
-// 🔊 SOUND
+// 🔊 COACH VOICE
+// =============================
+function speak(text, callback) {
+
+    speechSynthesis.cancel();
+
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = "de-DE";
+
+    msg.onend = () => {
+        if (callback) callback();
+    };
+
+    speechSynthesis.speak(msg);
+}
+
 // =============================
 function beep() {
-    const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    const audio = new Audio("https://actions.google.com/sounds/v1/beeps/beep_short.ogg");
     audio.play();
 }
 
 // =============================
 function startTimer() {
+
     if (timer) return;
 
-    timer = setInterval(() => {
+    const ex = phases[phaseIndex][current];
 
-        timeLeft--;
-        updateUI();
+    // 👉 erst Ansage dann Start
+    speak(ex.speech, () => {
 
-        if (timeLeft <= 0) {
-            beep();
-            nextExercise();
-        }
+        timer = setInterval(() => {
 
-    }, 1000);
+            timeLeft--;
+            updateUI();
+
+            if (timeLeft <= 0) {
+                beep();
+                nextExercise();
+            }
+
+        }, 1000);
+
+    });
 }
 
 // =============================
@@ -234,17 +241,16 @@ function nextExercise() {
 
     if (current >= phases[phaseIndex].length) {
 
-        // ✅ TRAINING FERTIG
-        points = parseInt(points) + 10;
+        sessions++;
+        points += 10;
 
-        if (points >= level * 50) {
-            level++;
-        }
+        if (points >= level * 50) level++;
+
+        autoSwitchPhase();
 
         saveStats();
-        markDayDone();
 
-        alert("Training fertig 💪");
+        alert("Training abgeschlossen 💪");
 
         current = 0;
     }
@@ -254,18 +260,33 @@ function nextExercise() {
 }
 
 // =============================
-function resetAll() {
-    clearInterval(timer);
-    current = 0;
-    phaseIndex = 0;
-    saveState();
-    loadExercise();
+// 🧠 INTELLIGENTER PLAN
+// =============================
+function autoSwitchPhase() {
+
+    // 👉 Anfänger: Phase 1 öfter
+    if (sessions < 3) {
+        phaseIndex = 0;
+    }
+    // 👉 Fortgeschritten: Phase 2 öfter
+    else {
+        phaseIndex = 1;
+    }
 }
 
 // =============================
 function setPhase(p) {
     phaseIndex = p - 1;
     current = 0;
+    saveState();
+    loadExercise();
+}
+
+// =============================
+function resetAll() {
+    clearInterval(timer);
+    current = 0;
+    phaseIndex = 0;
     saveState();
     loadExercise();
 }
@@ -283,9 +304,6 @@ function updateUI() {
 // =============================
 function loadExercise() {
 
-    phaseIndex = parseInt(phaseIndex);
-    current = parseInt(current);
-
     const ex = phases[phaseIndex][current];
 
     document.getElementById("phaseTitle").innerText =
@@ -301,21 +319,29 @@ function loadExercise() {
     document.getElementById("exerciseImage").src = ex.img;
 
     timeLeft = ex.time;
+
     updateUI();
-    updatePhaseButtons();
     updateStats();
+    updatePhaseUI();
 }
 
 // =============================
-function updatePhaseButtons() {
+function updateStats() {
+    document.getElementById("points").innerText = points;
+    document.getElementById("level").innerText = level;
+    document.getElementById("sessions").innerText = sessions;
+}
 
-    document.getElementById("btnPhase1").classList.remove("active");
-    document.getElementById("btnPhase2").classList.remove("active");
+// =============================
+function updatePhaseUI() {
 
-    if (phaseIndex == 0) {
-        document.getElementById("btnPhase1").classList.add("active");
+    document.getElementById("p1").classList.remove("active");
+    document.getElementById("p2").classList.remove("active");
+
+    if (phaseIndex === 0) {
+        document.getElementById("p1").classList.add("active");
     } else {
-        document.getElementById("btnPhase2").classList.add("active");
+        document.getElementById("p2").classList.add("active");
     }
 }
 
@@ -325,46 +351,13 @@ function saveState() {
     localStorage.setItem("current", current);
 }
 
-// =============================
 function saveStats() {
     localStorage.setItem("points", points);
     localStorage.setItem("level", level);
+    localStorage.setItem("sessions", sessions);
 }
 
 // =============================
-function updateStats() {
-    document.getElementById("points").innerText = points;
-    document.getElementById("level").innerText = level;
-}
-
-// =============================
-// 📅 KALENDER
-// =============================
-function createCalendar() {
-
-    const cal = document.getElementById("calendar");
-    cal.innerHTML = "";
-
-    for (let i = 0; i < 30; i++) {
-        const d = document.createElement("div");
-        d.classList.add("day");
-
-        if (localStorage.getItem("day_" + i)) {
-            d.classList.add("done");
-        }
-
-        cal.appendChild(d);
-    }
-}
-
-function markDayDone() {
-    const today = new Date().getDate();
-    localStorage.setItem("day_" + today, true);
-    createCalendar();
-}
-
-// =============================
-createCalendar();
 loadExercise();
 
 </script>
