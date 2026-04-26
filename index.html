@@ -5,34 +5,51 @@
 <title>Psoas Ultra+</title>
 
 <style>
-body {
- font-family:-apple-system;
- margin:0;
- background:#0f172a;
- color:white;
- text-align:center;
+body{
+  font-family:-apple-system;
+  background:#0f172a;
+  color:white;
+  text-align:center;
+  margin:0;
 }
 
-.header {padding:20px;font-size:22px;font-weight:bold;}
-.timer {font-size:60px;margin:10px;}
-.exercise {font-size:24px;margin-top:10px;}
-.next {font-size:14px;color:#94a3b8;}
-
-img {
- width:90%;
- border-radius:12px;
- margin-top:10px;
+.header{
+  padding:20px;
+  font-size:24px;
+  font-weight:bold;
 }
 
-button {
- padding:12px;margin:5px;border-radius:10px;
- border:none;background:#22c55e;color:white;
+.exercise{
+  font-size:22px;
+  margin-top:10px;
 }
 
-input {
- padding:10px;border-radius:8px;border:none;
- width:60px;text-align:center;
+.next{
+  font-size:16px;
+  opacity:0.7;
 }
+
+img{
+  width:90%;
+  border-radius:20px;
+  margin-top:15px;
+}
+
+.timer{
+  font-size:70px;
+  margin:20px;
+}
+
+button{
+  padding:15px;
+  margin:10px;
+  border:none;
+  border-radius:12px;
+  font-size:18px;
+}
+
+.start{background:#22c55e;color:white;}
+.pause{background:#ef4444;color:white;}
 </style>
 </head>
 
@@ -40,116 +57,137 @@ input {
 
 <div class="header">Psoas Ultra+</div>
 
-<div>
- Schmerz (0–10):
- <input id="pain" type="number" min="0" max="10">
-</div>
-
-<div class="exercise" id="exercise">Bereit</div>
+<div class="exercise" id="exercise">Start drücken</div>
 <div class="next" id="next"></div>
 
-<img id="img" src="https://upload.wikimedia.org/wikipedia/commons/8/8c/Diaphragmatic_breathing.png">
+<img id="img" src="phase1.jpg">
 
 <div class="timer" id="timer">0</div>
 
-<button onclick="start()">Start</button>
-<button onclick="pause()">Pause</button>
+<button class="start" onclick="start()">Start</button>
+<button class="pause" onclick="pause()">Pause</button>
 
 <script>
 
-// 🧠 Trainingsplan mit echten Bildern
-let plan = [
+// ----------------------
+// PHASE 1 (ruhig)
+// ----------------------
+let phase1 = [
 
- {name:"Bauchatmung", time:60,
- img:"https://upload.wikimedia.org/wikipedia/commons/8/8c/Diaphragmatic_breathing.png"},
-
- {name:"Knie zur Brust links", time:45,
- img:"https://upload.wikimedia.org/wikipedia/commons/3/3c/Knee_to_chest_stretch.png"},
-
- {name:"Knie zur Brust rechts", time:45,
- img:"https://upload.wikimedia.org/wikipedia/commons/3/3c/Knee_to_chest_stretch.png"},
-
- {name:"Becken kippen", time:60,
- img:"https://upload.wikimedia.org/wikipedia/commons/2/2e/Pelvic_tilt_exercise.png"},
-
- {name:"Glute Bridge", time:60,
- img:"https://upload.wikimedia.org/wikipedia/commons/5/5f/Glute_bridge_exercise.png"},
-
- {name:"Adduktor Stretch links", time:45,
- img:"https://upload.wikimedia.org/wikipedia/commons/4/4e/Adductor_stretch.png"},
-
- {name:"Adduktor Stretch rechts", time:45,
- img:"https://upload.wikimedia.org/wikipedia/commons/4/4e/Adductor_stretch.png"}
+{name:"Bauchatmung", time:60},
+{name:"Knie zur Brust links", time:45},
+{name:"Knie zur Brust rechts", time:45},
+{name:"Mini-Becken-Kippung", time:60},
+{name:"Hüftbeuger Dehnung links", time:45},
+{name:"Hüftbeuger Dehnung rechts", time:45},
+{name:"Glute Bridge", time:60},
+{name:"Adduktor Dehnung links", time:45},
+{name:"Adduktor Dehnung rechts", time:45}
 
 ];
 
-let i = 0;
-let t = 0;
+// ----------------------
+// PHASE 2 (dynamisch)
+// ----------------------
+let phase2 = [
+
+{name:"Dynamische Hüftöffnung links", time:45},
+{name:"Dynamische Hüftöffnung rechts", time:45},
+{name:"Glute Bridge einbeinig links", time:45},
+{name:"Glute Bridge einbeinig rechts", time:45},
+{name:"Dead Bug", time:60},
+{name:"Seitliche Ausfallschritte links", time:45},
+{name:"Seitliche Ausfallschritte rechts", time:45},
+{name:"Adduktor + Aktivierung links", time:45},
+{name:"Adduktor + Aktivierung rechts", time:45}
+
+];
+
+// ----------------------
+// SYSTEM
+// ----------------------
+let plan = [];
+let index = 0;
+let time = 0;
+let running = false;
 let interval;
 
-// 🎧 Sprache
-function speak(text){
- let msg = new SpeechSynthesisUtterance(text);
- msg.lang="de-DE";
- speechSynthesis.speak(msg);
+// 👉 Phase automatisch wechseln
+function getPlan(){
+  let day = new Date().getDate();
+
+  if(day <= 14){
+    document.getElementById("img").src = "phase1.jpg";
+    return phase1;
+  }else{
+    document.getElementById("img").src = "phase2.jpg";
+    return phase2;
+  }
 }
 
-// ▶️ Start
+// ----------------------
+// UI
+// ----------------------
+function updateUI(){
+  let ex = plan[index];
+
+  document.getElementById("exercise").innerText = ex.name;
+  document.getElementById("timer").innerText = time;
+
+  if(plan[index+1]){
+    document.getElementById("next").innerText =
+      "Als nächstes: " + plan[index+1].name;
+  }else{
+    document.getElementById("next").innerText = "Letzte Übung";
+  }
+}
+
+// ----------------------
+// START
+// ----------------------
 function start(){
- i = 0;
- next();
+
+  if(!running){
+
+    if(plan.length === 0){
+      plan = getPlan();
+      index = 0;
+      time = plan[0].time;
+      updateUI();
+    }
+
+    running = true;
+
+    interval = setInterval(()=>{
+
+      if(time > 0){
+        time--;
+        document.getElementById("timer").innerText = time;
+      }else{
+
+        index++;
+
+        if(index >= plan.length){
+          alert("Fertig 🎉");
+          clearInterval(interval);
+          running = false;
+          return;
+        }
+
+        time = plan[index].time;
+        updateUI();
+      }
+
+    },1000);
+  }
 }
 
-// 🔁 nächste Übung
-function next(){
-
- if(i >= plan.length){
-   speak("Training abgeschlossen");
-   localStorage.setItem("lastDone", Date.now());
-   document.getElementById("exercise").innerText = "Fertig 💪";
-   document.getElementById("next").innerText = "";
-   return;
- }
-
- let ex = plan[i];
-
- document.getElementById("exercise").innerText = ex.name;
- document.getElementById("img").src = ex.img;
-
- if(plan[i+1]){
-   document.getElementById("next").innerText = "Als nächstes: " + plan[i+1].name;
- } else {
-   document.getElementById("next").innerText = "";
- }
-
- speak(ex.name);
-
- t = ex.time;
-
- interval = setInterval(()=>{
-   t--;
-   document.getElementById("timer").innerText = t;
-
-   if(t <= 0){
-     clearInterval(interval);
-     i++;
-     next();
-   }
- },1000);
-}
-
-// ⏸ Pause
+// ----------------------
+// PAUSE
+// ----------------------
 function pause(){
- clearInterval(interval);
-}
-
-// 🔔 Erinnerung
-let last = localStorage.getItem("lastDone");
-if(last){
- let diff = (Date.now() - last)/1000/60/60;
- if(diff > 24){
-   document.getElementById("next").innerText = "Heute wieder trainieren!";
- }
+  running = false;
+  clearInterval(interval);
 }
 
 </script>
