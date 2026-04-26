@@ -1,194 +1,156 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Psoas Ultra+</title>
+<title>Psoas Ultra</title>
 
 <style>
-body{
-  font-family:-apple-system;
-  background:#0f172a;
-  color:white;
-  text-align:center;
-  margin:0;
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    text-align: center;
 }
 
-.header{
-  padding:20px;
-  font-size:24px;
-  font-weight:bold;
+.container {
+    padding: 20px;
 }
 
-.exercise{
-  font-size:22px;
-  margin-top:10px;
+h1 {
+    margin-top: 10px;
 }
 
-.next{
-  font-size:16px;
-  opacity:0.7;
+img {
+    width: 90%;
+    max-width: 400px;
+    border-radius: 15px;
+    margin-top: 20px;
 }
 
-img{
-  width:90%;
-  border-radius:20px;
-  margin-top:15px;
+.timer {
+    font-size: 60px;
+    margin: 20px 0;
 }
 
-.timer{
-  font-size:70px;
-  margin:20px;
+button {
+    padding: 15px 25px;
+    margin: 10px;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
 }
 
-button{
-  padding:15px;
-  margin:10px;
-  border:none;
-  border-radius:12px;
-  font-size:18px;
-}
-
-.start{background:#22c55e;color:white;}
-.pause{background:#ef4444;color:white;}
+.start { background: #22c55e; color: white; }
+.pause { background: #ef4444; color: white; }
 </style>
 </head>
 
 <body>
 
-<div class="header">Psoas Ultra+</div>
+<div class="container">
 
-<div class="exercise" id="exercise">Start drücken</div>
-<div class="next" id="next"></div>
+<h1>Psoas Ultra</h1>
 
-<img id="img" src="phase1.jpg">
+<h2 id="exercise">Bereit?</h2>
+
+<img id="image" src="images/phase1.jpg">
 
 <div class="timer" id="timer">0</div>
 
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
 
+</div>
+
 <script>
 
-// ----------------------
-// PHASE 1 (ruhig)
-// ----------------------
-let phase1 = [
+// =========================
+// ÜBUNGEN
+// =========================
 
-{name:"Bauchatmung", time:60},
-{name:"Knie zur Brust links", time:45},
-{name:"Knie zur Brust rechts", time:45},
-{name:"Mini-Becken-Kippung", time:60},
-{name:"Hüftbeuger Dehnung links", time:45},
-{name:"Hüftbeuger Dehnung rechts", time:45},
-{name:"Glute Bridge", time:60},
-{name:"Adduktor Dehnung links", time:45},
-{name:"Adduktor Dehnung rechts", time:45}
-
+const phase1 = [
+    {name: "Bauchatmung", time: 60},
+    {name: "Knie zur Brust links", time: 45},
+    {name: "Knie zur Brust rechts", time: 45},
+    {name: "Mini-Becken-Kippung", time: 40},
+    {name: "Glute Bridge", time: 40},
+    {name: "Adduktor-Dehnung", time: 45}
 ];
 
-// ----------------------
-// PHASE 2 (dynamisch)
-// ----------------------
-let phase2 = [
-
-{name:"Dynamische Hüftöffnung links", time:45},
-{name:"Dynamische Hüftöffnung rechts", time:45},
-{name:"Glute Bridge einbeinig links", time:45},
-{name:"Glute Bridge einbeinig rechts", time:45},
-{name:"Dead Bug", time:60},
-{name:"Seitliche Ausfallschritte links", time:45},
-{name:"Seitliche Ausfallschritte rechts", time:45},
-{name:"Adduktor + Aktivierung links", time:45},
-{name:"Adduktor + Aktivierung rechts", time:45}
-
+const phase2 = [
+    {name: "Bauchatmung", time: 60},
+    {name: "Dynamische Hüftöffnung", time: 50},
+    {name: "Glute Bridge einbeinig", time: 50},
+    {name: "Dead Bug", time: 50},
+    {name: "Seitliche Ausfallschritte", time: 50},
+    {name: "Adduktor Aktivierung", time: 50}
 ];
 
-// ----------------------
-// SYSTEM
-// ----------------------
-let plan = [];
+// 👉 HIER PHASE WECHSELN
+let currentPhase = 2; // 1 oder 2
+
+let exercises = currentPhase === 1 ? phase1 : phase2;
+
+
+// =========================
+// LOGIK
+// =========================
+
 let index = 0;
-let time = 0;
-let running = false;
-let interval;
+let time = exercises[0].time;
+let interval = null;
 
-// 👉 Phase automatisch wechseln
-function getPlan(){
-  let day = new Date().getDate();
+function updateUI() {
 
-  if(day <= 14){
-    document.getElementById("img").src = "phase1.jpg";
-    return phase1;
-  }else{
-    document.getElementById("img").src = "phase2.jpg";
-    return phase2;
-  }
-}
+    document.getElementById("exercise").innerText = exercises[index].name;
+    document.getElementById("timer").innerText = time;
 
-// ----------------------
-// UI
-// ----------------------
-function updateUI(){
-  let ex = plan[index];
-
-  document.getElementById("exercise").innerText = ex.name;
-  document.getElementById("timer").innerText = time;
-
-  if(plan[index+1]){
-    document.getElementById("next").innerText =
-      "Als nächstes: " + plan[index+1].name;
-  }else{
-    document.getElementById("next").innerText = "Letzte Übung";
-  }
-}
-
-// ----------------------
-// START
-// ----------------------
-function start(){
-
-  if(!running){
-
-    if(plan.length === 0){
-      plan = getPlan();
-      index = 0;
-      time = plan[0].time;
-      updateUI();
+    // Bild wechseln
+    if (currentPhase === 1) {
+        document.getElementById("image").src = "images/phase1.jpg";
+    } else {
+        document.getElementById("image").src = "images/phase2.jpg";
     }
+}
 
-    running = true;
+function start() {
+    if (interval) return;
 
-    interval = setInterval(()=>{
+    interval = setInterval(() => {
 
-      if(time > 0){
         time--;
-        document.getElementById("timer").innerText = time;
-      }else{
 
-        index++;
-
-        if(index >= plan.length){
-          alert("Fertig 🎉");
-          clearInterval(interval);
-          running = false;
-          return;
+        if (time <= 0) {
+            nextExercise();
         }
 
-        time = plan[index].time;
         updateUI();
-      }
 
-    },1000);
-  }
+    }, 1000);
 }
 
-// ----------------------
-// PAUSE
-// ----------------------
-function pause(){
-  running = false;
-  clearInterval(interval);
+function pause() {
+    clearInterval(interval);
+    interval = null;
 }
+
+function nextExercise() {
+
+    index++;
+
+    if (index >= exercises.length) {
+        alert("Fertig! 💪");
+        pause();
+        return;
+    }
+
+    time = exercises[index].time;
+}
+
+updateUI();
 
 </script>
 
