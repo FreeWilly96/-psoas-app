@@ -7,6 +7,11 @@
 <title>Psoas Ultra PRO</title>
 
 <link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
+<link rel="manifest" href="manifest.json">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Psoas Ultra">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <style>
 body { margin:0; font-family:Arial; text-align:center; background:#f2f2f2; }
@@ -27,13 +32,12 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 
 <h2 id="phaseTitle"></h2>
 <h3 id="exerciseTitle"></h3>
-<div class="side" id="side"></div>
+<div id="side" class="side"></div>
 
 <img id="exerciseImage">
-
 <div id="guide"></div>
 
-<div class="timer" id="timer">0</div>
+<div id="timer" class="timer">0</div>
 
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
@@ -46,63 +50,52 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 
 <script>
 
-// =============================
-// STATE
-// =============================
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
 let spoken = false;
 
 // =============================
-// SPEAK
-// =============================
 function speak(text, cb){
     speechSynthesis.cancel();
     let msg = new SpeechSynthesisUtterance(text);
-    msg.lang = "de-DE";
-    msg.onend = () => { if(cb) cb(); };
+    msg.lang="de-DE";
+    msg.rate=0.95;
+    msg.onend = ()=> cb && cb();
     speechSynthesis.speak(msg);
 }
 
-// =============================
-// START
+function speakSequence(name, text, cb){
+    speak(name, ()=> speak(text, cb));
+}
+
 // =============================
 function start(){
-
     if(timer) return;
 
     let ex = phases[phaseIndex][current];
 
     if(!spoken){
         spoken = true;
-
-        speak(ex.name + ". " + ex.speech, ()=>{
+        speakSequence(ex.name, ex.speech, ()=>{
             countdown(()=> run(ex));
         });
-
     } else {
         countdown(()=> run(ex));
     }
 }
 
 // =============================
-// COUNTDOWN
-// =============================
 function countdown(cb){
-
     let c = 3;
 
     function step(){
-        if(c === 0){
-            cb();
-            return;
-        }
+        if(c===0){ cb(); return; }
 
         speak(c.toString());
-        document.getElementById("timer").innerText = c;
-        c--;
+        update(c);
 
+        c--;
         setTimeout(step,1000);
     }
 
@@ -110,24 +103,17 @@ function countdown(cb){
 }
 
 // =============================
-// RUN
-// =============================
 function run(ex){
-
     if(ex.type==="time") runTime(ex);
     else if(ex.type==="reps") runReps(ex);
     else if(ex.type==="side") runSide(ex);
 }
 
 // =============================
-// TIME
-// =============================
 function runTime(ex){
-
     let t = ex.time;
 
     timer = setInterval(()=>{
-
         t--;
         update(t);
 
@@ -139,63 +125,52 @@ function runTime(ex){
 }
 
 // =============================
-// REPS (FIXED)
-// =============================
 function runReps(ex){
-
     let reps = ex.reps;
     let rest = ex.rest || 3;
 
     function doRep(){
+        if(reps<=0){ next(); return; }
 
-        if(reps <= 0){
-            next();
-            return;
-        }
+        let txt = reps.toString();
+        if(ex.hold) txt += ". Spannung halten";
 
-        let text = reps.toString();
-
-        if(ex.hold) text += ". Spannung halten";
-
-        speak(text);
+        speak(txt);
         update(reps);
 
         reps--;
-
-        setTimeout(doRep, rest * 1000);
+        setTimeout(doRep, rest*1000);
     }
 
     doRep();
 }
 
 // =============================
-// SIDE (links dann rechts)
-// =============================
 function runSide(ex){
 
-    let sides = ["links","rechts"];
-    let index = 0;
+    let sides = ["rechts","links"];
+    let i = 0;
 
     function doSide(){
 
-        if(index >= sides.length){
+        if(i>=sides.length){
             next();
             return;
         }
 
-        showSide(sides[index]);
-
-        speak("Seite " + sides[index]);
+        showSide(sides[i]);
+        speak("Seite " + sides[i]);
 
         let t = ex.time;
 
         timer = setInterval(()=>{
+
             t--;
             update(t);
 
             if(t<=0){
                 clearInterval(timer);
-                index++;
+                i++;
                 doSide();
             }
 
@@ -206,34 +181,24 @@ function runSide(ex){
 }
 
 // =============================
-function showSide(t){
-    document.getElementById("side").innerText = t;
-}
-
-// =============================
-function update(v){
-    document.getElementById("timer").innerText = v;
-}
-
-// =============================
-// NEXT (inkl Pause + Erklärung)
-// =============================
 function next(){
 
     clearInterval(timer);
-    timer = null;
-    spoken = false;
+    timer=null;
+    spoken=false;
 
     current++;
 
-    if(current >= phases[phaseIndex].length){
-        alert("Fertig 💪");
-        current = 0;
+    if(current>=phases[phaseIndex].length){
+        alert("Training fertig 💪");
+        current=0;
     }
 
-    let nextEx = phases[phaseIndex][current];
+    let ex = phases[phaseIndex][current];
 
-    speak("Nächste Übung. " + nextEx.name + ". " + nextEx.speech);
+    speak("Nächste Übung", ()=>{
+        speakSequence(ex.name, ex.speech);
+    });
 
     restCountdown(()=>{
         load();
@@ -242,22 +207,15 @@ function next(){
 }
 
 // =============================
-// REST COUNTDOWN (15s)
-// =============================
 function restCountdown(cb){
 
     let t = 15;
 
     function step(){
-
-        if(t === 0){
-            cb();
-            return;
-        }
+        if(t===0){ cb(); return; }
 
         update(t);
         t--;
-
         setTimeout(step,1000);
     }
 
@@ -267,19 +225,17 @@ function restCountdown(cb){
 // =============================
 function pause(){
     clearInterval(timer);
-    timer = null;
+    timer=null;
     speak("Pause");
 }
 
-// =============================
 function setPhase(p){
     phaseIndex = p-1;
     current = 0;
-    spoken = false;
+    spoken=false;
     load();
 }
 
-// =============================
 function toggleMode(){
     document.body.classList.toggle("dark");
 }
@@ -292,66 +248,62 @@ function load(){
     document.getElementById("phaseTitle").innerText = "Phase " + (phaseIndex+1);
     document.getElementById("exerciseTitle").innerText = ex.name;
     document.getElementById("exerciseImage").src = ex.img;
-
     document.getElementById("guide").innerText = ex.speech;
-
-    updatePhaseButtons();
 
     update(ex.time || ex.reps);
 }
 
-// =============================
-function updatePhaseButtons(){
-    document.getElementById("btnP1").classList.remove("active");
-    document.getElementById("btnP2").classList.remove("active");
+function update(v){
+    document.getElementById("timer").innerText = v;
+}
 
-    if(phaseIndex===0) document.getElementById("btnP1").classList.add("active");
-    else document.getElementById("btnP2").classList.add("active");
+function showSide(s){
+    document.getElementById("side").innerText = s;
 }
 
 // =============================
-// PHASEN (FINAL)
+// PHASES FINAL
 // =============================
 const phases = [
 
 [
 {name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
-speech:"Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Fünf Sekunden ein, sieben Sekunden aus."},
+speech:"Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Atme tief in den Bauch ein, etwa fünf Sekunden lang. Atme langsam durch den Mund aus, etwa sieben Sekunden. Der Bauch hebt und senkt sich ruhig."},
 
 {name:"Knie zur Brust", img:"images/phase3.jpg", type:"side", time:45,
-speech:"Ein Knie zur Brust ziehen. Anderes Bein entspannt liegen lassen."},
+speech:"Ziehe ein Knie langsam zur Brust. Halte die Position entspannt. Das andere Bein bleibt locker am Boden liegen. Nicht ziehen, sondern nur sanft heranziehen."},
 
-{name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15,
-speech:"Becken kippen. Unteren Rücken in den Boden drücken und lösen."},
+{name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15, rest:3,
+speech:"Kippe dein Becken leicht nach hinten. Drücke den unteren Rücken in den Boden und löse wieder. Kleine, kontrollierte Bewegung ohne Schwung."},
 
 {name:"Hüftbeuger Dehnung", img:"images/phase3.jpg", type:"side", time:40,
-speech:"Halbkniestand. Becken nach vorne kippen. Dehnung vorne spüren."},
+speech:"Gehe in den Halbkniestand. Spanne das Gesäß an und kippe das Becken leicht nach vorne. Du spürst die Dehnung vorne in der Hüfte."},
 
 {name:"Glute Bridge", img:"images/phase3.jpg", type:"reps", reps:12, rest:3,
-speech:"Hüfte anheben. Gesäß anspannen und kontrolliert absenken."},
+speech:"Drücke die Hüfte nach oben. Spanne dein Gesäß an und halte kurz oben. Senke dich langsam wieder ab."},
 
 {name:"Adduktor Dehnung", img:"images/phase3.jpg", type:"time", time:45,
-speech:"Breiter Stand. Gewicht zur Seite verlagern und Dehnung halten."}
+speech:"Gehe in einen breiten Stand. Verlagere dein Gewicht zur Seite und halte die Dehnung im inneren Oberschenkel."}
 ],
 
 [
 {name:"Bauchatmung Aktivierung", img:"images/phase2.jpg", type:"time", time:60,
-speech:"Ruhig atmen und Körperspannung aufbauen."},
+speech:"Atme ruhig und gleichmäßig. Baue Körperspannung auf und bereite dich auf die Bewegung vor."},
 
-{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"reps", reps:10, rest:5,
-speech:"Ausfallschritt. Hüfte kontrolliert vor und zurück bewegen."},
+{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"side", time:30,
+speech:"Gehe in einen Ausfallschritt. Bewege die Hüfte kontrolliert nach vorne und zurück. Bleibe stabil im Oberkörper."},
 
 {name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"reps", reps:10, rest:3, hold:true,
-speech:"Ein Bein anheben. Hüfte nach oben drücken und Spannung halten."},
+speech:"Hebe ein Bein an. Drücke die Hüfte nach oben und halte die Spannung. Senke langsam ab und wiederhole."},
 
 {name:"Dead Bug", img:"images/phase2.jpg", type:"reps", reps:12, rest:3,
-speech:"Arm und Bein gegengleich bewegen. Rumpf stabil halten."},
+speech:"Bewege Arm und gegenüberliegendes Bein gleichzeitig. Halte deinen Rumpf stabil und kontrolliere jede Bewegung."},
 
 {name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"reps", reps:10, rest:3,
-speech:"Seitlich treten. Hüfte nach hinten schieben."},
+speech:"Mache einen großen Schritt zur Seite. Schiebe die Hüfte nach hinten und halte den Rücken gerade."},
 
-{name:"Adduktor & Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
-speech:"Dehnung halten und kleine Bewegungen ausführen."}
+{name:"Adduktor Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
+speech:"Halte die Dehnung und führe kleine kontrollierte Bewegungen aus. Spüre die Aktivierung in der Hüfte."}
 ]
 
 ];
