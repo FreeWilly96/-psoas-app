@@ -11,20 +11,15 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Psoas Ultra">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <style>
 body { margin:0; font-family:Arial; text-align:center; background:#f2f2f2; }
-body.dark { background:#0b1a2f; color:white; }
-
 img { width:95%; height:40vh; object-fit:contain; }
-
 .timer { font-size:80px; }
 .side { font-size:30px; height:40px; }
-
 button { padding:10px; margin:5px; border:none; border-radius:10px; color:white; }
 .start{background:green;} .pause{background:red;} .skip{background:orange;}
-.mode{background:black;} .phase{background:#999;} .phase.active{background:purple;}
+.phase{background:#999;} .phase.active{background:purple;}
 </style>
 </head>
 
@@ -42,7 +37,6 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
 <button class="skip" onclick="next()">Skip</button>
-<button class="mode" onclick="toggleMode()">Mode</button>
 
 <br>
 <button id="btnP1" class="phase" onclick="setPhase(1)">Phase 1</button>
@@ -65,21 +59,23 @@ function speak(text, cb){
     speechSynthesis.speak(msg);
 }
 
-function speakSequence(name, text, cb){
-    speak(name, ()=> speak(text, cb));
-}
-
 // =============================
+// START → jetzt überall gleich (FIX)
 function start(){
+
     if(timer) return;
 
     let ex = phases[phaseIndex][current];
 
     if(!spoken){
         spoken = true;
-        speakSequence(ex.name, ex.speech, ()=>{
-            countdown(()=> run(ex));
+
+        speak(ex.name, ()=>{
+            speak(ex.speech, ()=>{
+                countdown(()=> run(ex));
+            });
         });
+
     } else {
         countdown(()=> run(ex));
     }
@@ -94,8 +90,8 @@ function countdown(cb){
 
         speak(c.toString());
         update(c);
-
         c--;
+
         setTimeout(step,1000);
     }
 
@@ -104,9 +100,11 @@ function countdown(cb){
 
 // =============================
 function run(ex){
+
     if(ex.type==="time") runTime(ex);
     else if(ex.type==="reps") runReps(ex);
     else if(ex.type==="side") runSide(ex);
+    else if(ex.type==="sideReps") runSideReps(ex);
 }
 
 // =============================
@@ -120,29 +118,71 @@ function runTime(ex){
         if(t<=5 && t>0) speak(t);
 
         if(t<=0) next();
-
     },1000);
 }
 
 // =============================
 function runReps(ex){
+
     let reps = ex.reps;
-    let rest = ex.rest || 3;
 
     function doRep(){
+
         if(reps<=0){ next(); return; }
 
-        let txt = reps.toString();
-        if(ex.hold) txt += ". Spannung halten";
-
-        speak(txt);
+        speak(reps.toString());
         update(reps);
 
         reps--;
-        setTimeout(doRep, rest*1000);
+        setTimeout(doRep, ex.rest * 1000);
     }
 
     doRep();
+}
+
+// =============================
+// 🔥 WICHTIG: Übung 2 Phase 2 korrekt
+function runSideReps(ex){
+
+    let sides = ["rechts","links"];
+    let sideIndex = 0;
+
+    function doSide(){
+
+        if(sideIndex >= sides.length){
+            next();
+            return;
+        }
+
+        showSide(sides[sideIndex]);
+        speak("Seite " + sides[sideIndex]);
+
+        let reps = ex.reps;
+
+        function doRep(){
+
+            if(reps <= 0){
+                sideIndex++;
+                doSide();
+                return;
+            }
+
+            if(reps === ex.reps){
+                speak("Spannung halten für fünf Sekunden");
+            } else {
+                speak(reps.toString());
+            }
+
+            update(reps);
+            reps--;
+
+            setTimeout(doRep, 5000);
+        }
+
+        doRep();
+    }
+
+    doSide();
 }
 
 // =============================
@@ -197,7 +237,9 @@ function next(){
     let ex = phases[phaseIndex][current];
 
     speak("Nächste Übung", ()=>{
-        speakSequence(ex.name, ex.speech);
+        speak(ex.name, ()=>{
+            speak(ex.speech);
+        });
     });
 
     restCountdown(()=>{
@@ -226,18 +268,14 @@ function restCountdown(cb){
 function pause(){
     clearInterval(timer);
     timer=null;
-    speak("Pause");
 }
 
+// =============================
 function setPhase(p){
     phaseIndex = p-1;
     current = 0;
     spoken=false;
     load();
-}
-
-function toggleMode(){
-    document.body.classList.toggle("dark");
 }
 
 // =============================
@@ -262,48 +300,48 @@ function showSide(s){
 }
 
 // =============================
-// PHASES FINAL
+// PHASEN MIT AUSFÜHRLICHEN TEXTEN
 // =============================
 const phases = [
 
 [
 {name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
-speech:"Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Atme tief in den Bauch ein, etwa fünf Sekunden lang. Atme langsam durch den Mund aus, etwa sieben Sekunden. Der Bauch hebt und senkt sich ruhig."},
+speech:"Lege dich auf den Rücken. Stelle die Füße auf. Lege eine Hand auf den Bauch und eine auf die Brust. Atme tief durch die Nase in den Bauch ein, etwa fünf Sekunden lang. Der Bauch hebt sich. Atme langsam durch den Mund aus, etwa sieben Sekunden. Die Brust bleibt möglichst ruhig."},
 
 {name:"Knie zur Brust", img:"images/phase3.jpg", type:"side", time:45,
-speech:"Ziehe ein Knie langsam zur Brust. Halte die Position entspannt. Das andere Bein bleibt locker am Boden liegen. Nicht ziehen, sondern nur sanft heranziehen."},
+speech:"Ziehe ein Knie langsam zur Brust. Halte das Bein mit den Händen fest. Das andere Bein bleibt entspannt am Boden liegen. Atme ruhig weiter und ziehe nicht mit Kraft."},
 
 {name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15, rest:3,
-speech:"Kippe dein Becken leicht nach hinten. Drücke den unteren Rücken in den Boden und löse wieder. Kleine, kontrollierte Bewegung ohne Schwung."},
+speech:"Kippe dein Becken leicht nach hinten. Drücke den unteren Rücken sanft in den Boden. Halte kurz und löse wieder. Die Bewegung ist klein und kontrolliert."},
 
 {name:"Hüftbeuger Dehnung", img:"images/phase3.jpg", type:"side", time:40,
-speech:"Gehe in den Halbkniestand. Spanne das Gesäß an und kippe das Becken leicht nach vorne. Du spürst die Dehnung vorne in der Hüfte."},
+speech:"Gehe in den Halbkniestand. Spanne dein Gesäß an und kippe das Becken nach vorne. Halte den Oberkörper aufrecht. Du solltest eine Dehnung vorne in der Hüfte spüren."},
 
 {name:"Glute Bridge", img:"images/phase3.jpg", type:"reps", reps:12, rest:3,
-speech:"Drücke die Hüfte nach oben. Spanne dein Gesäß an und halte kurz oben. Senke dich langsam wieder ab."},
+speech:"Drücke deine Hüfte nach oben. Spanne dein Gesäß fest an. Halte kurz oben und senke dich langsam wieder ab. Der Rücken bleibt stabil."},
 
 {name:"Adduktor Dehnung", img:"images/phase3.jpg", type:"time", time:45,
-speech:"Gehe in einen breiten Stand. Verlagere dein Gewicht zur Seite und halte die Dehnung im inneren Oberschenkel."}
+speech:"Gehe in einen breiten Stand. Verlagere dein Gewicht zur Seite. Halte die Position und spüre die Dehnung im inneren Oberschenkel."}
 ],
 
 [
 {name:"Bauchatmung Aktivierung", img:"images/phase2.jpg", type:"time", time:60,
-speech:"Atme ruhig und gleichmäßig. Baue Körperspannung auf und bereite dich auf die Bewegung vor."},
+speech:"Atme ruhig ein und aus. Baue Körperspannung auf. Spüre deinen Rumpf und bereite dich auf die Bewegung vor."},
 
-{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"side", time:30,
-speech:"Gehe in einen Ausfallschritt. Bewege die Hüfte kontrolliert nach vorne und zurück. Bleibe stabil im Oberkörper."},
+{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"sideReps", reps:10,
+speech:"Gehe in einen Ausfallschritt. Bewege deine Hüfte kontrolliert nach vorne und wieder zurück. Halte den Oberkörper stabil und arbeite sauber aus der Hüfte."},
 
-{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"reps", reps:10, rest:3, hold:true,
-speech:"Hebe ein Bein an. Drücke die Hüfte nach oben und halte die Spannung. Senke langsam ab und wiederhole."},
+{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"reps", reps:10, rest:3,
+speech:"Hebe ein Bein an. Drücke die Hüfte nach oben. Halte die Spannung im Gesäß und senke dich langsam wieder ab."},
 
 {name:"Dead Bug", img:"images/phase2.jpg", type:"reps", reps:12, rest:3,
-speech:"Bewege Arm und gegenüberliegendes Bein gleichzeitig. Halte deinen Rumpf stabil und kontrolliere jede Bewegung."},
+speech:"Bewege Arm und gegenüberliegendes Bein gleichzeitig nach unten. Halte deinen unteren Rücken stabil am Boden."},
 
 {name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"reps", reps:10, rest:3,
-speech:"Mache einen großen Schritt zur Seite. Schiebe die Hüfte nach hinten und halte den Rücken gerade."},
+speech:"Mache einen großen Schritt zur Seite. Schiebe die Hüfte nach hinten. Halte den Rücken gerade."},
 
 {name:"Adduktor Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
-speech:"Halte die Dehnung und führe kleine kontrollierte Bewegungen aus. Spüre die Aktivierung in der Hüfte."}
+speech:"Halte die Dehnung und bewege dich leicht vor und zurück. Spüre die Aktivierung in der Hüfte."}
 ]
 
 ];
