@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra PRO v22 FIX</title>
+<title>Psoas Ultra PRO v23</title>
 
-<link rel="apple-touch-icon" sizes="180x180" href="/-psoas-app/images/icon.png">
+<link rel="apple-touch-icon" href="/-psoas-app/images/icon.png">
 <link rel="manifest" href="/-psoas-app/manifest.json">
 
 <style>
-body { font-family:Arial; text-align:center; margin:0; background:#f2f2f2; }
+body { margin:0; font-family:Arial; background:#f2f2f2; text-align:center; }
 img { width:95%; height:40vh; object-fit:contain; }
-.timer { font-size:70px; }
-.guide { text-align:left; max-width:500px; margin:auto; }
+.timer { font-size:80px; }
+.guide { max-width:500px; margin:auto; text-align:left; }
 button { padding:10px; margin:5px; border:none; border-radius:10px; color:white; }
 .start{background:green;} .pause{background:red;} .skip{background:orange;}
 .phase{background:#999;} .phase.active{background:purple;}
@@ -47,137 +47,65 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
-let timeLeft = 0;
 
 // =============================
-// PHASES (KORREKT ZUGEORDNET)
+// PHASEN (SAUBER STRUKTURIERT)
 // =============================
 const phases = [
 
 /* =============================
-   👉 PHASE 1 (Bild: phase3.jpg)
+   PHASE 1 (phase3.jpg)
 ============================= */
 [
-{
-name:"Bauchatmung",
-img:"images/phase3.jpg",
-type:"time",
-time:120,
-guide:[
-"Rückenlage, Füße aufgestellt",
-"Eine Hand auf Bauch, eine auf Brust",
-"5 Sekunden ein, 7 Sekunden aus"
-]
-},
+{name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
+guide:["Rückenlage","Bauch atmen","5 ein / 7 aus"]},
 
-{
-name:"Knie zur Brust links",
-img:"images/phase3.jpg",
-type:"time",
-time:45,
-guide:["Knie zur Brust ziehen","Entspannen","Ruhig atmen"]
-},
+{name:"Knie zur Brust links", img:"images/phase3.jpg", type:"time", time:45,
+guide:["Knie zur Brust ziehen","entspannen"]},
 
-{
-name:"Knie zur Brust rechts",
-img:"images/phase3.jpg",
-type:"time",
-time:45,
-guide:["Knie zur Brust ziehen","Entspannen","Ruhig atmen"]
-},
+{name:"Knie zur Brust rechts", img:"images/phase3.jpg", type:"time", time:45,
+guide:["Knie zur Brust ziehen","entspannen"]},
 
-{
-name:"Mini-Becken-Kippung",
-img:"images/phase3.jpg",
-type:"reps",
-reps:15,
-guide:["Becken kippen","Rücken drücken","Langsam lösen"]
-},
+{name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15,
+guide:["Becken kippen","langsam lösen"]},
 
-{
-name:"Hüftbeuger-Dehnung",
-img:"images/phase3.jpg",
-type:"time",
-time:40,
-guide:["Halbkniestand","Becken kippen","Dehnung halten"]
-},
+{name:"Hüftbeuger-Dehnung links", img:"images/phase3.jpg", type:"time", time:40,
+guide:["Halbkniestand","Becken kippen"]},
 
-{
-name:"Glute Bridge",
-img:"images/phase3.jpg",
-type:"reps",
-reps:12,
-guide:["Hüfte anheben","Gesäß anspannen"]
-},
+{name:"Hüftbeuger-Dehnung rechts", img:"images/phase3.jpg", type:"time", time:40,
+guide:["Halbkniestand","Becken kippen"]},
 
-{
-name:"Adduktor-Dehnung",
-img:"images/phase3.jpg",
-type:"time",
-time:45,
-guide:["Breiter Stand","Gewicht verlagern"]
-}
+{name:"Glute Bridge", img:"images/phase3.jpg", type:"reps", reps:12,
+guide:["Hüfte anheben","Gesäß anspannen"]},
+
+{name:"Adduktor-Dehnung", img:"images/phase3.jpg", type:"time", time:45,
+guide:["breiter Stand","seitlich verlagern"]}
 ],
 
 /* =============================
-   👉 PHASE 2 (Bild: phase2.jpg)
+   PHASE 2 (phase2.jpg)
 ============================= */
 [
-{
-name:"Bauchatmung",
-img:"images/phase2.jpg",
-type:"time",
-time:60,
-guide:["Aktivierung","Ruhig atmen"]
-},
+{name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60,
+guide:["Aktivierung","ruhig atmen"]},
 
-{
-name:"Dynamische Hüftöffnung",
-img:"images/phase2.jpg",
-type:"reps",
-reps:10,
-guide:["Ausfallschritt","Vor und zurück bewegen"]
-},
+{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"reps", reps:10,
+guide:["Ausfallschritt","vor/zurück"]},
 
-{
-name:"Glute Bridge einbeinig links",
-img:"images/phase2.jpg",
-type:"reps",
-reps:10,
-guide:["Hüfte anheben","Spannung halten"]
-},
+{name:"Glute Bridge einbeinig links", img:"images/phase2.jpg", type:"reps", reps:10,
+guide:["Hüfte anheben"]},
 
-{
-name:"Glute Bridge einbeinig rechts",
-img:"images/phase2.jpg",
-type:"reps",
-reps:10,
-guide:["Hüfte anheben","Spannung halten"]
-},
+{name:"Glute Bridge einbeinig rechts", img:"images/phase2.jpg", type:"reps", reps:10,
+guide:["Hüfte anheben"]},
 
-{
-name:"Dead Bug",
-img:"images/phase2.jpg",
-type:"reps",
-reps:12,
-guide:["Arm + Bein","Rumpf stabil"]
-},
+{name:"Dead Bug", img:"images/phase2.jpg", type:"reps", reps:12,
+guide:["Arm + Bein","Rumpf stabil"]},
 
-{
-name:"Seitliche Ausfallschritte",
-img:"images/phase2.jpg",
-type:"reps",
-reps:10,
-guide:["Seitlich treten","Hüfte nach hinten"]
-},
+{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"reps", reps:10,
+guide:["seitlich treten","Hüfte zurück"]},
 
-{
-name:"Adduktor & Hüfte",
-img:"images/phase2.jpg",
-type:"time",
-time:40,
-guide:["Dehnung","kleine Bewegungen"]
-}
+{name:"Adduktor & Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
+guide:["Dehnung","kleine Bewegungen"]}
 ]
 
 ];
@@ -187,7 +115,7 @@ guide:["Dehnung","kleine Bewegungen"]
 // =============================
 function speak(text){
     speechSynthesis.cancel();
-    let msg=new SpeechSynthesisUtterance(text);
+    let msg = new SpeechSynthesisUtterance(text);
     msg.lang="de-DE";
     speechSynthesis.speak(msg);
 }
@@ -202,25 +130,50 @@ function start(){
     speak(ex.name);
 
     setTimeout(()=>{
-        ex.type==="time" ? runTime(ex) : runReps(ex);
+        countdown(()=> run(ex));
+    },800);
+}
+
+// =============================
+function countdown(callback){
+
+    let c = 3;
+
+    let cd = setInterval(()=>{
+        speak(c);
+        document.getElementById("timer").innerText = c;
+        c--;
+
+        if(c===0){
+            clearInterval(cd);
+            callback();
+        }
+
     },1000);
+}
+
+// =============================
+function run(ex){
+
+    if(ex.type==="time") runTime(ex);
+    else runReps(ex);
 }
 
 // =============================
 function runTime(ex){
 
-    timeLeft = ex.time;
+    let t = ex.time;
 
     timer = setInterval(()=>{
 
-        timeLeft--;
-        update(timeLeft);
+        t--;
+        update(t);
 
-        if(timeLeft <=5 && timeLeft>0){
-            speak(timeLeft);
+        if(t<=5 && t>0){
+            speak(t);
         }
 
-        if(timeLeft<=0){
+        if(t<=0){
             next();
         }
 
@@ -230,15 +183,15 @@ function runTime(ex){
 // =============================
 function runReps(ex){
 
-    let reps = ex.reps;
+    let r = ex.reps;
 
     timer = setInterval(()=>{
 
-        reps--;
-        update(reps);
-        speak(reps);
+        r--;
+        update(r);
+        speak(r);
 
-        if(reps<=0){
+        if(r<=0){
             next();
         }
 
@@ -272,6 +225,7 @@ function next(){
 function pause(){
     clearInterval(timer);
     timer=null;
+    speak("Pause");
 }
 
 // =============================
