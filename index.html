@@ -149,9 +149,12 @@ function run(ex){
 function runTime(ex){
     let t = ex.time;
 
+    update(t); // 👈 HIER NEU
+
     timer = setInterval(()=>{
         t--;
         update(t);
+
         if(t<=0) next();
     },1000);
 }
@@ -177,10 +180,12 @@ async function runHoldReps(ex){
     while(reps>0){
 
         if(reps===ex.reps){
-            await speak("Spannung halten für fünf Sekunden");
-        } else {
-            await speak(reps.toString());
-        }
+    update("HALTEN"); // 👈 NEU
+    await speak("Spannung halten für fünf Sekunden");
+} else {
+    update(reps);
+    await speak(reps.toString());
+}
 
         update(reps);
         reps--;
@@ -206,11 +211,13 @@ async function runSideHoldReps(ex){
 
         while(reps>0){
 
-            if(reps===ex.reps){
-                await speak("Spannung halten für fünf Sekunden");
-            } else {
-                await speak(reps.toString());
-            }
+           if(reps===ex.reps){
+    update("HALTEN"); // 👈 NEU
+    await speak("Spannung halten für fünf Sekunden");
+} else {
+    update(reps);
+    await speak(reps.toString());
+}
 
             update(reps);
             reps--;
