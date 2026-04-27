@@ -55,6 +55,7 @@ button {
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
+let firstStart = true;
 
 const beep = new Audio("https://actions.google.com/sounds/v1/beeps/beep_short.ogg");
 
@@ -62,8 +63,6 @@ function vibrate(ms=100){
     if(navigator.vibrate) navigator.vibrate(ms);
 }
 
-// =============================
-// ÜBUNGEN
 // =============================
 const phases = [
 
@@ -116,8 +115,6 @@ speech:"Dehnung halten und kleine Bewegungen machen."}
 ];
 
 // =============================
-// SPEAK
-// =============================
 function speak(text, cb){
     speechSynthesis.cancel();
     let msg = new SpeechSynthesisUtterance(text);
@@ -156,7 +153,14 @@ function start(){
     vibrate(200);
 
     speak(ex.speech, ()=>{
-        countdown(()=> run(ex));
+
+        if(firstStart){
+            firstStart = false;
+            countdown(()=> run(ex));
+        } else {
+            run(ex);
+        }
+
     });
 }
 
@@ -225,17 +229,13 @@ function runAlt(ex){
         }
 
         setTimeout(()=>{
-            speak("Wechsel", ()=>{
-                countdown(loop);
-            });
+            speak("Wechsel", loop);
         },1500);
     }
 
     loop();
 }
 
-// =============================
-// 🔥 PAUSE MIT ERKLÄRUNG
 // =============================
 function rest(){
 
@@ -257,9 +257,8 @@ function rest(){
             clearInterval(timer);
             timer = null;
 
-            countdown(()=>{
-                run(nextEx);
-            });
+            // 👉 KEIN COUNTDOWN MEHR HIER!
+            run(nextEx);
         }
 
     },1000);
@@ -281,6 +280,7 @@ function next(){
         if(current >= phases[phaseIndex].length){
             alert("Training fertig 💪");
             current = 0;
+            firstStart = true;
             load();
             return;
         }
@@ -301,6 +301,7 @@ function pause(){
 function setPhase(p){
     phaseIndex = p-1;
     current = 0;
+    firstStart = true;
     load();
 }
 
