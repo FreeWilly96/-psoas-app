@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra PRO v23</title>
+<title>Psoas Ultra PRO FINAL</title>
 
 <link rel="apple-touch-icon" href="/-psoas-app/images/icon.png">
 <link rel="manifest" href="/-psoas-app/manifest.json">
@@ -49,16 +49,16 @@ let current = 0;
 let timer = null;
 
 // =============================
-// PHASEN (SAUBER STRUKTURIERT)
+// PHASEN (FINAL CLEAN)
 // =============================
 const phases = [
 
 /* =============================
-   PHASE 1 (phase3.jpg)
+   PHASE 1 (ruhig – phase3.jpg)
 ============================= */
 [
 {name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
-guide:["Rückenlage","Bauch atmen","5 ein / 7 aus"]},
+guide:["Rückenlage","5 Sekunden ein","7 Sekunden aus"]},
 
 {name:"Knie zur Brust links", img:"images/phase3.jpg", type:"time", time:45,
 guide:["Knie zur Brust ziehen","entspannen"]},
@@ -83,26 +83,23 @@ guide:["breiter Stand","seitlich verlagern"]}
 ],
 
 /* =============================
-   PHASE 2 (phase2.jpg)
+   PHASE 2 (dynamisch – phase2.jpg)
 ============================= */
 [
 {name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60,
 guide:["Aktivierung","ruhig atmen"]},
 
-{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"reps", reps:10,
+{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"alt", reps:10,
 guide:["Ausfallschritt","vor/zurück"]},
 
-{name:"Glute Bridge einbeinig links", img:"images/phase2.jpg", type:"reps", reps:10,
-guide:["Hüfte anheben"]},
+{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"alt", reps:10,
+guide:["Hüfte anheben","Seiten wechseln"]},
 
-{name:"Glute Bridge einbeinig rechts", img:"images/phase2.jpg", type:"reps", reps:10,
-guide:["Hüfte anheben"]},
+{name:"Dead Bug", img:"images/phase2.jpg", type:"alt", reps:12,
+guide:["Arm + Bein","abwechselnd"]},
 
-{name:"Dead Bug", img:"images/phase2.jpg", type:"reps", reps:12,
-guide:["Arm + Bein","Rumpf stabil"]},
-
-{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"reps", reps:10,
-guide:["seitlich treten","Hüfte zurück"]},
+{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"alt", reps:10,
+guide:["seitlich treten","links/rechts"]},
 
 {name:"Adduktor & Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
 guide:["Dehnung","kleine Bewegungen"]}
@@ -129,13 +126,11 @@ function start(){
 
     speak(ex.name);
 
-    setTimeout(()=>{
-        countdown(()=> run(ex));
-    },800);
+    setTimeout(()=> countdown(()=> run(ex)),800);
 }
 
 // =============================
-function countdown(callback){
+function countdown(cb){
 
     let c = 3;
 
@@ -146,7 +141,7 @@ function countdown(callback){
 
         if(c===0){
             clearInterval(cd);
-            callback();
+            cb();
         }
 
     },1000);
@@ -156,7 +151,8 @@ function countdown(callback){
 function run(ex){
 
     if(ex.type==="time") runTime(ex);
-    else runReps(ex);
+    else if(ex.type==="reps") runReps(ex);
+    else if(ex.type==="alt") runAlt(ex);
 }
 
 // =============================
@@ -169,13 +165,9 @@ function runTime(ex){
         t--;
         update(t);
 
-        if(t<=5 && t>0){
-            speak(t);
-        }
+        if(t<=5 && t>0) speak(t);
 
-        if(t<=0){
-            next();
-        }
+        if(t<=0) next();
 
     },1000);
 }
@@ -191,9 +183,27 @@ function runReps(ex){
         update(r);
         speak(r);
 
-        if(r<=0){
-            next();
-        }
+        if(r<=0) next();
+
+    },2000);
+}
+
+// =============================
+function runAlt(ex){
+
+    let r = ex.reps;
+    let side = "links";
+
+    timer = setInterval(()=>{
+
+        r--;
+        update(r);
+
+        speak(side + " " + r);
+
+        side = (side === "links") ? "rechts" : "links";
+
+        if(r<=0) next();
 
     },2000);
 }
