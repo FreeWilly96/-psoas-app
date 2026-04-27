@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra ULTIMATE</title>
+<title>Psoas Ultra FINAL</title>
 
 <style>
 body { margin:0; font-family:Arial; text-align:center; background:#f2f2f2; transition:0.3s;}
@@ -17,7 +17,7 @@ img { width:95%; height:40vh; object-fit:contain;}
 
 button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;}
 .start{background:green;} .pause{background:red;} .skip{background:orange;}
-.mode{background:black;} .sound{background:#555;}
+.mode{background:black;}
 </style>
 </head>
 
@@ -36,43 +36,17 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 <button class="pause" onclick="pause()">Pause</button>
 <button class="skip" onclick="next()">Skip</button>
 <button class="mode" onclick="toggleMode()">Mode</button>
-<button class="sound" onclick="toggleSound()">Sound</button>
-<button class="sound" onclick="toggleMusic()">Musik</button>
 
 <script>
 
-// =============================
-// STATE
 // =============================
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
 let spoken = false;
 
-let soundOn = true;
-let musicOn = false;
-
 // =============================
-// AUDIO SYSTEM
-// =============================
-const beep = new Audio("https://actions.google.com/sounds/v1/beeps/beep_short.ogg");
-const music = new Audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3");
-
-music.loop = true;
-music.volume = 0.2;
-
-// =============================
-function playBeep(){
-    if(soundOn) beep.play();
-}
-
 function speak(text, cb){
-
-    if(!soundOn){
-        cb && cb();
-        return;
-    }
-
     speechSynthesis.cancel();
     let msg = new SpeechSynthesisUtterance(text);
     msg.lang="de-DE";
@@ -81,74 +55,67 @@ function speak(text, cb){
 }
 
 // =============================
-function toggleSound(){
-    soundOn = !soundOn;
+function showSide(text){
+    document.getElementById("side").innerText = text.toUpperCase();
 }
 
-function toggleMusic(){
-    musicOn = !musicOn;
-
-    if(musicOn) music.play();
-    else music.pause();
-}
-
-// =============================
-// TRAINING DATA
 // =============================
 const phases = [
 
+/* =============================
+   PHASE 1 (unverändert korrekt)
+============================= */
 [
 {name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
-speech:"Rückenlage. Fünf Sekunden ein, sieben aus."},
+speech:"Rückenlage, Füße aufgestellt. Eine Hand auf den Bauch, eine auf die Brust. Durch die Nase in den Bauch atmen. Fünf Sekunden ein, sieben Sekunden aus."},
 
 {name:"Knie zur Brust", img:"images/phase3.jpg", type:"side", time:45,
-speech:"Knie zur Brust ziehen."},
+speech:"Rückenlage. Ein Knie zur Brust ziehen und mit den Händen halten. Anderes Bein bleibt entspannt. Ruhig weiteratmen."},
 
 {name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15,
-speech:"Becken kippen."},
+speech:"Rückenlage. Unteren Rücken in den Boden drücken. Becken kippen und wieder lösen. Kleine ruhige Bewegung."},
 
 {name:"Hüftbeuger Dehnung", img:"images/phase3.jpg", type:"side", time:40,
-speech:"Becken kippen."},
+speech:"Halbkniestand. Gesäß anspannen. Becken nach hinten kippen. Oberkörper aufrecht. Dehnung vorne spüren."},
 
 {name:"Glute Bridge", img:"images/phase3.jpg", type:"repsSlow", reps:12,
-speech:"Hüfte anheben."},
+speech:"Rückenlage. Füße aufstellen. Hüfte anheben bis der Körper eine Linie bildet. Zwei bis drei Sekunden halten. Langsam absenken."},
 
 {name:"Adduktor Dehnung", img:"images/phase3.jpg", type:"time", time:45,
-speech:"Dehnung halten."}
+speech:"Breiter Stand. Gewicht zur Seite verlagern. Andere Seite bleibt gestreckt. Dehnung spüren."}
 ],
 
+/* =============================
+   PHASE 2 (JETZT KOMPLETT!)
+============================= */
 [
 {name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60,
-speech:"Atmen."},
+speech:"Rückenlage, Füße aufgestellt. Eine Hand auf den Bauch, eine auf die Brust. Durch die Nase in den Bauch atmen. Langsam durch den Mund ausatmen."},
 
 {name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"sideSlow", reps:10,
-speech:"Hüfte bewegen."},
+speech:"Ausfallschritt Position einnehmen. Hüfte langsam nach vorne schieben bis eine Dehnung spürbar ist. Danach wieder leicht zurück. Oberkörper aufrecht halten und Gesäß leicht anspannen."},
 
 {name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"sideSlow", reps:10,
-speech:"Ein Bein oben."},
+speech:"Rückenlage. Ein Knie gebeugt, anderes Bein anheben. Hüfte nach oben drücken bis der Körper eine Linie bildet. Zwei bis drei Sekunden halten und langsam absenken."},
 
 {name:"Dead Bug", img:"images/phase2.jpg", type:"alt", reps:12,
-speech:"Arm Bein wechseln."},
+speech:"Rückenlage. Arme nach oben, Knie 90 Grad gebeugt. Gleichzeitig ein Bein ausstrecken und den gegenüberliegenden Arm nach hinten führen. Langsam zurück und Seite wechseln ohne den unteren Rücken anzuheben."},
 
 {name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"altSlow", reps:10,
-speech:"Seitlich gehen."},
+speech:"Schritt weit zur Seite machen. Hüfte nach hinten schieben und das Bein beugen. Das andere Bein bleibt gestreckt. Zurück in die Mitte und Seite wechseln."},
 
-{name:"Adduktor Kombi", img:"images/phase2.jpg", type:"time", time:40,
-speech:"Dehnung + Bewegung."}
+{name:"Adduktor und Hüfte kombinieren", img:"images/phase2.jpg", type:"time", time:40,
+speech:"In die seitliche Dehnung gehen und Spannung in der Leiste spüren. Ruhig atmen. Danach kleine Wippbewegungen nach oben und unten ausführen um die Muskulatur zu aktivieren."}
 ]
 
 ];
 
-// =============================
-// START
 // =============================
 function start(){
 
     if(timer) return;
 
     let ex = phases[phaseIndex][current];
-
-    playBeep();
 
     if(!spoken){
         spoken = true;
@@ -225,8 +192,36 @@ function runRepsSlow(ex){
 }
 
 // =============================
-function showSide(text){
-    document.getElementById("side").innerText = text.toUpperCase();
+function runSideSlow(ex){
+
+    let side="rechts";
+
+    function go(){
+
+        showSide(side);
+        speak(side);
+
+        let r = ex.reps;
+
+        let i = setInterval(()=>{
+            r--;
+            update(r);
+
+            if(r<=0){
+                clearInterval(i);
+
+                if(side==="rechts"){
+                    speak("Wechsel", ()=>{
+                        side="links";
+                        setTimeout(go,2000);
+                    });
+                } else next();
+            }
+
+        },3000);
+    }
+
+    go();
 }
 
 // =============================
@@ -256,38 +251,6 @@ function runSide(ex){
             }
 
         },1000);
-    }
-
-    go();
-}
-
-// =============================
-function runSideSlow(ex){
-
-    let side="rechts";
-
-    function go(){
-
-        showSide(side);
-        speak(side);
-
-        let r = ex.reps;
-
-        let i = setInterval(()=>{
-            r--; update(r);
-
-            if(r<=0){
-                clearInterval(i);
-
-                if(side==="rechts"){
-                    speak("Wechsel", ()=>{
-                        side="links";
-                        setTimeout(go,2000);
-                    });
-                } else next();
-            }
-
-        },3000);
     }
 
     go();
@@ -350,14 +313,11 @@ function next(){
 
     clearInterval(timer);
 
-    playBeep();
-
     speak("Übung beendet", ()=>{
 
         current++;
 
         if(current >= phases[phaseIndex].length){
-            saveStats();
             alert("Training fertig 💪");
             current=0;
         }
@@ -382,18 +342,6 @@ function toggleMode(){
 // =============================
 function update(val){
     document.getElementById("timer").innerText = val;
-}
-
-// =============================
-// STATISTIK
-// =============================
-function saveStats(){
-
-    let count = localStorage.getItem("trainings") || 0;
-    count++;
-
-    localStorage.setItem("trainings", count);
-    localStorage.setItem("lastTraining", new Date().toLocaleDateString());
 }
 
 // =============================
