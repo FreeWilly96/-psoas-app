@@ -10,9 +10,30 @@
 <link rel="manifest" href="/-psoas-app/manifest.json">
 
 <style>
-body { margin:0; font-family:Arial; background:#f2f2f2; text-align:center; }
-img { width:95%; height:40vh; object-fit:contain; }
-.timer { font-size:80px; }
+
+body {
+    margin:0;
+    font-family:Arial;
+    background:#f2f2f2;
+    color:black;
+    text-align:center;
+    transition:0.3s;
+}
+
+body.dark {
+    background:#0b1a2f;
+    color:white;
+}
+
+img {
+    width:95%;
+    height:40vh;
+    object-fit:contain;
+}
+
+.timer {
+    font-size:80px;
+}
 
 button {
     padding:10px;
@@ -25,9 +46,16 @@ button {
 .start{background:green;}
 .pause{background:red;}
 .skip{background:orange;}
+.mode{background:black;}
 
 .phase{background:#999;}
 .phase.active{background:purple;}
+
+body.dark .mode {
+    background:white;
+    color:black;
+}
+
 </style>
 </head>
 
@@ -43,6 +71,7 @@ button {
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
 <button class="skip" onclick="next()">Skip</button>
+<button class="mode" onclick="toggleMode()">Mode</button>
 
 <br>
 
@@ -94,19 +123,19 @@ speech:"Breiter Stand. Gewicht zur Seite verlagern."}
 
 [
 {name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60,
-speech:"Bauchatmung zur Aktivierung. Rückenlage. Füße aufgestellt. Tief in den Bauch atmen. Bauch hebt sich. Langsam durch den Mund ausatmen. Spannung im Körper aufbauen."},
+speech:"Rückenlage. Tief in den Bauch atmen. Spannung aufbauen."},
 
 {name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"alt", reps:10,
-speech:"Ausfallschritt einnehmen. Hüfte nach vorne schieben und wieder zurück."},
+speech:"Ausfallschritt. Hüfte vor und zurück bewegen."},
 
 {name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"alt", reps:10,
-speech:"Ein Bein anheben. Hüfte nach oben drücken und stabil halten."},
+speech:"Ein Bein anheben. Hüfte nach oben drücken."},
 
 {name:"Dead Bug", img:"images/phase2.jpg", type:"alt", reps:12,
-speech:"Arm und Bein gegengleich bewegen. Rumpf stabil halten."},
+speech:"Arm und Bein gegengleich bewegen."},
 
 {name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"alt", reps:10,
-speech:"Schritt zur Seite machen. Hüfte nach hinten schieben."},
+speech:"Schritt zur Seite. Hüfte nach hinten."},
 
 {name:"Adduktor und Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
 speech:"Dehnung halten und kleine Bewegungen ausführen."}
@@ -129,7 +158,6 @@ function countdown(cb){
     let c = 3;
 
     timer = setInterval(()=>{
-
         if(c > 0){
             speak(c);
             update(c);
@@ -139,7 +167,6 @@ function countdown(cb){
             timer = null;
             cb();
         }
-
     },1000);
 }
 
@@ -210,6 +237,8 @@ function runReps(ex){
 }
 
 // =============================
+// 👉 SEITENWECHSEL CLEAN
+// =============================
 function runAlt(ex){
 
     let reps = ex.reps;
@@ -217,7 +246,8 @@ function runAlt(ex){
 
     function loop(){
 
-        speak(side);
+        speak(side); // 👉 NUR links/rechts
+
         update(reps);
 
         side = (side === "links") ? "rechts" : "links";
@@ -302,6 +332,13 @@ function setPhase(p){
     current = 0;
     firstStart = true;
     load();
+}
+
+// =============================
+// 🌙 DARK MODE
+// =============================
+function toggleMode(){
+    document.body.classList.toggle("dark");
 }
 
 // =============================
