@@ -237,6 +237,7 @@ async function runSide(ex){
 
         showSide(side);
         await speak("Seite " + side);
+        await sleep(1500); // 👈 HIER angepasst
 
         let t=ex.time;
 
@@ -251,8 +252,6 @@ async function runSide(ex){
                 }
             },1000);
         });
-
-        await sleep(1000);
     }
 
     next();
