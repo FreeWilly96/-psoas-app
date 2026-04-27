@@ -86,6 +86,9 @@ let current = 0;
 let timer = null;
 let firstStart = true;
 
+// 👉 verhindert doppelte Ansage
+let descriptionSpoken = false;
+
 const beep = new Audio("https://actions.google.com/sounds/v1/beeps/beep_short.ogg");
 
 function vibrate(ms=100){
@@ -180,16 +183,21 @@ function start(){
     beep.play();
     vibrate(200);
 
-    speak(ex.speech, ()=>{
+    // 👉 Beschreibung nur 1x
+    if(!descriptionSpoken){
+        descriptionSpoken = true;
 
-        if(firstStart){
-            firstStart = false;
-            countdown(()=> run(ex));
-        } else {
-            run(ex);
-        }
-
-    });
+        speak(ex.speech, ()=>{
+            if(firstStart){
+                firstStart = false;
+                countdown(()=> run(ex));
+            } else {
+                run(ex);
+            }
+        });
+    } else {
+        run(ex);
+    }
 }
 
 // =============================
@@ -237,8 +245,6 @@ function runReps(ex){
 }
 
 // =============================
-// 👉 SEITENWECHSEL CLEAN
-// =============================
 function runAlt(ex){
 
     let reps = ex.reps;
@@ -246,8 +252,7 @@ function runAlt(ex){
 
     function loop(){
 
-        speak(side); // 👉 NUR links/rechts
-
+        speak(side);
         update(reps);
 
         side = (side === "links") ? "rechts" : "links";
@@ -268,10 +273,14 @@ function runAlt(ex){
 }
 
 // =============================
+// ⏸️ 15 SEKUNDEN PAUSE
+// =============================
 function rest(){
 
-    let t = 20;
+    let t = 15;
     let nextEx = phases[phaseIndex][current];
+
+    descriptionSpoken = false;
 
     speak("Pause. Nächste Übung: " + nextEx.name, ()=>{
         speak(nextEx.speech);
@@ -310,6 +319,7 @@ function next(){
             alert("Training fertig 💪");
             current = 0;
             firstStart = true;
+            descriptionSpoken = false;
             load();
             return;
         }
@@ -331,11 +341,10 @@ function setPhase(p){
     phaseIndex = p-1;
     current = 0;
     firstStart = true;
+    descriptionSpoken = false;
     load();
 }
 
-// =============================
-// 🌙 DARK MODE
 // =============================
 function toggleMode(){
     document.body.classList.toggle("dark");
