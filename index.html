@@ -94,22 +94,22 @@ speech:"Breiter Stand. Gewicht zur Seite verlagern."}
 
 [
 {name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60,
-speech:"Ruhig atmen und Spannung aufbauen."},
+speech:"Bauchatmung zur Aktivierung. Rückenlage. Füße aufgestellt. Tief in den Bauch atmen. Bauch hebt sich. Langsam durch den Mund ausatmen. Spannung im Körper aufbauen."},
 
 {name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"alt", reps:10,
-speech:"Ausfallschritt. Hüfte vor und zurück bewegen."},
+speech:"Ausfallschritt einnehmen. Hüfte nach vorne schieben und wieder zurück."},
 
 {name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"alt", reps:10,
-speech:"Ein Bein anheben. Hüfte nach oben drücken."},
+speech:"Ein Bein anheben. Hüfte nach oben drücken und stabil halten."},
 
 {name:"Dead Bug", img:"images/phase2.jpg", type:"alt", reps:12,
-speech:"Arm und Bein gegengleich bewegen."},
+speech:"Arm und Bein gegengleich bewegen. Rumpf stabil halten."},
 
 {name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"alt", reps:10,
-speech:"Schritt zur Seite. Hüfte nach hinten."},
+speech:"Schritt zur Seite machen. Hüfte nach hinten schieben."},
 
 {name:"Adduktor und Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
-speech:"Dehnung halten und kleine Bewegungen machen."}
+speech:"Dehnung halten und kleine Bewegungen ausführen."}
 ]
 
 ];
@@ -129,11 +129,12 @@ function countdown(cb){
     let c = 3;
 
     timer = setInterval(()=>{
-        speak(c);
-        update(c);
-        c--;
 
-        if(c < 0){
+        if(c > 0){
+            speak(c);
+            update(c);
+            c--;
+        } else {
             clearInterval(timer);
             timer = null;
             cb();
@@ -256,8 +257,6 @@ function rest(){
         if(t<=0){
             clearInterval(timer);
             timer = null;
-
-            // 👉 KEIN COUNTDOWN MEHR HIER!
             run(nextEx);
         }
 
