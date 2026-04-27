@@ -50,35 +50,23 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 <script>
 
 // =============================
-// STATE ENGINE
-// =============================
 let phaseIndex = 0;
 let current = 0;
-
-let mode = "idle"; 
-// idle | explain | countdown | exercise | rest | sideSwitch
-
+let mode = "idle";
 let timer = null;
 let value = 0;
 let side = "rechts";
 let reps = 0;
+let sessionActive = false;
 
-// =============================
-// SPEECH
 // =============================
 function speak(text, cb){
     speechSynthesis.cancel();
     let msg = new SpeechSynthesisUtterance(text);
     msg.lang="de-DE";
+    msg.rate = 0.95; // 🔥 angenehmer Flow
     msg.onend = ()=> cb && cb();
     speechSynthesis.speak(msg);
-}
-
-// =============================
-function updatePhaseUI(){
-    p1.classList.remove("active");
-    p2.classList.remove("active");
-    (phaseIndex===0?p1:p2).classList.add("active");
 }
 
 // =============================
@@ -99,78 +87,129 @@ const phases = [
 
 /* ================= PHASE 1 ================= */
 [
-{name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
-speech:"Rückenlage. Füße aufgestellt. Eine Hand auf den Bauch, eine auf die Brust. Fünf Sekunden ein, sieben Sekunden aus."},
+{
+name:"Bauchatmung",
+img:"images/phase3.jpg",
+type:"time",
+time:120,
+speech:"Bauchatmung. Lege dich entspannt auf den Rücken, die Füße sind aufgestellt. Eine Hand liegt auf deinem Bauch, die andere auf deiner Brust. Atme ruhig durch die Nase ein, der Bauch hebt sich. Die Brust bleibt möglichst ruhig. Atme langsam durch den Mund aus. Fünf Sekunden ein, sieben Sekunden aus. Finde einen gleichmäßigen, ruhigen Rhythmus."
+},
 
-{name:"Knie zur Brust", img:"images/phase3.jpg", type:"sideTime", time:45,
-speech:"Ein Knie zur Brust ziehen. Anderes Bein entspannt lassen."},
+{
+name:"Knie zur Brust",
+img:"images/phase3.jpg",
+type:"sideTime",
+time:45,
+speech:"Knie zur Brust. Bleibe in Rückenlage. Ziehe ein Knie sanft zur Brust und halte es mit beiden Händen. Das andere Bein bleibt lang und entspannt auf dem Boden. Atme ruhig weiter und spüre die Entlastung im unteren Rücken."
+},
 
-{name:"Mini Becken Kippung", img:"images/phase3.jpg", type:"reps", reps:15,
-speech:"Becken kippen. Unteren Rücken in den Boden drücken."},
+{
+name:"Mini Becken Kippung",
+img:"images/phase3.jpg",
+type:"reps",
+reps:15,
+speech:"Mini Becken Kippung. Füße aufgestellt. Kippe dein Becken leicht nach hinten, sodass der untere Rücken sanft in den Boden drückt. Halte kurz die Spannung und löse wieder. Die Bewegung ist klein und kontrolliert."
+},
 
-{name:"Hüftbeuger Dehnung", img:"images/phase3.jpg", type:"sideTime", time:40,
-speech:"Halbkniestand. Becken kippen. Gesäß anspannen."},
+{
+name:"Hüftbeuger Dehnung",
+img:"images/phase3.jpg",
+type:"sideTime",
+time:40,
+speech:"Hüftbeuger Dehnung. Gehe in den Halbkniestand. Das hintere Bein liegt am Boden. Spanne das Gesäß an und kippe das Becken leicht nach hinten. Halte den Oberkörper aufrecht. Du solltest eine Dehnung vorne in der Hüfte spüren."
+},
 
-{name:"Glute Bridge", img:"images/phase3.jpg", type:"repsSlow", reps:12,
-speech:"Hüfte hoch. Zwei Sekunden halten. Langsam absenken."},
+{
+name:"Glute Bridge",
+img:"images/phase3.jpg",
+type:"repsSlow",
+reps:12,
+speech:"Glute Bridge. Drücke die Füße in den Boden und hebe langsam die Hüfte an. Spanne dein Gesäß fest an. Halte die Position zwei bis drei Sekunden. Senke die Hüfte anschließend langsam wieder ab."
+},
 
-{name:"Adduktor Dehnung", img:"images/phase3.jpg", type:"time", time:45,
-speech:"Breiter Stand. Gewicht zur Seite verlagern."}
+{
+name:"Adduktor Dehnung",
+img:"images/phase3.jpg",
+type:"time",
+time:45,
+speech:"Adduktor Dehnung. Stelle dich breit hin. Verlagere dein Gewicht zur Seite. Ein Bein ist gebeugt, das andere bleibt gestreckt. Halte den Rücken gerade und spüre die Dehnung an der Innenseite des gestreckten Beins."
+}
 ],
 
 /* ================= PHASE 2 ================= */
 [
-{name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60,
-speech:"Ruhig in den Bauch atmen und Spannung aufbauen."},
+{
+name:"Bauchatmung Aktivierung",
+img:"images/phase2.jpg",
+type:"time",
+time:60,
+speech:"Bauchatmung zur Aktivierung. Atme tief durch die Nase ein und spanne dabei leicht deinen Bauch an. Halte die Spannung kurz und atme kontrolliert wieder aus. Bereite deinen Körper auf die Bewegung vor."
+},
 
-{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"sideReps", reps:10,
-speech:"Ausfallschritt. Hüfte vor und zurück bewegen."},
+{
+name:"Dynamische Hüftöffnung",
+img:"images/phase2.jpg",
+type:"sideReps",
+reps:10,
+speech:"Dynamische Hüftöffnung. Gehe in einen großen Ausfallschritt nach vorne. Schiebe die Hüfte kontrolliert nach vorne und wieder zurück. Bleibe stabil und führe die Bewegung fließend aus."
+},
 
-{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"sideRepsSlow", reps:10,
-speech:"Ein Bein oben halten. Hüfte hoch und langsam absenken."},
+{
+name:"Glute Bridge einbeinig",
+img:"images/phase2.jpg",
+type:"sideRepsSlow",
+reps:10,
+speech:"Einbeinige Glute Bridge. Hebe ein Bein an. Drücke das andere fest in den Boden und hebe die Hüfte an. Spanne das Gesäß an, halte kurz und senke die Hüfte langsam wieder ab."
+},
 
-{name:"Dead Bug", img:"images/phase2.jpg", type:"alt", reps:12,
-speech:"Gegengleich Arm und Bein bewegen. Rumpf stabil halten."},
+{
+name:"Dead Bug",
+img:"images/phase2.jpg",
+type:"alt",
+reps:12,
+speech:"Dead Bug. Lege dich auf den Rücken und hebe Arme und Beine an. Strecke abwechselnd einen Arm und das gegenüberliegende Bein. Halte deinen Rumpf stabil und kontrolliere die Bewegung."
+},
 
-{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"altSlow", reps:10,
-speech:"Seitlich treten und kontrolliert zurück."},
+{
+name:"Seitliche Ausfallschritte",
+img:"images/phase2.jpg",
+type:"altSlow",
+reps:10,
+speech:"Seitliche Ausfallschritte. Mache einen Schritt zur Seite. Schiebe die Hüfte nach hinten und beuge das Standbein. Kehre kontrolliert zur Mitte zurück und wechsle die Seite."
+},
 
-{name:"Adduktor Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
-speech:"Dehnung halten und kleine Bewegungen machen."}
+{
+name:"Adduktor Hüfte Kombi",
+img:"images/phase2.jpg",
+type:"time",
+time:40,
+speech:"Adduktor und Hüfte kombiniert. Gehe in die Dehnposition und führe kleine kontrollierte Bewegungen aus. Halte Spannung und arbeite aktiv in der Position."
+}
 ]
 
 ];
 
 // =============================
-// START FLOW
-// =============================
 function start(){
-
-    if(mode !== "idle" && mode !== "rest") return;
-
+    if(mode !== "idle") return;
+    sessionActive = true;
     explainExercise();
 }
 
 // =============================
 function explainExercise(){
-
     let ex = phases[phaseIndex][current];
-
     mode = "explain";
-
-    speak(ex.name + ". " + ex.speech, ()=>{
-        startCountdown();
-    });
+    speak(ex.speech, startCountdown);
 }
 
 // =============================
 function startCountdown(){
-
     mode = "countdown";
     let c = 3;
 
     timer = setInterval(()=>{
-        document.getElementById("timer").innerText = c;
+        timerEl.innerText = c;
         speak(c);
         c--;
 
@@ -184,7 +223,6 @@ function startCountdown(){
 
 // =============================
 function runExercise(){
-
     let ex = phases[phaseIndex][current];
     mode = "exercise";
 
@@ -220,7 +258,6 @@ function runReps(ex, speed){
     timer = setInterval(()=>{
         value--;
         update(value);
-        speak(value);
 
         if(value<=0) finishExercise();
 
@@ -229,14 +266,12 @@ function runReps(ex, speed){
 
 // =============================
 function runSideTime(ex){
-
-    side = "rechts";
+    side="rechts";
     doSideTime(ex);
 }
 
 function doSideTime(ex){
-
-    document.getElementById("side").innerText = side;
+    sideEl.innerText = side;
     speak(side);
 
     value = ex.time;
@@ -250,7 +285,6 @@ function doSideTime(ex){
 
             if(side==="rechts"){
                 side="links";
-                mode="sideSwitch";
                 speak("Wechsel", ()=> setTimeout(()=>doSideTime(ex),1000));
             } else finishExercise();
         }
@@ -260,14 +294,12 @@ function doSideTime(ex){
 
 // =============================
 function runSideReps(ex, speed){
-
     side="rechts";
     doSideReps(ex, speed);
 }
 
 function doSideReps(ex, speed){
-
-    document.getElementById("side").innerText = side;
+    sideEl.innerText = side;
     speak(side);
 
     value = ex.reps;
@@ -290,13 +322,11 @@ function doSideReps(ex, speed){
 
 // =============================
 function runAlt(ex, speed){
-
     reps = ex.reps;
     side = "links";
 
     function loop(){
-
-        document.getElementById("side").innerText = side;
+        sideEl.innerText = side;
         speak(side);
 
         side = side==="links"?"rechts":"links";
@@ -318,21 +348,18 @@ function runAlt(ex, speed){
 
 // =============================
 function finishExercise(){
-
     stopAll();
-
     startRest();
 }
 
 // =============================
 function startRest(){
 
-    mode = "rest";
-
     let nextEx = phases[phaseIndex][current+1];
 
     if(!nextEx){
         alert("Training fertig 💪");
+        sessionActive = false;
         current = 0;
         load();
         return;
@@ -350,7 +377,10 @@ function startRest(){
             clearInterval(timer);
             current++;
             load();
-            explainExercise();
+
+            if(sessionActive){
+                explainExercise();
+            }
         }
 
     },1000);
@@ -366,6 +396,7 @@ function skip(){
 // =============================
 function pause(){
     stopAll();
+    sessionActive = false;
 }
 
 // =============================
@@ -378,29 +409,25 @@ function stopAll(){
 
 // =============================
 function update(val){
-    document.getElementById("timer").innerText = val;
+    timerEl.innerText = val;
 }
 
 // =============================
 function load(){
-
     let ex = phases[phaseIndex][current];
 
-    document.getElementById("phaseTitle").innerText =
-        "Phase " + (phaseIndex+1);
+    phaseTitle.innerText = "Phase " + (phaseIndex+1);
+    exerciseTitle.innerText = ex.name;
+    exerciseImage.src = ex.img;
 
-    document.getElementById("exerciseTitle").innerText = ex.name;
-
-    document.getElementById("exerciseImage").src = ex.img;
-
-    document.getElementById("side").innerText = "";
-
+    sideEl.innerText = "";
     update(ex.time || ex.reps);
-
-    updatePhaseUI();
 }
 
 // =============================
+const timerEl = document.getElementById("timer");
+const sideEl = document.getElementById("side");
+
 load();
 
 </script>
