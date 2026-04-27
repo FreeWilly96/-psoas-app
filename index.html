@@ -64,7 +64,7 @@ function speak(text, cb){
     speechSynthesis.cancel();
     let msg = new SpeechSynthesisUtterance(text);
     msg.lang="de-DE";
-    msg.rate = 0.95; // 🔥 angenehmer Flow
+    msg.rate = 0.95;
     msg.onend = ()=> cb && cb();
     speechSynthesis.speak(msg);
 }
@@ -92,7 +92,7 @@ name:"Bauchatmung",
 img:"images/phase3.jpg",
 type:"time",
 time:120,
-speech:"Bauchatmung. Lege dich entspannt auf den Rücken, die Füße sind aufgestellt. Eine Hand liegt auf deinem Bauch, die andere auf deiner Brust. Atme ruhig durch die Nase ein, der Bauch hebt sich. Die Brust bleibt möglichst ruhig. Atme langsam durch den Mund aus. Fünf Sekunden ein, sieben Sekunden aus. Finde einen gleichmäßigen, ruhigen Rhythmus."
+speech:"Bauchatmung. Lege dich entspannt auf den Rücken, die Füße sind aufgestellt. Eine Hand liegt auf deinem Bauch, die andere auf deiner Brust. Atme ruhig durch die Nase ein und spüre, wie sich dein Bauch hebt. Die Brust bleibt möglichst ruhig. Atme langsam durch den Mund wieder aus. Lass die Schultern locker. Finde einen gleichmäßigen Rhythmus: fünf Sekunden ein, sieben Sekunden aus. Versuche mit jeder Ausatmung mehr Spannung loszulassen."
 },
 
 {
@@ -100,7 +100,7 @@ name:"Knie zur Brust",
 img:"images/phase3.jpg",
 type:"sideTime",
 time:45,
-speech:"Knie zur Brust. Bleibe in Rückenlage. Ziehe ein Knie sanft zur Brust und halte es mit beiden Händen. Das andere Bein bleibt lang und entspannt auf dem Boden. Atme ruhig weiter und spüre die Entlastung im unteren Rücken."
+speech:"Knie zur Brust. Bleibe in Rückenlage. Ziehe ein Knie langsam zur Brust und halte es mit beiden Händen. Das andere Bein bleibt lang und entspannt am Boden liegen. Ziehe nicht mit Kraft, sondern arbeite ruhig in die Dehnung hinein. Atme gleichmäßig weiter und spüre die Entlastung im unteren Rücken."
 },
 
 {
@@ -108,7 +108,7 @@ name:"Mini Becken Kippung",
 img:"images/phase3.jpg",
 type:"reps",
 reps:15,
-speech:"Mini Becken Kippung. Füße aufgestellt. Kippe dein Becken leicht nach hinten, sodass der untere Rücken sanft in den Boden drückt. Halte kurz die Spannung und löse wieder. Die Bewegung ist klein und kontrolliert."
+speech:"Mini Becken Kippung. Stelle die Füße auf. Kippe dein Becken leicht nach hinten, sodass dein unterer Rücken sanft in den Boden drückt. Halte die Spannung kurz und löse sie wieder. Die Bewegung ist klein, langsam und kontrolliert. Vermeide Schwung."
 },
 
 {
@@ -116,7 +116,7 @@ name:"Hüftbeuger Dehnung",
 img:"images/phase3.jpg",
 type:"sideTime",
 time:40,
-speech:"Hüftbeuger Dehnung. Gehe in den Halbkniestand. Das hintere Bein liegt am Boden. Spanne das Gesäß an und kippe das Becken leicht nach hinten. Halte den Oberkörper aufrecht. Du solltest eine Dehnung vorne in der Hüfte spüren."
+speech:"Hüftbeuger Dehnung. Gehe in den Halbkniestand. Das hintere Knie liegt am Boden. Spanne dein Gesäß aktiv an und kippe dein Becken leicht nach hinten. Halte deinen Oberkörper aufrecht. Du solltest die Dehnung vorne in der Hüfte deutlich spüren, aber ohne Schmerz."
 },
 
 {
@@ -124,7 +124,7 @@ name:"Glute Bridge",
 img:"images/phase3.jpg",
 type:"repsSlow",
 reps:12,
-speech:"Glute Bridge. Drücke die Füße in den Boden und hebe langsam die Hüfte an. Spanne dein Gesäß fest an. Halte die Position zwei bis drei Sekunden. Senke die Hüfte anschließend langsam wieder ab."
+speech:"Glute Bridge. Drücke deine Füße fest in den Boden. Hebe die Hüfte langsam an, bis dein Körper eine Linie bildet. Spanne dein Gesäß aktiv an. Halte die Position zwei bis drei Sekunden. Senke die Hüfte kontrolliert wieder ab. Kein Durchhängen im unteren Rücken."
 },
 
 {
@@ -132,7 +132,7 @@ name:"Adduktor Dehnung",
 img:"images/phase3.jpg",
 type:"time",
 time:45,
-speech:"Adduktor Dehnung. Stelle dich breit hin. Verlagere dein Gewicht zur Seite. Ein Bein ist gebeugt, das andere bleibt gestreckt. Halte den Rücken gerade und spüre die Dehnung an der Innenseite des gestreckten Beins."
+speech:"Adduktor Dehnung. Stelle dich breit hin. Verlagere dein Gewicht langsam zur Seite. Ein Bein ist gebeugt, das andere bleibt gestreckt. Halte den Rücken gerade. Spüre die Dehnung an der Innenseite des gestreckten Beins und bleibe ruhig in der Position."
 }
 ],
 
@@ -143,7 +143,7 @@ name:"Bauchatmung Aktivierung",
 img:"images/phase2.jpg",
 type:"time",
 time:60,
-speech:"Bauchatmung zur Aktivierung. Atme tief durch die Nase ein und spanne dabei leicht deinen Bauch an. Halte die Spannung kurz und atme kontrolliert wieder aus. Bereite deinen Körper auf die Bewegung vor."
+speech:"Bauchatmung zur Aktivierung. Atme tief durch die Nase ein und baue Spannung im Bauch auf. Halte diese Spannung kurz. Atme kontrolliert wieder aus. Aktiviere deinen Rumpf für die kommenden Übungen."
 },
 
 {
@@ -151,7 +151,7 @@ name:"Dynamische Hüftöffnung",
 img:"images/phase2.jpg",
 type:"sideReps",
 reps:10,
-speech:"Dynamische Hüftöffnung. Gehe in einen großen Ausfallschritt nach vorne. Schiebe die Hüfte kontrolliert nach vorne und wieder zurück. Bleibe stabil und führe die Bewegung fließend aus."
+speech:"Dynamische Hüftöffnung. Gehe in einen großen Ausfallschritt nach vorne. Schiebe die Hüfte kontrolliert nach vorne und wieder zurück. Bleibe stabil im Oberkörper und führe die Bewegung fließend aus."
 },
 
 {
@@ -159,7 +159,7 @@ name:"Glute Bridge einbeinig",
 img:"images/phase2.jpg",
 type:"sideRepsSlow",
 reps:10,
-speech:"Einbeinige Glute Bridge. Hebe ein Bein an. Drücke das andere fest in den Boden und hebe die Hüfte an. Spanne das Gesäß an, halte kurz und senke die Hüfte langsam wieder ab."
+speech:"Einbeinige Glute Bridge. Hebe ein Bein an. Drücke das andere fest in den Boden. Hebe die Hüfte an und spanne dein Gesäß an. Halte kurz und senke die Hüfte langsam wieder ab. Bleibe stabil im Becken."
 },
 
 {
@@ -167,7 +167,7 @@ name:"Dead Bug",
 img:"images/phase2.jpg",
 type:"alt",
 reps:12,
-speech:"Dead Bug. Lege dich auf den Rücken und hebe Arme und Beine an. Strecke abwechselnd einen Arm und das gegenüberliegende Bein. Halte deinen Rumpf stabil und kontrolliere die Bewegung."
+speech:"Dead Bug. Lege dich auf den Rücken und hebe Arme und Beine an. Strecke langsam einen Arm und das gegenüberliegende Bein. Halte den unteren Rücken stabil am Boden. Die Bewegung ist ruhig und kontrolliert."
 },
 
 {
@@ -175,7 +175,7 @@ name:"Seitliche Ausfallschritte",
 img:"images/phase2.jpg",
 type:"altSlow",
 reps:10,
-speech:"Seitliche Ausfallschritte. Mache einen Schritt zur Seite. Schiebe die Hüfte nach hinten und beuge das Standbein. Kehre kontrolliert zur Mitte zurück und wechsle die Seite."
+speech:"Seitliche Ausfallschritte. Mache einen großen Schritt zur Seite. Schiebe die Hüfte nach hinten und beuge das Standbein. Drücke dich kontrolliert wieder zurück zur Mitte und wechsle die Seite."
 },
 
 {
@@ -183,11 +183,15 @@ name:"Adduktor Hüfte Kombi",
 img:"images/phase2.jpg",
 type:"time",
 time:40,
-speech:"Adduktor und Hüfte kombiniert. Gehe in die Dehnposition und führe kleine kontrollierte Bewegungen aus. Halte Spannung und arbeite aktiv in der Position."
+speech:"Adduktor und Hüfte kombiniert. Gehe in die Dehnposition und arbeite aktiv mit kleinen Bewegungen. Halte die Spannung und kontrolliere jede Bewegung bewusst."
 }
 ]
 
 ];
+
+// ===== REST CODE BLEIBT IDENTISCH WIE VERSION 33 =====
+
+// (Ich lasse den Engine-Teil unverändert, damit nichts kaputt geht)
 
 // =============================
 function start(){
