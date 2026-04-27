@@ -42,60 +42,159 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 <script>
 
 // =============================
-// STATE
-// =============================
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
 
 // =============================
-// SOUND
-// =============================
 const beep = new Audio("https://actions.google.com/sounds/v1/beeps/beep_short.ogg");
 
-// =============================
-// VIBRATION
-// =============================
 function vibrate(ms=100){
-    if(navigator.vibrate){
-        navigator.vibrate(ms);
-    }
+    if(navigator.vibrate) navigator.vibrate(ms);
 }
 
 // =============================
-// PHASEN (gleich wie vorher)
+// 🔥 PHASEN MIT ERKLÄRUNG
 // =============================
 const phases = [
+
 [
-{name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120, guide:["Rückenlage","5 ein / 7 aus"]},
-{name:"Knie zur Brust links", img:"images/phase3.jpg", type:"time", time:45, guide:["ziehen","entspannen"]},
-{name:"Knie zur Brust rechts", img:"images/phase3.jpg", type:"time", time:45, guide:["ziehen","entspannen"]},
-{name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15, guide:["kippen"]},
-{name:"Hüftbeuger-Dehnung links", img:"images/phase3.jpg", type:"time", time:40, guide:["Dehnung"]},
-{name:"Hüftbeuger-Dehnung rechts", img:"images/phase3.jpg", type:"time", time:40, guide:["Dehnung"]},
-{name:"Glute Bridge", img:"images/phase3.jpg", type:"reps", reps:12, guide:["heben"]},
-{name:"Adduktor-Dehnung", img:"images/phase3.jpg", type:"time", time:45, guide:["seitlich"]}
+{
+name:"Bauchatmung",
+img:"images/phase3.jpg",
+type:"time",
+time:120,
+speech:"Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Tief in den Bauch atmen. Fünf Sekunden ein, sieben Sekunden aus."
+},
+
+{
+name:"Knie zur Brust links",
+img:"images/phase3.jpg",
+type:"time",
+time:45,
+speech:"Ein Knie zur Brust ziehen und halten. Anderes Bein entspannt lassen. Ruhig weiteratmen."
+},
+
+{
+name:"Knie zur Brust rechts",
+img:"images/phase3.jpg",
+type:"time",
+time:45,
+speech:"Ein Knie zur Brust ziehen und halten. Anderes Bein entspannt lassen. Ruhig weiteratmen."
+},
+
+{
+name:"Mini-Becken-Kippung",
+img:"images/phase3.jpg",
+type:"reps",
+reps:15,
+speech:"Unteren Rücken in den Boden drücken. Becken kippen. Spannung kurz halten und lösen."
+},
+
+{
+name:"Hüftbeuger-Dehnung links",
+img:"images/phase3.jpg",
+type:"time",
+time:40,
+speech:"Halbkniestand. Gesäß anspannen. Becken leicht kippen. Dehnung vorne spüren."
+},
+
+{
+name:"Hüftbeuger-Dehnung rechts",
+img:"images/phase3.jpg",
+type:"time",
+time:40,
+speech:"Halbkniestand. Gesäß anspannen. Becken leicht kippen. Dehnung vorne spüren."
+},
+
+{
+name:"Glute Bridge",
+img:"images/phase3.jpg",
+type:"reps",
+reps:12,
+speech:"Hüfte nach oben drücken. Gesäß anspannen. Kurz halten und langsam absenken."
+},
+
+{
+name:"Adduktor-Dehnung",
+img:"images/phase3.jpg",
+type:"time",
+time:45,
+speech:"Breiter Stand. Gewicht zur Seite verlagern. Dehnung spüren."
+}
 ],
+
 [
-{name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60, guide:["Aktivierung"]},
-{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"alt", reps:10, guide:["vor/zurück"]},
-{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"alt", reps:10, guide:["heben"]},
-{name:"Dead Bug", img:"images/phase2.jpg", type:"alt", reps:12, guide:["abwechselnd"]},
-{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"alt", reps:10, guide:["seitlich"]},
-{name:"Adduktor & Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40, guide:["Dehnung"]}
+{
+name:"Bauchatmung",
+img:"images/phase2.jpg",
+type:"time",
+time:60,
+speech:"Ruhig atmen und Spannung aufbauen."
+},
+
+{
+name:"Dynamische Hüftöffnung",
+img:"images/phase2.jpg",
+type:"alt",
+reps:10,
+speech:"Ausfallschritt einnehmen. Hüfte nach vorne schieben und wieder zurück bewegen."
+},
+
+{
+name:"Glute Bridge einbeinig",
+img:"images/phase2.jpg",
+type:"alt",
+reps:10,
+speech:"Ein Bein anheben. Hüfte nach oben drücken und stabil halten."
+},
+
+{
+name:"Dead Bug",
+img:"images/phase2.jpg",
+type:"alt",
+reps:12,
+speech:"Gegengleich Arm und Bein bewegen. Rumpf stabil halten."
+},
+
+{
+name:"Seitliche Ausfallschritte",
+img:"images/phase2.jpg",
+type:"alt",
+reps:10,
+speech:"Schritt zur Seite machen. Hüfte nach hinten schieben und wieder zurück."
+},
+
+{
+name:"Adduktor und Hüfte kombinieren",
+img:"images/phase2.jpg",
+type:"time",
+time:40,
+speech:"In die Dehnung gehen. Kleine kontrollierte Bewegungen ausführen."
+}
 ]
+
 ];
 
 // =============================
-// SPEAK
+// 🔊 SPEAK mit Callback (WICHTIG)
 // =============================
-function speak(text){
+function speak(text, callback){
+
     speechSynthesis.cancel();
+
     let msg = new SpeechSynthesisUtterance(text);
-    msg.lang="de-DE";
+    msg.lang = "de-DE";
+
+    msg.onend = function(){
+        if(callback) callback();
+    };
+
     speechSynthesis.speak(msg);
 }
 
+// =============================
+// ▶️ START MIT ERKLÄRUNG
 // =============================
 function start(){
 
@@ -106,9 +205,18 @@ function start(){
     beep.play();
     vibrate(200);
 
-    speak(ex.name);
+    // 👉 1. ERKLÄRUNG
+    speak(ex.speech, () => {
 
-    setTimeout(()=> countdown(()=> run(ex)),800);
+        // 👉 kleine Pause
+        setTimeout(() => {
+
+            // 👉 2. COUNTDOWN
+            countdown(() => run(ex));
+
+        }, 800);
+
+    });
 }
 
 // =============================
@@ -117,6 +225,7 @@ function countdown(cb){
     let c = 3;
 
     let cd = setInterval(()=>{
+
         speak(c);
         update(c);
         c--;
@@ -134,7 +243,7 @@ function run(ex){
 
     if(ex.type==="time") runTime(ex);
     else if(ex.type==="reps") runReps(ex);
-    else if(ex.type==="alt") runAlt(ex);
+    else runAlt(ex);
 }
 
 // =============================
@@ -147,10 +256,7 @@ function runTime(ex){
         t--;
         update(t);
 
-        if(t<=5 && t>0){
-            speak(t);
-            vibrate(50);
-        }
+        if(t<=5 && t>0) speak(t);
 
         if(t<=0) next();
 
@@ -167,7 +273,6 @@ function runReps(ex){
         r--;
         update(r);
         speak(r);
-        vibrate(50);
 
         if(r<=0) next();
 
@@ -183,19 +288,14 @@ function runAlt(ex){
     timer = setInterval(()=>{
 
         speak(side);
-        vibrate(80);
 
         update(reps);
 
         side = (side === "links") ? "rechts" : "links";
 
-        if(side === "links"){
-            reps--;
-        }
+        if(side === "links") reps--;
 
-        if(reps <= 0){
-            next();
-        }
+        if(reps<=0) next();
 
     },2000);
 }
@@ -252,13 +352,8 @@ function load(){
 
     document.getElementById("exerciseImage").src = ex.img;
 
-    let html="<ul>";
-    ex.guide.forEach(g => html+="<li>"+g+"</li>");
-    html+="</ul>";
-
-    document.getElementById("guideText").innerHTML = html;
-
-    update(ex.type==="time" ? ex.time : ex.reps);
+    document.getElementById("timer").innerText =
+        ex.type==="time" ? ex.time : ex.reps;
 
     updatePhaseUI();
 }
@@ -276,7 +371,6 @@ function updatePhaseUI(){
     }
 }
 
-// =============================
 load();
 
 </script>
