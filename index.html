@@ -6,7 +6,6 @@
 
 <title>Psoas Ultra PRO FINAL</title>
 
-<!-- APP ICON -->
 <link rel="apple-touch-icon" href="/-psoas-app/images/icon.png">
 <link rel="manifest" href="/-psoas-app/manifest.json">
 
@@ -52,8 +51,6 @@ button {
 
 <script>
 
-// =============================
-// STATE
 // =============================
 let phaseIndex = 0;
 let current = 0;
@@ -119,7 +116,7 @@ speech:"Dehnung halten und kleine Bewegungen machen."}
 ];
 
 // =============================
-// SPEAK FIX
+// SPEAK
 // =============================
 function speak(text, cb){
     speechSynthesis.cancel();
@@ -131,6 +128,7 @@ function speak(text, cb){
 
 // =============================
 function countdown(cb){
+
     let c = 3;
 
     timer = setInterval(()=>{
@@ -237,13 +235,19 @@ function runAlt(ex){
 }
 
 // =============================
-function rest(cb){
+// 🔥 PAUSE MIT ERKLÄRUNG
+// =============================
+function rest(){
 
     let t = 20;
+    let nextEx = phases[phaseIndex][current];
 
-    speak("Pause. Nächste Übung vorbereiten");
+    speak("Pause. Nächste Übung: " + nextEx.name, ()=>{
+        speak(nextEx.speech);
+    });
 
     timer = setInterval(()=>{
+
         t--;
         update(t);
 
@@ -252,7 +256,10 @@ function rest(cb){
         if(t<=0){
             clearInterval(timer);
             timer = null;
-            cb();
+
+            countdown(()=>{
+                run(nextEx);
+            });
         }
 
     },1000);
@@ -278,11 +285,8 @@ function next(){
             return;
         }
 
-        rest(()=>{
-            load();
-            start();
-        });
-
+        load();
+        rest();
     });
 }
 
