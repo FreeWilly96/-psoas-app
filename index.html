@@ -180,15 +180,15 @@ async function runHoldReps(ex){
     while(reps>0){
 
         if(reps===ex.reps){
-    update("HALTEN"); // 👈 NEU
+    update("HALTEN");
     await speak("Spannung halten für fünf Sekunden");
 } else {
     update(reps);
     await speak(reps.toString());
 }
 
-        update(reps);
-        reps--;
+reps--;
+       
 
         await sleep(5000);
     }
@@ -212,15 +212,14 @@ async function runSideHoldReps(ex){
         while(reps>0){
 
            if(reps===ex.reps){
-    update("HALTEN"); // 👈 NEU
+    update("HALTEN");
     await speak("Spannung halten für fünf Sekunden");
 } else {
     update(reps);
     await speak(reps.toString());
 }
 
-            update(reps);
-            reps--;
+reps--;
 
             await sleep(5000);
         }
