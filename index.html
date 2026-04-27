@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra PRO FINAL</title>
+<title>Psoas Ultra PRO MAX</title>
 
 <link rel="apple-touch-icon" href="/-psoas-app/images/icon.png">
 <link rel="manifest" href="/-psoas-app/manifest.json">
@@ -49,62 +49,41 @@ let current = 0;
 let timer = null;
 
 // =============================
-// PHASEN (FINAL CLEAN)
+// SOUND
+// =============================
+const beep = new Audio("https://actions.google.com/sounds/v1/beeps/beep_short.ogg");
+
+// =============================
+// VIBRATION
+// =============================
+function vibrate(ms=100){
+    if(navigator.vibrate){
+        navigator.vibrate(ms);
+    }
+}
+
+// =============================
+// PHASEN (gleich wie vorher)
 // =============================
 const phases = [
-
-/* =============================
-   PHASE 1 (ruhig – phase3.jpg)
-============================= */
 [
-{name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
-guide:["Rückenlage","5 Sekunden ein","7 Sekunden aus"]},
-
-{name:"Knie zur Brust links", img:"images/phase3.jpg", type:"time", time:45,
-guide:["Knie zur Brust ziehen","entspannen"]},
-
-{name:"Knie zur Brust rechts", img:"images/phase3.jpg", type:"time", time:45,
-guide:["Knie zur Brust ziehen","entspannen"]},
-
-{name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15,
-guide:["Becken kippen","langsam lösen"]},
-
-{name:"Hüftbeuger-Dehnung links", img:"images/phase3.jpg", type:"time", time:40,
-guide:["Halbkniestand","Becken kippen"]},
-
-{name:"Hüftbeuger-Dehnung rechts", img:"images/phase3.jpg", type:"time", time:40,
-guide:["Halbkniestand","Becken kippen"]},
-
-{name:"Glute Bridge", img:"images/phase3.jpg", type:"reps", reps:12,
-guide:["Hüfte anheben","Gesäß anspannen"]},
-
-{name:"Adduktor-Dehnung", img:"images/phase3.jpg", type:"time", time:45,
-guide:["breiter Stand","seitlich verlagern"]}
+{name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120, guide:["Rückenlage","5 ein / 7 aus"]},
+{name:"Knie zur Brust links", img:"images/phase3.jpg", type:"time", time:45, guide:["ziehen","entspannen"]},
+{name:"Knie zur Brust rechts", img:"images/phase3.jpg", type:"time", time:45, guide:["ziehen","entspannen"]},
+{name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15, guide:["kippen"]},
+{name:"Hüftbeuger-Dehnung links", img:"images/phase3.jpg", type:"time", time:40, guide:["Dehnung"]},
+{name:"Hüftbeuger-Dehnung rechts", img:"images/phase3.jpg", type:"time", time:40, guide:["Dehnung"]},
+{name:"Glute Bridge", img:"images/phase3.jpg", type:"reps", reps:12, guide:["heben"]},
+{name:"Adduktor-Dehnung", img:"images/phase3.jpg", type:"time", time:45, guide:["seitlich"]}
 ],
-
-/* =============================
-   PHASE 2 (dynamisch – phase2.jpg)
-============================= */
 [
-{name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60,
-guide:["Aktivierung","ruhig atmen"]},
-
-{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"alt", reps:10,
-guide:["Ausfallschritt","vor/zurück"]},
-
-{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"alt", reps:10,
-guide:["Hüfte anheben","Seiten wechseln"]},
-
-{name:"Dead Bug", img:"images/phase2.jpg", type:"alt", reps:12,
-guide:["Arm + Bein","abwechselnd"]},
-
-{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"alt", reps:10,
-guide:["seitlich treten","links/rechts"]},
-
-{name:"Adduktor & Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
-guide:["Dehnung","kleine Bewegungen"]}
+{name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60, guide:["Aktivierung"]},
+{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"alt", reps:10, guide:["vor/zurück"]},
+{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"alt", reps:10, guide:["heben"]},
+{name:"Dead Bug", img:"images/phase2.jpg", type:"alt", reps:12, guide:["abwechselnd"]},
+{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"alt", reps:10, guide:["seitlich"]},
+{name:"Adduktor & Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40, guide:["Dehnung"]}
 ]
-
 ];
 
 // =============================
@@ -124,6 +103,9 @@ function start(){
 
     let ex = phases[phaseIndex][current];
 
+    beep.play();
+    vibrate(200);
+
     speak(ex.name);
 
     setTimeout(()=> countdown(()=> run(ex)),800);
@@ -136,7 +118,7 @@ function countdown(cb){
 
     let cd = setInterval(()=>{
         speak(c);
-        document.getElementById("timer").innerText = c;
+        update(c);
         c--;
 
         if(c===0){
@@ -165,7 +147,10 @@ function runTime(ex){
         t--;
         update(t);
 
-        if(t<=5 && t>0) speak(t);
+        if(t<=5 && t>0){
+            speak(t);
+            vibrate(50);
+        }
 
         if(t<=0) next();
 
@@ -182,6 +167,7 @@ function runReps(ex){
         r--;
         update(r);
         speak(r);
+        vibrate(50);
 
         if(r<=0) next();
 
@@ -191,19 +177,25 @@ function runReps(ex){
 // =============================
 function runAlt(ex){
 
-    let r = ex.reps;
+    let reps = ex.reps;
     let side = "links";
 
     timer = setInterval(()=>{
 
-        r--;
-        update(r);
+        speak(side);
+        vibrate(80);
 
-        speak(side + " " + r);
+        update(reps);
 
         side = (side === "links") ? "rechts" : "links";
 
-        if(r<=0) next();
+        if(side === "links"){
+            reps--;
+        }
+
+        if(reps <= 0){
+            next();
+        }
 
     },2000);
 }
@@ -218,6 +210,9 @@ function next(){
 
     clearInterval(timer);
     timer=null;
+
+    beep.play();
+    vibrate(200);
 
     speak("Wechsel");
 
@@ -263,8 +258,7 @@ function load(){
 
     document.getElementById("guideText").innerHTML = html;
 
-    document.getElementById("timer").innerText =
-        ex.type==="time" ? ex.time : ex.reps;
+    update(ex.type==="time" ? ex.time : ex.reps);
 
     updatePhaseUI();
 }
