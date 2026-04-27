@@ -4,45 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra PRO FINAL</title>
+<title>Psoas Ultra PRO v25 ULTRA</title>
 
 <link rel="apple-touch-icon" href="/-psoas-app/images/icon.png">
 <link rel="manifest" href="/-psoas-app/manifest.json">
 
 <style>
+body { margin:0; font-family:Arial; background:#f2f2f2; color:black; text-align:center; transition:0.3s;}
+body.dark { background:#0b1a2f; color:white;}
 
-body {
-    margin:0;
-    font-family:Arial;
-    background:#f2f2f2;
-    color:black;
-    text-align:center;
-    transition:0.3s;
-}
+img { width:95%; height:40vh; object-fit:contain;}
+.timer { font-size:80px;}
 
-body.dark {
-    background:#0b1a2f;
-    color:white;
-}
-
-img {
-    width:95%;
-    height:40vh;
-    object-fit:contain;
-}
-
-.timer {
-    font-size:80px;
-}
-
-button {
-    padding:10px;
-    margin:5px;
-    border:none;
-    border-radius:10px;
-    color:white;
-}
-
+button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;}
 .start{background:green;}
 .pause{background:red;}
 .skip{background:orange;}
@@ -51,11 +25,7 @@ button {
 .phase{background:#999;}
 .phase.active{background:purple;}
 
-body.dark .mode {
-    background:white;
-    color:black;
-}
-
+body.dark .mode { background:white; color:black;}
 </style>
 </head>
 
@@ -85,36 +55,36 @@ let phaseIndex = 0;
 let current = 0;
 let timer = null;
 let firstStart = true;
-
-// 👉 verhindert doppelte Ansage
 let descriptionSpoken = false;
 
-const beep = new Audio("https://actions.google.com/sounds/v1/beeps/beep_short.ogg");
-
-function vibrate(ms=100){
-    if(navigator.vibrate) navigator.vibrate(ms);
+// =============================
+function speak(text, cb){
+    speechSynthesis.cancel();
+    let msg = new SpeechSynthesisUtterance(text);
+    msg.lang = "de-DE";
+    msg.onend = ()=> setTimeout(()=> cb && cb(),300);
+    speechSynthesis.speak(msg);
 }
 
 // =============================
 const phases = [
 
+/* =============================
+   PHASE 1
+============================= */
 [
 {name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
 speech:"Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Fünf Sekunden ein, sieben Sekunden aus."},
 
-{name:"Knie zur Brust links", img:"images/phase3.jpg", type:"time", time:45,
-speech:"Ein Knie zur Brust ziehen und halten. Anderes Bein entspannt lassen."},
-
-{name:"Knie zur Brust rechts", img:"images/phase3.jpg", type:"time", time:45,
+// 👉 ÜBUNG 2 = SIDE
+{name:"Knie zur Brust", img:"images/phase3.jpg", type:"side", reps:1, time:45,
 speech:"Ein Knie zur Brust ziehen und halten. Anderes Bein entspannt lassen."},
 
 {name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15,
 speech:"Unteren Rücken in den Boden drücken. Becken kippen und lösen."},
 
-{name:"Hüftbeuger-Dehnung links", img:"images/phase3.jpg", type:"time", time:40,
-speech:"Halbkniestand. Becken kippen. Gesäß anspannen."},
-
-{name:"Hüftbeuger-Dehnung rechts", img:"images/phase3.jpg", type:"time", time:40,
+// 👉 ÜBUNG 4 = SIDE
+{name:"Hüftbeuger-Dehnung", img:"images/phase3.jpg", type:"side", reps:1, time:40,
 speech:"Halbkniestand. Becken kippen. Gesäß anspannen."},
 
 {name:"Glute Bridge", img:"images/phase3.jpg", type:"reps", reps:12,
@@ -124,14 +94,17 @@ speech:"Hüfte nach oben drücken. Gesäß anspannen."},
 speech:"Breiter Stand. Gewicht zur Seite verlagern."}
 ],
 
+/* =============================
+   PHASE 2
+============================= */
 [
 {name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60,
 speech:"Rückenlage. Tief in den Bauch atmen. Spannung aufbauen."},
 
-{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"alt", reps:10,
+{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"side", reps:10,
 speech:"Ausfallschritt. Hüfte vor und zurück bewegen."},
 
-{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"alt", reps:10,
+{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"side", reps:10,
 speech:"Ein Bein anheben. Hüfte nach oben drücken."},
 
 {name:"Dead Bug", img:"images/phase2.jpg", type:"alt", reps:12,
@@ -147,179 +120,143 @@ speech:"Dehnung halten und kleine Bewegungen ausführen."}
 ];
 
 // =============================
-function speak(text, cb){
-    speechSynthesis.cancel();
-    let msg = new SpeechSynthesisUtterance(text);
-    msg.lang = "de-DE";
-    msg.onend = ()=> setTimeout(()=> cb && cb(),300);
-    speechSynthesis.speak(msg);
-}
-
-// =============================
 function countdown(cb){
-
-    let c = 3;
-
-    timer = setInterval(()=>{
-        if(c > 0){
-            speak(c);
-            update(c);
-            c--;
-        } else {
-            clearInterval(timer);
-            timer = null;
-            cb();
-        }
+    let c=3;
+    timer=setInterval(()=>{
+        if(c>0){ speak(c); update(c); c--; }
+        else{ clearInterval(timer); timer=null; cb(); }
     },1000);
 }
 
 // =============================
 function start(){
-
     if(timer) return;
 
-    let ex = phases[phaseIndex][current];
+    let ex=phases[phaseIndex][current];
 
-    beep.play();
-    vibrate(200);
-
-    // 👉 Beschreibung nur 1x
     if(!descriptionSpoken){
-        descriptionSpoken = true;
-
+        descriptionSpoken=true;
         speak(ex.speech, ()=>{
             if(firstStart){
-                firstStart = false;
+                firstStart=false;
                 countdown(()=> run(ex));
-            } else {
-                run(ex);
-            }
+            } else run(ex);
         });
-    } else {
-        run(ex);
-    }
+    } else run(ex);
 }
 
 // =============================
 function run(ex){
     if(ex.type==="time") runTime(ex);
     else if(ex.type==="reps") runReps(ex);
-    else runAlt(ex);
+    else if(ex.type==="alt") runAlt(ex);
+    else if(ex.type==="side") runSide(ex);
 }
 
 // =============================
 function runTime(ex){
-
-    let t = ex.time;
-
-    timer = setInterval(()=>{
-        t--;
-        update(t);
-
-        if(t<=5 && t>0) speak(t);
-
-        if(t<=0){
-            clearInterval(timer);
-            next();
-        }
-
+    let t=ex.time;
+    timer=setInterval(()=>{
+        t--; update(t);
+        if(t<=5&&t>0) speak(t);
+        if(t<=0){ clearInterval(timer); next(); }
     },1000);
 }
 
 // =============================
 function runReps(ex){
-
-    let r = ex.reps;
-
-    timer = setInterval(()=>{
-        r--;
-        update(r);
-        speak(r);
-
-        if(r<=0){
-            clearInterval(timer);
-            next();
-        }
-
+    let r=ex.reps;
+    timer=setInterval(()=>{
+        r--; update(r); speak(r);
+        if(r<=0){ clearInterval(timer); next(); }
     },2000);
 }
 
 // =============================
 function runAlt(ex){
-
-    let reps = ex.reps;
-    let side = "links";
-
+    let reps=ex.reps, side="links";
     function loop(){
-
         speak(side);
         update(reps);
-
-        side = (side === "links") ? "rechts" : "links";
-
-        if(side === "links") reps--;
-
-        if(reps <= 0){
-            next();
-            return;
-        }
-
-        setTimeout(()=>{
-            speak("Wechsel", loop);
-        },1500);
+        side=(side==="links")?"rechts":"links";
+        if(side==="links") reps--;
+        if(reps<=0){ next(); return; }
+        setTimeout(()=> speak("Wechsel",loop),1500);
     }
-
     loop();
 }
 
 // =============================
-// ⏸️ 15 SEKUNDEN PAUSE
+// 👉 SIDE = ERST RECHTS DANN LINKS
+// =============================
+function runSide(ex){
+
+    let phase="rechts";
+
+    function doSide(){
+
+        speak(phase);
+
+        let duration = ex.time || (ex.reps * 2);
+
+        let t = duration;
+
+        let interval = setInterval(()=>{
+
+            t--;
+            update(t);
+
+            if(t<=0){
+                clearInterval(interval);
+
+                if(phase==="rechts"){
+                    speak("Wechsel", ()=>{
+                        phase="links";
+                        doSide();
+                    });
+                } else {
+                    next();
+                }
+            }
+
+        },1000);
+    }
+
+    doSide();
+}
+
 // =============================
 function rest(){
+    let t=15;
+    let nextEx=phases[phaseIndex][current];
+    descriptionSpoken=false;
 
-    let t = 15;
-    let nextEx = phases[phaseIndex][current];
+    speak("Pause. Nächste Übung: "+nextEx.name, ()=> speak(nextEx.speech));
 
-    descriptionSpoken = false;
-
-    speak("Pause. Nächste Übung: " + nextEx.name, ()=>{
-        speak(nextEx.speech);
-    });
-
-    timer = setInterval(()=>{
-
-        t--;
-        update(t);
-
-        if(t<=5 && t>0) speak(t);
-
+    timer=setInterval(()=>{
+        t--; update(t);
+        if(t<=5&&t>0) speak(t);
         if(t<=0){
             clearInterval(timer);
-            timer = null;
+            timer=null;
             run(nextEx);
         }
-
     },1000);
 }
 
 // =============================
 function next(){
-
     clearInterval(timer);
-    timer = null;
-
-    beep.play();
-    vibrate(200);
+    timer=null;
 
     speak("Übung beendet", ()=>{
-
         current++;
 
-        if(current >= phases[phaseIndex].length){
+        if(current>=phases[phaseIndex].length){
             alert("Training fertig 💪");
-            current = 0;
-            firstStart = true;
-            descriptionSpoken = false;
+            current=0;
+            firstStart=true;
+            descriptionSpoken=false;
             load();
             return;
         }
@@ -338,10 +275,10 @@ function pause(){
 
 // =============================
 function setPhase(p){
-    phaseIndex = p-1;
-    current = 0;
-    firstStart = true;
-    descriptionSpoken = false;
+    phaseIndex=p-1;
+    current=0;
+    firstStart=true;
+    descriptionSpoken=false;
     load();
 }
 
@@ -352,30 +289,29 @@ function toggleMode(){
 
 // =============================
 function update(val){
-    document.getElementById("timer").innerText = val;
+    document.getElementById("timer").innerText=val;
 }
 
 // =============================
 function load(){
 
-    let ex = phases[phaseIndex][current];
+    let ex=phases[phaseIndex][current];
 
     document.getElementById("phaseTitle").innerText =
-        "Phase " + (phaseIndex+1);
+        "Phase "+(phaseIndex+1);
 
     document.getElementById("exerciseTitle").innerText = ex.name;
 
     document.getElementById("exerciseImage").src = ex.img;
 
-    update(ex.type==="time" ? ex.time : ex.reps);
+    update(ex.time || ex.reps);
 
-    document.getElementById("p1").classList.toggle("active", phaseIndex===0);
-    document.getElementById("p2").classList.toggle("active", phaseIndex===1);
+    document.getElementById("p1").classList.toggle("active",phaseIndex===0);
+    document.getElementById("p2").classList.toggle("active",phaseIndex===1);
 }
 
 load();
 
 </script>
-
 </body>
 </html>
