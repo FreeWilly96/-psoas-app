@@ -121,9 +121,8 @@ async function start(){
 
     let ex = phases[phaseIndex][current];
 
-    await speak(ex.name);
-    await speak(ex.speech);
-
+    await speak(ex.name + ". " + ex.subtitle);
+    
     await countdown();
     run(ex);
 }
@@ -312,16 +311,13 @@ function load(){
     document.getElementById("exerciseTitle").innerText=ex.name;
     document.getElementById("exerciseImage").src=ex.img;
 
-    let html="<ul>";
-    ex.speech.split(".").forEach(t=>{
-        if(t.trim()!==""){
-            html+="<li>"+t.trim()+"</li>";
-        }
-    });
-    html+="</ul>";
+    let html = "<ul>";
+ex.guide.forEach(g=>{
+    html += "<li>" + g + "</li>";
+});
+html += "</ul>";
 
-    document.getElementById("guide").innerHTML=html;
-
+document.getElementById("guide").innerHTML = html;
     update(ex.time||ex.reps);
     updateButtons();
 }
@@ -359,51 +355,90 @@ const phases = [
 [
 {
 name:"Bauchatmung",
+subtitle:"Nervensystem beruhigen",
 img:"images/phase3.jpg",
 type:"time",
 time:120,
-speech:"Rückenlage. Füße aufgestellt. Eine Hand auf dem Bauch, eine auf der Brust. Langsam tief in den Bauch einatmen, die Brust bleibt ruhig. Fünf Sekunden einatmen und sieben Sekunden ausatmen."
+guide:[
+"Rückenlage, Füße aufgestellt",
+"Eine Hand auf Bauch, eine auf Brust",
+"Langsam in den Bauch atmen",
+"5 Sekunden einatmen, 7 Sekunden ausatmen"
+]
 },
 
 {
 name:"Knie zur Brust",
+subtitle:"Psoas Entlastung",
 img:"images/phase3.jpg",
 type:"side",
 time:45,
-speech:"Rückenlage. Ein Knie zur Brust ziehen und mit den Händen halten. Das andere Bein bleibt gestreckt und entspannt. Tief weiteratmen und die Spannung lösen."
+guide:[
+"Rückenlage",
+"Ein Knie zur Brust ziehen und mit Händen halten",
+"Anderes Bein bleibt gestreckt und locker",
+"Tief weiteratmen und entspannen"
+]
 },
 
 {
 name:"Mini-Becken-Kippung",
+subtitle:"Kontrolle und Entlastung",
 img:"images/phase3.jpg",
 type:"reps",
 reps:15,
 rest:3,
-speech:"Rückenlage. Füße aufgestellt. Den unteren Rücken leicht in den Boden drücken indem das Becken gekippt wird. Spannung kurz halten und wieder lösen. Kleine ruhige Bewegung."
+guide:[
+"Rückenlage, Füße aufgestellt",
+"Unterer Rücken leicht in den Boden drücken",
+"Becken kippt nach hinten",
+"Spannung kurz halten und wieder lösen",
+"Kleine ruhige Bewegung"
+]
 },
 
 {
 name:"Hüftbeuger Dehnung",
+subtitle:"Psoas und Hüftbeuger dehnen",
 img:"images/phase3.jpg",
 type:"side",
 time:40,
-speech:"Halbkniestand. Gesäß der hinteren Seite anspannen. Becken leicht nach hinten kippen und Bauch anspannen. Oberkörper bleibt aufrecht ohne Hohlkreuz. Dehnung vorne in der Hüfte spüren."
+guide:[
+"Halbkniestand",
+"Gesäß der hinteren Seite anspannen",
+"Becken leicht nach hinten kippen",
+"Oberkörper aufrecht, kein Hohlkreuz",
+"Dehnung vorne in der Hüfte spüren"
+]
 },
 
 {
 name:"Glute Bridge",
+subtitle:"Gesäßmuskulatur stärken",
 img:"images/phase3.jpg",
 type:"holdReps",
 reps:15,
-speech:"Rückenlage. Füße hüftbreit aufstellen. Hüfte nach oben drücken und Gesäß fest anspannen. Oben die Position stabil halten und langsam wieder absenken."
+guide:[
+"Rückenlage, Füße hüftbreit aufstellen",
+"Hüfte nach oben drücken, Gesäß anspannen",
+"Oben 5 Sekunden halten",
+"Langsam wieder absenken"
+]
 },
 
 {
 name:"Adduktor Dehnung",
+subtitle:"Leisten und Innenschenkel dehnen",
 img:"images/phase3.jpg",
 type:"time",
 time:45,
-speech:"Breiter Stand. Gewicht langsam zu einer Seite verlagern. Die andere Seite bleibt gestreckt. Rücken gerade halten und die Dehnung in der Innenseite spüren."
+guide:[
+"Breiten Stand einnehmen",
+"Gewicht zur Seite verlagern",
+"Andere Seite bleibt gestreckt",
+"Rücken gerade halten",
+"Dehnung innen spüren"
+]
 }
 ],
 
@@ -411,51 +446,86 @@ speech:"Breiter Stand. Gewicht langsam zu einer Seite verlagern. Die andere Seit
 [
 {
 name:"Bauchatmung Aktivierung",
+subtitle:"Rumpf aktivieren",
 img:"images/phase2.jpg",
 type:"time",
 time:60,
-speech:"Ruhig und kontrolliert atmen. Körperspannung langsam aufbauen und den Rumpf aktivieren."
+guide:[
+"Ruhig atmen",
+"Spannung im Rumpf aufbauen",
+"Kontrollierte Atmung"
+]
 },
 
 {
 name:"Dynamische Hüftöffnung",
+subtitle:"Beweglichkeit und Kontrolle",
 img:"images/phase2.jpg",
 type:"sideHoldReps",
 reps:10,
-speech:"Ausfallschritt nach vorne. Hüfte kontrolliert nach vorne und zurück bewegen. Spannung im Hüftbereich halten und Bewegung ruhig ausführen."
+guide:[
+"Ausfallschritt nach vorne",
+"Hüfte vor und zurück bewegen",
+"Spannung halten",
+"Bewegung kontrolliert ausführen"
+]
 },
 
 {
 name:"Glute Bridge einbeinig",
+subtitle:"Stabilität und Kraft",
 img:"images/phase2.jpg",
 type:"sideHoldReps",
 reps:10,
-speech:"Ein Bein anheben. Hüfte nach oben drücken und stabil halten. Gesäß aktiv anspannen und die Position kontrolliert halten."
+guide:[
+"Ein Bein anheben",
+"Hüfte nach oben drücken",
+"Spannung im Gesäß halten",
+"Stabil bleiben"
+]
 },
 
 {
 name:"Dead Bug",
+subtitle:"Rumpfstabilität",
 img:"images/phase2.jpg",
 type:"reps",
 reps:12,
 rest:3,
-speech:"Rückenlage. Arme und Beine anheben. Gegengleich Arm und Bein absenken. Rumpf bleibt stabil und der untere Rücken am Boden."
+guide:[
+"Rückenlage",
+"Arme und Beine anheben",
+"Gegengleich bewegen",
+"Rumpf stabil halten",
+"Unterer Rücken bleibt am Boden"
+]
 },
 
 {
 name:"Seitliche Ausfallschritte",
+subtitle:"Beweglichkeit Hüfte",
 img:"images/phase2.jpg",
 type:"sideHoldReps",
 reps:10,
-speech:"Seitlich ausweichen. Hüfte nach hinten schieben und Gewicht verlagern. Spannung halten und kontrolliert zurückkommen."
+guide:[
+"Seitlich ausweichen",
+"Hüfte nach hinten schieben",
+"Gewicht verlagern",
+"Spannung halten"
+]
 },
 
 {
 name:"Adduktor Hüfte Kombi",
+subtitle:"Mobilität und Dehnung",
 img:"images/phase2.jpg",
 type:"time",
 time:40,
-speech:"Dehnung der Innenseite halten und kleine kontrollierte Bewegungen ausführen. Spannung ruhig halten."
+guide:[
+"Dehnung halten",
+"Kleine Bewegungen ausführen",
+"Spannung ruhig halten"
+]
 }
 ]
 
