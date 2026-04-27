@@ -122,6 +122,7 @@ async function start(){
     let ex = phases[phaseIndex][current];
 
     await speak(ex.name + ". " + ex.subtitle);
+    await sleep(500); // smoother Übergang
     
     await countdown();
     run(ex);
@@ -222,37 +223,33 @@ async function runSideHoldReps(ex){
 }
 
 // =============================
-function runSide(ex){
+async function runSide(ex){
 
     let sides=["rechts","links"];
-    let i=0;
 
-    function go(){
+    for(let side of sides){
 
-        if(i>=sides.length){
-            next();
-            return;
-        }
-
-        showSide(sides[i]);
-        speak("Seite " + sides[i]);
+        showSide(side);
+        await speak("Seite " + side);
 
         let t=ex.time;
 
-        timer=setInterval(()=>{
-            t--;
-            update(t);
+        await new Promise(resolve=>{
+            timer=setInterval(()=>{
+                t--;
+                update(t);
 
-            if(t<=0){
-                clearInterval(timer);
-                i++;
-                setTimeout(go,1000);
-            }
+                if(t<=0){
+                    clearInterval(timer);
+                    resolve();
+                }
+            },1000);
+        });
 
-        },1000);
+        await sleep(1000);
     }
 
-    go();
+    next();
 }
 
 // =============================
@@ -271,8 +268,7 @@ async function next(){
     let ex=phases[phaseIndex][current];
 
     await speak("Nächste Übung");
-    await speak(ex.name);
-    await speak(ex.speech);
+    await speak(ex.name + ". " + ex.subtitle);
 
     await rest();
 
