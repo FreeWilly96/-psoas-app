@@ -355,48 +355,111 @@ function updateButtons(){
 // 🔥 STABILE PHASEN
 const phases = [
 
+/* ================= PHASE 1 ================= */
 [
-{name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
-speech:"Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Tief in den Bauch einatmen und langsam ausatmen."},
+{
+name:"Bauchatmung",
+img:"images/phase3.jpg",
+type:"time",
+time:120,
+speech:"Rückenlage. Füße aufgestellt. Eine Hand auf dem Bauch, eine auf der Brust. Langsam tief in den Bauch einatmen, die Brust bleibt ruhig. Fünf Sekunden einatmen und sieben Sekunden ausatmen."
+},
 
-{name:"Knie zur Brust", img:"images/phase3.jpg", type:"side", time:45,
-speech:"Ein Knie zur Brust ziehen. Andere Seite entspannt lassen. Ruhig atmen."},
+{
+name:"Knie zur Brust",
+img:"images/phase3.jpg",
+type:"side",
+time:45,
+speech:"Rückenlage. Ein Knie zur Brust ziehen und mit den Händen halten. Das andere Bein bleibt gestreckt und entspannt. Tief weiteratmen und die Spannung lösen."
+},
 
-{name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15, rest:3,
-speech:"Becken nach hinten kippen. unteren Rücken in den Boden drücken. langsam lösen."},
+{
+name:"Mini-Becken-Kippung",
+img:"images/phase3.jpg",
+type:"reps",
+reps:15,
+rest:3,
+speech:"Rückenlage. Füße aufgestellt. Den unteren Rücken leicht in den Boden drücken indem das Becken gekippt wird. Spannung kurz halten und wieder lösen. Kleine ruhige Bewegung."
+},
 
-{name:"Hüftbeuger Dehnung", img:"images/phase3.jpg", type:"side", time:40,
-speech:"Halbkniestand. Becken nach vorne kippen. Dehnung vorne spüren."},
+{
+name:"Hüftbeuger Dehnung",
+img:"images/phase3.jpg",
+type:"side",
+time:40,
+speech:"Halbkniestand. Gesäß der hinteren Seite anspannen. Becken leicht nach hinten kippen und Bauch anspannen. Oberkörper bleibt aufrecht ohne Hohlkreuz. Dehnung vorne in der Hüfte spüren."
+},
 
-{name:"Glute Bridge", img:"images/phase3.jpg", type:"holdReps", reps:15,
-speech:"Hüfte anheben. Gesäß anspannen. Spannung oben halten und langsam absenken."},
+{
+name:"Glute Bridge",
+img:"images/phase3.jpg",
+type:"holdReps",
+reps:15,
+speech:"Rückenlage. Füße hüftbreit aufstellen. Hüfte nach oben drücken und Gesäß fest anspannen. Oben die Position stabil halten und langsam wieder absenken."
+},
 
-{name:"Adduktor Dehnung", img:"images/phase3.jpg", type:"time", time:45,
-speech:"Breiter Stand. Gewicht zur Seite verlagern. Dehnung innen spüren."}
+{
+name:"Adduktor Dehnung",
+img:"images/phase3.jpg",
+type:"time",
+time:45,
+speech:"Breiter Stand. Gewicht langsam zu einer Seite verlagern. Die andere Seite bleibt gestreckt. Rücken gerade halten und die Dehnung in der Innenseite spüren."
+}
 ],
 
+/* ================= PHASE 2 ================= */
 [
-{name:"Bauchatmung Aktivierung", img:"images/phase2.jpg", type:"time", time:60,
-speech:"Ruhig atmen und Körperspannung aufbauen."},
+{
+name:"Bauchatmung Aktivierung",
+img:"images/phase2.jpg",
+type:"time",
+time:60,
+speech:"Ruhig und kontrolliert atmen. Körperspannung langsam aufbauen und den Rumpf aktivieren."
+},
 
-{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"sideHoldReps", reps:10,
-speech:"Ausfallschritt. Hüfte vor und zurück bewegen."},
+{
+name:"Dynamische Hüftöffnung",
+img:"images/phase2.jpg",
+type:"sideHoldReps",
+reps:10,
+speech:"Ausfallschritt nach vorne. Hüfte kontrolliert nach vorne und zurück bewegen. Spannung im Hüftbereich halten und Bewegung ruhig ausführen."
+},
 
-{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"sideHoldReps", reps:10,
-speech:"Ein Bein oben halten. Hüfte anheben und stabilisieren."},
+{
+name:"Glute Bridge einbeinig",
+img:"images/phase2.jpg",
+type:"sideHoldReps",
+reps:10,
+speech:"Ein Bein anheben. Hüfte nach oben drücken und stabil halten. Gesäß aktiv anspannen und die Position kontrolliert halten."
+},
 
-{name:"Dead Bug", img:"images/phase2.jpg", type:"reps", reps:12, rest:3,
-speech:"Arm und Bein gegengleich bewegen. Rumpf stabil halten."},
+{
+name:"Dead Bug",
+img:"images/phase2.jpg",
+type:"reps",
+reps:12,
+rest:3,
+speech:"Rückenlage. Arme und Beine anheben. Gegengleich Arm und Bein absenken. Rumpf bleibt stabil und der untere Rücken am Boden."
+},
 
-{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"sideHoldReps", reps:10,
-speech:"Seitlich ausweichen. Hüfte nach hinten schieben."},
+{
+name:"Seitliche Ausfallschritte",
+img:"images/phase2.jpg",
+type:"sideHoldReps",
+reps:10,
+speech:"Seitlich ausweichen. Hüfte nach hinten schieben und Gewicht verlagern. Spannung halten und kontrolliert zurückkommen."
+},
 
-{name:"Adduktor Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
-speech:"Dehnung halten und leicht bewegen."}
+{
+name:"Adduktor Hüfte Kombi",
+img:"images/phase2.jpg",
+type:"time",
+time:40,
+speech:"Dehnung der Innenseite halten und kleine kontrollierte Bewegungen ausführen. Spannung ruhig halten."
+}
 ]
 
 ];
-
 // =============================
 load();
 
