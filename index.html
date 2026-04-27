@@ -6,7 +6,7 @@
 
 <title>Psoas Ultra PRO FINAL</title>
 
-<!-- APP -->
+<!-- APP ICON -->
 <link rel="apple-touch-icon" href="/-psoas-app/images/icon.png">
 <link rel="manifest" href="/-psoas-app/manifest.json">
 
@@ -14,9 +14,21 @@
 body { margin:0; font-family:Arial; background:#f2f2f2; text-align:center; }
 img { width:95%; height:40vh; object-fit:contain; }
 .timer { font-size:80px; }
-button { padding:10px; margin:5px; border:none; border-radius:10px; color:white; }
-.start{background:green;} .pause{background:red;} .skip{background:orange;}
-.phase{background:#999;} .phase.active{background:purple;}
+
+button {
+    padding:10px;
+    margin:5px;
+    border:none;
+    border-radius:10px;
+    color:white;
+}
+
+.start{background:green;}
+.pause{background:red;}
+.skip{background:orange;}
+
+.phase{background:#999;}
+.phase.active{background:purple;}
 </style>
 </head>
 
@@ -34,6 +46,7 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 <button class="skip" onclick="next()">Skip</button>
 
 <br>
+
 <button id="p1" class="phase" onclick="setPhase(1)">Phase 1</button>
 <button id="p2" class="phase" onclick="setPhase(2)">Phase 2</button>
 
@@ -53,11 +66,10 @@ function vibrate(ms=100){
 }
 
 // =============================
-// ÜBUNGEN (FINAL)
+// ÜBUNGEN
 // =============================
 const phases = [
 
-/* PHASE 1 */
 [
 {name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
 speech:"Rückenlage. Füße aufgestellt. Eine Hand auf Bauch, eine auf Brust. Fünf Sekunden ein, sieben Sekunden aus."},
@@ -84,7 +96,6 @@ speech:"Hüfte nach oben drücken. Gesäß anspannen."},
 speech:"Breiter Stand. Gewicht zur Seite verlagern."}
 ],
 
-/* PHASE 2 */
 [
 {name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60,
 speech:"Ruhig atmen und Spannung aufbauen."},
@@ -108,32 +119,37 @@ speech:"Dehnung halten und kleine Bewegungen machen."}
 ];
 
 // =============================
-// SPEAK
+// SPEAK FIX
 // =============================
-function speak(text, callback){
+function speak(text, cb){
     speechSynthesis.cancel();
     let msg = new SpeechSynthesisUtterance(text);
     msg.lang = "de-DE";
-    msg.onend = () => callback && callback();
+    msg.onend = ()=> setTimeout(()=> cb && cb(),300);
     speechSynthesis.speak(msg);
 }
 
 // =============================
 function countdown(cb){
     let c = 3;
-    let cd = setInterval(()=>{
+
+    timer = setInterval(()=>{
         speak(c);
         update(c);
         c--;
-        if(c===0){
-            clearInterval(cd);
+
+        if(c < 0){
+            clearInterval(timer);
+            timer = null;
             cb();
         }
+
     },1000);
 }
 
 // =============================
 function start(){
+
     if(timer) return;
 
     let ex = phases[phaseIndex][current];
@@ -142,9 +158,7 @@ function start(){
     vibrate(200);
 
     speak(ex.speech, ()=>{
-        setTimeout(()=>{
-            countdown(()=> run(ex));
-        },800);
+        countdown(()=> run(ex));
     });
 }
 
@@ -157,23 +171,38 @@ function run(ex){
 
 // =============================
 function runTime(ex){
+
     let t = ex.time;
+
     timer = setInterval(()=>{
         t--;
         update(t);
+
         if(t<=5 && t>0) speak(t);
-        if(t<=0) next();
+
+        if(t<=0){
+            clearInterval(timer);
+            next();
+        }
+
     },1000);
 }
 
 // =============================
 function runReps(ex){
+
     let r = ex.reps;
+
     timer = setInterval(()=>{
         r--;
         update(r);
         speak(r);
-        if(r<=0) next();
+
+        if(r<=0){
+            clearInterval(timer);
+            next();
+        }
+
     },2000);
 }
 
@@ -183,28 +212,28 @@ function runAlt(ex){
     let reps = ex.reps;
     let side = "links";
 
-    function nextSide(){
-        speak("Wechsel");
-        setTimeout(()=> countdown(runSide),500);
-    }
+    function loop(){
 
-    function runSide(){
         speak(side);
         update(reps);
 
         side = (side === "links") ? "rechts" : "links";
 
-        if(side==="links") reps--;
+        if(side === "links") reps--;
 
-        if(reps<=0){
+        if(reps <= 0){
             next();
             return;
         }
 
-        timer = setTimeout(nextSide,2000);
+        setTimeout(()=>{
+            speak("Wechsel", ()=>{
+                countdown(loop);
+            });
+        },1500);
     }
 
-    runSide();
+    loop();
 }
 
 // =============================
@@ -222,6 +251,7 @@ function rest(cb){
 
         if(t<=0){
             clearInterval(timer);
+            timer = null;
             cb();
         }
 
@@ -237,20 +267,22 @@ function next(){
     beep.play();
     vibrate(200);
 
-    speak("Übung beendet");
+    speak("Übung beendet", ()=>{
 
-    current++;
+        current++;
 
-    if(current >= phases[phaseIndex].length){
-        alert("Training fertig 💪");
-        current = 0;
-        load();
-        return;
-    }
+        if(current >= phases[phaseIndex].length){
+            alert("Training fertig 💪");
+            current = 0;
+            load();
+            return;
+        }
 
-    rest(()=>{
-        load();
-        start();
+        rest(()=>{
+            load();
+            start();
+        });
+
     });
 }
 
