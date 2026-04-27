@@ -9,9 +9,6 @@
 <link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
 <link rel="manifest" href="manifest.json">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Psoas Ultra">
-
 <style>
 body { margin:0; font-family:Arial; text-align:center; background:#f2f2f2; }
 img { width:95%; height:40vh; object-fit:contain; }
@@ -39,72 +36,57 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 <button class="skip" onclick="next()">Skip</button>
 
 <br>
-<button id="btnP1" class="phase" onclick="setPhase(1)">Phase 1</button>
-<button id="btnP2" class="phase" onclick="setPhase(2)">Phase 2</button>
+<button onclick="setPhase(1)">Phase 1</button>
+<button onclick="setPhase(2)">Phase 2</button>
 
 <script>
 
+// =============================
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
-let spoken = false;
+let running = false;
 
 // =============================
-function speak(text, cb){
-    speechSynthesis.cancel();
-    let msg = new SpeechSynthesisUtterance(text);
-    msg.lang="de-DE";
-    msg.rate=0.95;
-    msg.onend = ()=> cb && cb();
-    speechSynthesis.speak(msg);
+function speak(text){
+    return new Promise(res=>{
+        speechSynthesis.cancel();
+        let m = new SpeechSynthesisUtterance(text);
+        m.lang="de-DE";
+        m.onend=res;
+        speechSynthesis.speak(m);
+    });
 }
 
 // =============================
-// START → jetzt überall gleich (FIX)
-function start(){
-
-    if(timer) return;
+async function start(){
+    if(running) return;
+    running=true;
 
     let ex = phases[phaseIndex][current];
 
-    if(!spoken){
-        spoken = true;
+    await speak(ex.name);
+    await speak(ex.speech);
+    await countdown();
 
-        speak(ex.name, ()=>{
-            speak(ex.speech, ()=>{
-                countdown(()=> run(ex));
-            });
-        });
-
-    } else {
-        countdown(()=> run(ex));
-    }
+    run(ex);
 }
 
 // =============================
-function countdown(cb){
-    let c = 3;
-
-    function step(){
-        if(c===0){ cb(); return; }
-
-        speak(c.toString());
-        update(c);
-        c--;
-
-        setTimeout(step,1000);
+async function countdown(){
+    for(let i=3;i>0;i--){
+        update(i);
+        await speak(i.toString());
     }
-
-    step();
 }
 
 // =============================
 function run(ex){
-
     if(ex.type==="time") runTime(ex);
-    else if(ex.type==="reps") runReps(ex);
-    else if(ex.type==="side") runSide(ex);
-    else if(ex.type==="sideReps") runSideReps(ex);
+    if(ex.type==="reps") runReps(ex);
+    if(ex.type==="side") runSide(ex);
+    if(ex.type==="holdReps") runHoldReps(ex);
+    if(ex.type==="sideHoldReps") runSideHoldReps(ex);
 }
 
 // =============================
@@ -115,55 +97,75 @@ function runTime(ex){
         t--;
         update(t);
 
-        if(t<=5 && t>0) speak(t);
-
+        if(t<=5 && t>0) speak(t.toString());
         if(t<=0) next();
+
     },1000);
 }
 
 // =============================
 function runReps(ex){
-
     let reps = ex.reps;
 
-    function doRep(){
-
+    function loop(){
         if(reps<=0){ next(); return; }
 
         speak(reps.toString());
         update(reps);
 
         reps--;
-        setTimeout(doRep, ex.rest * 1000);
+        setTimeout(loop, ex.rest*1000);
     }
 
-    doRep();
+    loop();
 }
 
 // =============================
-// 🔥 WICHTIG: Übung 2 Phase 2 korrekt
-function runSideReps(ex){
+// 🔥 HOLD REPS (ohne Seite)
+function runHoldReps(ex){
 
-    let sides = ["rechts","links"];
-    let sideIndex = 0;
+    let reps = ex.reps;
 
-    function doSide(){
+    function loop(){
 
-        if(sideIndex >= sides.length){
-            next();
-            return;
+        if(reps<=0){ next(); return; }
+
+        if(reps === ex.reps){
+            speak("Spannung halten für fünf Sekunden");
+        } else {
+            speak(reps.toString());
         }
 
-        showSide(sides[sideIndex]);
-        speak("Seite " + sides[sideIndex]);
+        update(reps);
+        reps--;
+
+        setTimeout(loop, 5000);
+    }
+
+    loop();
+}
+
+// =============================
+// 🔥 HOLD REPS MIT SEITEN
+function runSideHoldReps(ex){
+
+    let sides = ["rechts","links"];
+    let s = 0;
+
+    function nextSide(){
+
+        if(s>=sides.length){ next(); return; }
+
+        speak("Seite " + sides[s]);
+        showSide(sides[s]);
 
         let reps = ex.reps;
 
-        function doRep(){
+        function loop(){
 
-            if(reps <= 0){
-                sideIndex++;
-                doSide();
+            if(reps<=0){
+                s++;
+                nextSide();
                 return;
             }
 
@@ -176,56 +178,50 @@ function runSideReps(ex){
             update(reps);
             reps--;
 
-            setTimeout(doRep, 5000);
+            setTimeout(loop, 5000);
         }
 
-        doRep();
+        loop();
     }
 
-    doSide();
+    nextSide();
 }
 
 // =============================
 function runSide(ex){
 
-    let sides = ["rechts","links"];
-    let i = 0;
+    let sides=["rechts","links"];
+    let i=0;
 
-    function doSide(){
+    function go(){
 
-        if(i>=sides.length){
-            next();
-            return;
-        }
+        if(i>=sides.length){ next(); return; }
 
+        speak("Seite "+sides[i]);
         showSide(sides[i]);
-        speak("Seite " + sides[i]);
 
-        let t = ex.time;
+        let t=ex.time;
 
-        timer = setInterval(()=>{
-
+        timer=setInterval(()=>{
             t--;
             update(t);
 
             if(t<=0){
                 clearInterval(timer);
                 i++;
-                doSide();
+                go();
             }
-
         },1000);
     }
 
-    doSide();
+    go();
 }
 
 // =============================
-function next(){
+async function next(){
 
     clearInterval(timer);
-    timer=null;
-    spoken=false;
+    running=false;
 
     current++;
 
@@ -236,112 +232,102 @@ function next(){
 
     let ex = phases[phaseIndex][current];
 
-    speak("Nächste Übung", ()=>{
-        speak(ex.name, ()=>{
-            speak(ex.speech);
-        });
-    });
+    await speak("Nächste Übung");
+    await speak(ex.name);
+    await speak(ex.speech);
 
-    restCountdown(()=>{
-        load();
-        start();
-    });
+    await rest();
+
+    load();
+    start();
 }
 
 // =============================
-function restCountdown(cb){
-
-    let t = 15;
-
-    function step(){
-        if(t===0){ cb(); return; }
-
-        update(t);
-        t--;
-        setTimeout(step,1000);
+async function rest(){
+    for(let i=15;i>0;i--){
+        update(i);
+        await new Promise(r=>setTimeout(r,1000));
     }
-
-    step();
 }
 
 // =============================
 function pause(){
     clearInterval(timer);
-    timer=null;
+    running=false;
 }
 
 // =============================
 function setPhase(p){
-    phaseIndex = p-1;
-    current = 0;
-    spoken=false;
+    phaseIndex=p-1;
+    current=0;
+    running=false;
     load();
 }
 
 // =============================
 function load(){
 
-    let ex = phases[phaseIndex][current];
+    let ex=phases[phaseIndex][current];
 
-    document.getElementById("phaseTitle").innerText = "Phase " + (phaseIndex+1);
-    document.getElementById("exerciseTitle").innerText = ex.name;
-    document.getElementById("exerciseImage").src = ex.img;
-    document.getElementById("guide").innerText = ex.speech;
+    document.getElementById("phaseTitle").innerText="Phase "+(phaseIndex+1);
+    document.getElementById("exerciseTitle").innerText=ex.name;
+    document.getElementById("exerciseImage").src=ex.img;
+    document.getElementById("guide").innerText=ex.speech;
 
-    update(ex.time || ex.reps);
+    update(ex.time||ex.reps);
 }
 
 function update(v){
-    document.getElementById("timer").innerText = v;
+    document.getElementById("timer").innerText=v;
 }
 
 function showSide(s){
-    document.getElementById("side").innerText = s;
+    document.getElementById("side").innerText=s;
 }
 
 // =============================
-// PHASEN MIT AUSFÜHRLICHEN TEXTEN
-// =============================
 const phases = [
 
+/* PHASE 1 */
 [
 {name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
-speech:"Lege dich auf den Rücken. Stelle die Füße auf. Lege eine Hand auf den Bauch und eine auf die Brust. Atme tief durch die Nase in den Bauch ein, etwa fünf Sekunden lang. Der Bauch hebt sich. Atme langsam durch den Mund aus, etwa sieben Sekunden. Die Brust bleibt möglichst ruhig."},
+speech:"Ruhige Bauchatmung im Liegen."},
 
 {name:"Knie zur Brust", img:"images/phase3.jpg", type:"side", time:45,
-speech:"Ziehe ein Knie langsam zur Brust. Halte das Bein mit den Händen fest. Das andere Bein bleibt entspannt am Boden liegen. Atme ruhig weiter und ziehe nicht mit Kraft."},
+speech:"Knie zur Brust ziehen."},
 
 {name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15, rest:3,
-speech:"Kippe dein Becken leicht nach hinten. Drücke den unteren Rücken sanft in den Boden. Halte kurz und löse wieder. Die Bewegung ist klein und kontrolliert."},
+speech:"Becken kippen."},
 
 {name:"Hüftbeuger Dehnung", img:"images/phase3.jpg", type:"side", time:40,
-speech:"Gehe in den Halbkniestand. Spanne dein Gesäß an und kippe das Becken nach vorne. Halte den Oberkörper aufrecht. Du solltest eine Dehnung vorne in der Hüfte spüren."},
+speech:"Dehnung Hüftbeuger."},
 
-{name:"Glute Bridge", img:"images/phase3.jpg", type:"reps", reps:12, rest:3,
-speech:"Drücke deine Hüfte nach oben. Spanne dein Gesäß fest an. Halte kurz oben und senke dich langsam wieder ab. Der Rücken bleibt stabil."},
+{name:"Glute Bridge", img:"images/phase3.jpg", type:"holdReps", reps:15,
+speech:"Hüfte anheben und Spannung halten."},
 
 {name:"Adduktor Dehnung", img:"images/phase3.jpg", type:"time", time:45,
-speech:"Gehe in einen breiten Stand. Verlagere dein Gewicht zur Seite. Halte die Position und spüre die Dehnung im inneren Oberschenkel."}
+speech:"Dehnung innen Oberschenkel."}
 ],
 
+/* PHASE 2 */
 [
 {name:"Bauchatmung Aktivierung", img:"images/phase2.jpg", type:"time", time:60,
-speech:"Atme ruhig ein und aus. Baue Körperspannung auf. Spüre deinen Rumpf und bereite dich auf die Bewegung vor."},
+speech:"Aktivierung durch Atmung."},
 
-{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"sideReps", reps:10,
-speech:"Gehe in einen Ausfallschritt. Bewege deine Hüfte kontrolliert nach vorne und wieder zurück. Halte den Oberkörper stabil und arbeite sauber aus der Hüfte."},
+{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"sideHoldReps", reps:10,
+speech:"Hüfte vor und zurück bewegen."},
 
-{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"reps", reps:10, rest:3,
-speech:"Hebe ein Bein an. Drücke die Hüfte nach oben. Halte die Spannung im Gesäß und senke dich langsam wieder ab."},
+{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"sideHoldReps", reps:10,
+speech:"Einbeinig anheben und halten."},
 
 {name:"Dead Bug", img:"images/phase2.jpg", type:"reps", reps:12, rest:3,
-speech:"Bewege Arm und gegenüberliegendes Bein gleichzeitig nach unten. Halte deinen unteren Rücken stabil am Boden."},
+speech:"Arm und Bein gegengleich."},
 
-{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"reps", reps:10, rest:3,
-speech:"Mache einen großen Schritt zur Seite. Schiebe die Hüfte nach hinten. Halte den Rücken gerade."},
+{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"sideHoldReps", reps:10,
+speech:"Seitlich bewegen und halten."},
 
 {name:"Adduktor Hüfte Kombi", img:"images/phase2.jpg", type:"time", time:40,
-speech:"Halte die Dehnung und bewege dich leicht vor und zurück. Spüre die Aktivierung in der Hüfte."}
+speech:"Dehnung und Bewegung kombinieren."}
 ]
 
 ];
