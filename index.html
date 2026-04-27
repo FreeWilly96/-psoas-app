@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Psoas Ultra PRO ELITE+</title>
+<title>Psoas Ultra ULTIMATE</title>
 
 <style>
 body { margin:0; font-family:Arial; text-align:center; background:#f2f2f2; transition:0.3s;}
@@ -13,21 +13,11 @@ body.dark { background:#0b1a2f; color:white;}
 img { width:95%; height:40vh; object-fit:contain;}
 .timer { font-size:80px;}
 
-.sideDisplay {
-    font-size:60px;
-    font-weight:bold;
-    height:70px;
-    margin:10px;
-    opacity:0;
-    transition:0.3s;
-}
-.sideDisplay.show { opacity:1; }
+.side { font-size:50px; font-weight:bold; height:60px; }
 
 button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;}
-.start{background:green;}
-.pause{background:red;}
-.skip{background:orange;}
-.mode{background:black;}
+.start{background:green;} .pause{background:red;} .skip{background:orange;}
+.mode{background:black;} .sound{background:#555;}
 </style>
 </head>
 
@@ -36,7 +26,7 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 <h2 id="phaseTitle"></h2>
 <h3 id="exerciseTitle"></h3>
 
-<div id="sideDisplay" class="sideDisplay"></div>
+<div id="side" class="side"></div>
 
 <img id="exerciseImage">
 
@@ -46,143 +36,111 @@ button { padding:10px; margin:5px; border:none; border-radius:10px; color:white;
 <button class="pause" onclick="pause()">Pause</button>
 <button class="skip" onclick="next()">Skip</button>
 <button class="mode" onclick="toggleMode()">Mode</button>
+<button class="sound" onclick="toggleSound()">Sound</button>
+<button class="sound" onclick="toggleMusic()">Musik</button>
 
 <script>
 
 // =============================
+// STATE
+// =============================
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
-let descriptionSpoken = false;
+let spoken = false;
+
+let soundOn = true;
+let musicOn = false;
 
 // =============================
+// AUDIO SYSTEM
+// =============================
+const beep = new Audio("https://actions.google.com/sounds/v1/beeps/beep_short.ogg");
+const music = new Audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3");
+
+music.loop = true;
+music.volume = 0.2;
+
+// =============================
+function playBeep(){
+    if(soundOn) beep.play();
+}
+
 function speak(text, cb){
+
+    if(!soundOn){
+        cb && cb();
+        return;
+    }
+
     speechSynthesis.cancel();
     let msg = new SpeechSynthesisUtterance(text);
     msg.lang="de-DE";
-    msg.onend = ()=> setTimeout(()=> cb && cb(),200);
+    msg.onend = ()=> cb && cb();
     speechSynthesis.speak(msg);
 }
 
 // =============================
-function showSide(text){
-    const el = document.getElementById("sideDisplay");
-    el.innerText = text.toUpperCase();
-    el.classList.add("show");
-    setTimeout(()=> el.classList.remove("show"),1000);
+function toggleSound(){
+    soundOn = !soundOn;
+}
+
+function toggleMusic(){
+    musicOn = !musicOn;
+
+    if(musicOn) music.play();
+    else music.pause();
 }
 
 // =============================
+// TRAINING DATA
+// =============================
 const phases = [
 
-/* =============================
-   PHASE 1
-============================= */
 [
-{
-name:"Bauchatmung",
-img:"images/phase3.jpg",
-type:"time",
-time:120,
-speech:"Rückenlage. Füße aufgestellt. Eine Hand auf den Bauch, eine auf die Brust. Fünf Sekunden einatmen, sieben Sekunden ausatmen."
-},
+{name:"Bauchatmung", img:"images/phase3.jpg", type:"time", time:120,
+speech:"Rückenlage. Fünf Sekunden ein, sieben aus."},
 
-{
-name:"Knie zur Brust",
-img:"images/phase3.jpg",
-type:"side",
-time:45,
-speech:"Ein Knie zur Brust ziehen und halten. Anderes Bein bleibt entspannt."
-},
+{name:"Knie zur Brust", img:"images/phase3.jpg", type:"side", time:45,
+speech:"Knie zur Brust ziehen."},
 
-{
-name:"Mini-Becken-Kippung",
-img:"images/phase3.jpg",
-type:"reps",
-reps:15,
-speech:"Becken kippen und wieder lösen. Kleine ruhige Bewegung."
-},
+{name:"Mini-Becken-Kippung", img:"images/phase3.jpg", type:"reps", reps:15,
+speech:"Becken kippen."},
 
-{
-name:"Hüftbeuger Dehnung",
-img:"images/phase3.jpg",
-type:"side",
-time:40,
-speech:"Halbkniestand. Gesäß anspannen. Becken kippen. Dehnung vorne spüren."
-},
+{name:"Hüftbeuger Dehnung", img:"images/phase3.jpg", type:"side", time:40,
+speech:"Becken kippen."},
 
-{
-name:"Glute Bridge",
-img:"images/phase3.jpg",
-type:"repsSlow",
-reps:12,
-speech:"Hüfte anheben. Gesäß anspannen. Zwei bis drei Sekunden halten und langsam absenken."
-},
+{name:"Glute Bridge", img:"images/phase3.jpg", type:"repsSlow", reps:12,
+speech:"Hüfte anheben."},
 
-{
-name:"Adduktor Dehnung",
-img:"images/phase3.jpg",
-type:"time",
-time:45,
-speech:"Breiter Stand. Gewicht zur Seite verlagern. Dehnung spüren."
-}
+{name:"Adduktor Dehnung", img:"images/phase3.jpg", type:"time", time:45,
+speech:"Dehnung halten."}
 ],
 
-/* =============================
-   PHASE 2 (FIX!)
-============================= */
 [
-{
-name:"Bauchatmung",
-img:"images/phase2.jpg",
-type:"time",
-time:60,
-speech:"Rückenlage. Tief in den Bauch atmen. Spannung aufbauen."
-},
+{name:"Bauchatmung", img:"images/phase2.jpg", type:"time", time:60,
+speech:"Atmen."},
 
-{
-name:"Dynamische Hüftöffnung",
-img:"images/phase2.jpg",
-type:"sideSlow",
-reps:10,
-speech:"Ausfallschritt Position. Hüfte langsam nach vorne schieben und wieder zurück."
-},
+{name:"Dynamische Hüftöffnung", img:"images/phase2.jpg", type:"sideSlow", reps:10,
+speech:"Hüfte bewegen."},
 
-{
-name:"Glute Bridge einbeinig",
-img:"images/phase2.jpg",
-type:"sideSlow",
-reps:10,
-speech:"Ein Bein anheben. Hüfte nach oben drücken. Kurz halten und kontrolliert absenken."
-},
+{name:"Glute Bridge einbeinig", img:"images/phase2.jpg", type:"sideSlow", reps:10,
+speech:"Ein Bein oben."},
 
-{
-name:"Dead Bug",
-img:"images/phase2.jpg",
-type:"alt",
-reps:12,
-speech:"Arm und Bein gegengleich bewegen. Rumpf stabil halten."
-},
+{name:"Dead Bug", img:"images/phase2.jpg", type:"alt", reps:12,
+speech:"Arm Bein wechseln."},
 
-{
-name:"Seitliche Ausfallschritte",
-img:"images/phase2.jpg",
-type:"altSlow",
-reps:10,
-speech:"Schritt zur Seite. Hüfte nach hinten schieben. Kontrolle behalten."
-},
+{name:"Seitliche Ausfallschritte", img:"images/phase2.jpg", type:"altSlow", reps:10,
+speech:"Seitlich gehen."},
 
-{
-name:"Adduktor und Hüfte Kombi",
-img:"images/phase2.jpg",
-type:"time",
-time:40,
-speech:"Dehnung halten und kleine Wippbewegungen ausführen."
-}
+{name:"Adduktor Kombi", img:"images/phase2.jpg", type:"time", time:40,
+speech:"Dehnung + Bewegung."}
 ]
 
 ];
 
+// =============================
+// START
 // =============================
 function start(){
 
@@ -190,30 +148,28 @@ function start(){
 
     let ex = phases[phaseIndex][current];
 
-    if(!descriptionSpoken){
+    playBeep();
 
-        descriptionSpoken = true;
+    if(!spoken){
+        spoken = true;
 
-        // 👉 FIX: KEIN DOPPELTER NAME
         speak(ex.name + ". " + ex.speech, ()=>{
             run(ex);
         });
 
-    } else {
-        run(ex);
-    }
+    } else run(ex);
 }
 
 // =============================
 function run(ex){
 
     if(ex.type==="time") runTime(ex);
-    else if(ex.type==="reps") runReps(ex);
-    else if(ex.type==="repsSlow") runRepsSlow(ex);
-    else if(ex.type==="side") runSide(ex);
-    else if(ex.type==="sideSlow") runSideSlow(ex);
-    else if(ex.type==="alt") runAlt(ex);
-    else if(ex.type==="altSlow") runAltSlow(ex);
+    if(ex.type==="reps") runReps(ex);
+    if(ex.type==="repsSlow") runRepsSlow(ex);
+    if(ex.type==="side") runSide(ex);
+    if(ex.type==="sideSlow") runSideSlow(ex);
+    if(ex.type==="alt") runAlt(ex);
+    if(ex.type==="altSlow") runAltSlow(ex);
 }
 
 // =============================
@@ -222,8 +178,7 @@ function runTime(ex){
     let t = ex.time;
 
     timer = setInterval(()=>{
-        t--;
-        update(t);
+        t--; update(t);
 
         if(t<=5 && t>0) speak(t);
 
@@ -241,8 +196,7 @@ function runReps(ex){
     let r = ex.reps;
 
     timer = setInterval(()=>{
-        r--;
-        update(r);
+        r--; update(r);
         speak(r);
 
         if(r<=0){
@@ -259,8 +213,7 @@ function runRepsSlow(ex){
     let r = ex.reps;
 
     timer = setInterval(()=>{
-        r--;
-        update(r);
+        r--; update(r);
         speak(r);
 
         if(r<=0){
@@ -269,6 +222,11 @@ function runRepsSlow(ex){
         }
 
     },3000);
+}
+
+// =============================
+function showSide(text){
+    document.getElementById("side").innerText = text.toUpperCase();
 }
 
 // =============================
@@ -284,22 +242,17 @@ function runSide(ex){
         let t = ex.time;
 
         let i = setInterval(()=>{
-
-            t--;
-            update(t);
+            t--; update(t);
 
             if(t<=0){
                 clearInterval(i);
 
                 if(side==="rechts"){
-                    showSide("wechsel");
                     speak("Wechsel", ()=>{
                         side="links";
                         setTimeout(go,2000);
                     });
-                } else {
-                    next();
-                }
+                } else next();
             }
 
         },1000);
@@ -321,22 +274,17 @@ function runSideSlow(ex){
         let r = ex.reps;
 
         let i = setInterval(()=>{
-
-            r--;
-            update(r);
+            r--; update(r);
 
             if(r<=0){
                 clearInterval(i);
 
                 if(side==="rechts"){
-                    showSide("wechsel");
                     speak("Wechsel", ()=>{
                         side="links";
                         setTimeout(go,2000);
                     });
-                } else {
-                    next();
-                }
+                } else next();
             }
 
         },3000);
@@ -365,9 +313,7 @@ function runAlt(ex){
             return;
         }
 
-        setTimeout(()=>{
-            speak("Wechsel", loop);
-        },1500);
+        setTimeout(()=> speak("Wechsel", loop),1500);
     }
 
     loop();
@@ -393,9 +339,7 @@ function runAltSlow(ex){
             return;
         }
 
-        setTimeout(()=>{
-            speak("Wechsel", loop);
-        },2500);
+        setTimeout(()=> speak("Wechsel", loop),2500);
     }
 
     loop();
@@ -406,17 +350,19 @@ function next(){
 
     clearInterval(timer);
 
+    playBeep();
+
     speak("Übung beendet", ()=>{
 
         current++;
 
         if(current >= phases[phaseIndex].length){
+            saveStats();
             alert("Training fertig 💪");
-            current = 0;
-            phaseIndex = 0;
+            current=0;
         }
 
-        descriptionSpoken = false;
+        spoken=false;
         load();
 
         setTimeout(start,1500);
@@ -436,6 +382,18 @@ function toggleMode(){
 // =============================
 function update(val){
     document.getElementById("timer").innerText = val;
+}
+
+// =============================
+// STATISTIK
+// =============================
+function saveStats(){
+
+    let count = localStorage.getItem("trainings") || 0;
+    count++;
+
+    localStorage.setItem("trainings", count);
+    localStorage.setItem("lastTraining", new Date().toLocaleDateString());
 }
 
 // =============================
