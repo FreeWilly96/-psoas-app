@@ -121,8 +121,17 @@ async function start(){
 
     let ex = phases[phaseIndex][current];
 
+    // 👉 Ansage (nur Titel + Subtitle)
     await speak(ex.name + ". " + ex.subtitle);
-    await sleep(500); // smoother Übergang
+
+    // 👉 SPEZIAL: Übung 1 = Erklärung direkt danach sprechen
+    if(current === 0){
+        for(let g of ex.guide){
+            await speak(g);
+        }
+    }
+
+    await sleep(500);
     
     await countdown();
     run(ex);
