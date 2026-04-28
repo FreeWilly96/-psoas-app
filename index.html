@@ -128,7 +128,10 @@ function speak(text){
 async function start(){
     if(running) return;
     running = true;
-
+    
+speechSynthesis.cancel(); // 👉 Reset der Stimme vor neuem Ablauf
+await sleep(200);
+    
     let ex = phases[phaseIndex][current];
 
     // 🔊 Titel + Subtitle
