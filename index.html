@@ -131,45 +131,24 @@ async function start(){
 
     let ex = phases[phaseIndex][current];
 
-    // 🔊 1. Titel + Subtitle (immer)
+    // 🔊 Titel + Subtitle
     await speak(ex.name + ". " + ex.subtitle);
 
-    // kleine Pause damit nichts abgeschnitten wird
     await sleep(300);
 
-    // 🔊 2. Erklärung NUR bei Übung 1
-    let speechQueue = Promise.resolve();
-
-function speak(text){
-    speechQueue = speechQueue.then(() => {
-        return new Promise(resolve => {
-
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = "de-DE";
-
-            msg.onend = () => {
-                setTimeout(resolve, 200); // kleine Pause stabilisiert iOS
-            };
-
-            speechSynthesis.speak(msg);
-        });
-    });
-
-    return speechQueue;
-}
-
-        // 👉 WICHTIG: kleine Pause + warten bis Audio wirklich fertig ist
-        await new Promise(r => setTimeout(r, 400));
+    // 🔊 Erklärung NUR bei Übung 1
+    if(current === 0){
+        for(let g of ex.guide){
+            await speak(g);
+        }
     }
-}
 
-    // extra Pause vor Countdown
     await sleep(500);
 
-    // 🔢 3. Countdown
+    // 🔢 Countdown
     await countdown();
 
-    // ▶️ 4. Start Übung
+    // ▶️ Übung starten
     run(ex);
 }
 
