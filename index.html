@@ -104,18 +104,24 @@ if(localStorage.getItem("darkMode")==="true"){
 
 // =============================
 // AUDIO
+let speechQueue = Promise.resolve();
+
 function speak(text){
-    return new Promise(resolve=>{
-        let msg = new SpeechSynthesisUtterance(text);
-        msg.lang = "de-DE";
+    speechQueue = speechQueue.then(() => {
+        return new Promise(resolve => {
 
-        msg.onend = () => {
-            setTimeout(resolve, 150); // 👉 verhindert Abschneiden
-        };
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = "de-DE";
 
-        speechSynthesis.cancel();
-        speechSynthesis.speak(msg);
+            msg.onend = () => {
+                setTimeout(resolve, 200); // kleine Pause stabilisiert iOS
+            };
+
+            speechSynthesis.speak(msg);
+        });
     });
+
+    return speechQueue;
 }
 
 // =============================
@@ -132,9 +138,25 @@ async function start(){
     await sleep(300);
 
     // 🔊 2. Erklärung NUR bei Übung 1
-    if(current === 0){
-    for(let i = 0; i < ex.guide.length; i++){
-        await speak(ex.guide[i]);
+    let speechQueue = Promise.resolve();
+
+function speak(text){
+    speechQueue = speechQueue.then(() => {
+        return new Promise(resolve => {
+
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = "de-DE";
+
+            msg.onend = () => {
+                setTimeout(resolve, 200); // kleine Pause stabilisiert iOS
+            };
+
+            speechSynthesis.speak(msg);
+        });
+    });
+
+    return speechQueue;
+}
 
         // 👉 WICHTIG: kleine Pause + warten bis Audio wirklich fertig ist
         await new Promise(r => setTimeout(r, 400));
