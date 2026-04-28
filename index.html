@@ -121,19 +121,27 @@ async function start(){
 
     let ex = phases[phaseIndex][current];
 
-    // 👉 Ansage (nur Titel + Subtitle)
+    // 🔊 1. Titel + Subtitle (immer)
     await speak(ex.name + ". " + ex.subtitle);
 
-    // 👉 SPEZIAL: Übung 1 = Erklärung direkt danach sprechen
+    // kleine Pause damit nichts abgeschnitten wird
+    await sleep(300);
+
+    // 🔊 2. Erklärung NUR bei Übung 1
     if(current === 0){
         for(let g of ex.guide){
             await speak(g);
+            await sleep(200); // 👉 wichtig für saubere Audio-Kette
         }
     }
 
+    // extra Pause vor Countdown
     await sleep(500);
-    
+
+    // 🔢 3. Countdown
     await countdown();
+
+    // ▶️ 4. Start Übung
     run(ex);
 }
 
