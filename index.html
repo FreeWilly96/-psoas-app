@@ -307,17 +307,18 @@ async function next(){
     let ex=phases[phaseIndex][current];
 
     await speak("Nächste Übung");
-    
+
+// 👉 HINZUFÜGEN (das hat gefehlt)
+await speak(ex.name + ". " + ex.subtitle);
+
 // 👉 10 Sekunden Pause vor Erklärung
 for(let i=10;i>0;i--){
     update(i);
     await sleep(1000);
 }
 
-
-    load();
-    start();
-}
+load();
+start();
 
 // =============================
 async function rest(){
