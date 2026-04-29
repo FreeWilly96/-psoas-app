@@ -129,38 +129,38 @@ async function start(){
     if(running) return;
     running = true;
     
-speechSynthesis.cancel(); // 👉 Reset der Stimme vor neuem Ablauf
-await sleep(200);
+    speechSynthesis.cancel();
+    await sleep(200);
     
     let ex = phases[phaseIndex][current];
 
-    // 🔊 Titel + Subtitle
     await speak(ex.name + ". " + ex.subtitle);
-
     await sleep(300);
 
-// 👉 unterscheiden: erste Übung oder nicht
-if(current === 0){
+    if(current === 0){
 
-    // 🔥 Übung 1 → sofort Erklärung
-    for(let g of ex.guide){
-        await speak(g);
+        for(let g of ex.guide){
+            await speak(g);
+        }
+
+    } else {
+
+        await speak("Bereit machen");
+        
+        for(let i=10;i>0;i--){
+            update(i);
+            await sleep(1000);
+        }
+
+        for(let g of ex.guide){
+            await speak(g);
+        }
     }
 
-} else {
-
-    // 🔥 alle anderen Übungen → erst Pause, dann Erklärung
-    await speak("Bereit machen");
-    
-    for(let i=10;i>0;i--){
-        update(i);
-        await sleep(1000);
-    }
-
-    // 👉 danach Erklärung
-    for(let g of ex.guide){
-        await speak(g);
-    }
+    // 🔥 DAS HAT GEFEHLT
+    await sleep(500);
+    await countdown();
+    run(ex);
 }
 // =============================
 async function countdown(){
@@ -307,7 +307,7 @@ async function next(){
     let ex=phases[phaseIndex][current];
 
     await speak("Nächste Übung");
-    await speak(ex.name + ". " + ex.subtitle);
+    
 // 👉 10 Sekunden Pause vor Erklärung
 for(let i=10;i>0;i--){
     update(i);
