@@ -235,7 +235,14 @@ async function runSideHoldReps(ex){
 
     let sides=["rechts","links"];
 
-    for(let side of sides){
+    for(let i=0;i<sides.length;i++){
+
+        let side = sides[i];
+
+        if(i > 0){
+            await speak("Seitenwechsel");
+            await sleep(1000);
+        }
 
         showSide(side);
         await speak("Seite " + side);
@@ -245,33 +252,39 @@ async function runSideHoldReps(ex){
 
         while(reps>0){
 
-           if(reps===ex.reps){
-    update("HALTEN");
-    await speak("Spannung halten für fünf Sekunden");
-} else {
-    update(reps);
-    await speak(reps.toString());
-}
+            if(reps===ex.reps){
+                update("HALTEN");
+                await speak("Spannung halten für fünf Sekunden");
+            } else {
+                update(reps);
+                await speak(reps.toString());
+            }
 
-reps--;
-
+            reps--;
             await sleep(5000);
         }
     }
 
     next();
-}
+} // ✅ WICHTIG!
 
 // =============================
 async function runSide(ex){
 
     let sides=["rechts","links"];
 
-    for(let side of sides){
+    for(let i=0;i<sides.length;i++){
+
+        let side = sides[i];
+
+        if(i > 0){
+            await speak("Seitenwechsel");
+            await sleep(1000);
+        }
 
         showSide(side);
         await speak("Seite " + side);
-        await sleep(1500); // 👈 HIER angepasst
+        await sleep(1500);
 
         let t=ex.time;
 
@@ -290,7 +303,6 @@ async function runSide(ex){
 
     next();
 }
-
 // =============================
 async function next(){
 
@@ -319,7 +331,7 @@ for(let i=10;i>0;i--){
 
 load();
 start();
-
+}
 // =============================
 async function rest(){
     for(let i=15;i>0;i--){
@@ -470,7 +482,7 @@ guide:[
 name:"Adduktor Dehnung",
 subtitle:"Leisten und Innenschenkel dehnen",
 img:"images/phase3.jpg",
-type:"time",
+type:"side", // ✅ WAR "time"
 time:45,
 guide:[
 "Breiten Stand einnehmen",
