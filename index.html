@@ -374,10 +374,21 @@ async function next(){
     running=false;
 
     current++;
+// 🔥 NEU: Training ENDE pro Phase
 
-    if(current>=phases[phaseIndex].length){
-        alert("Training fertig 💪");
-        current=0;
+    if(current >= phases[phaseIndex].length){
+
+        update("FERTIG 💪");
+
+        showSide("");
+
+        await speak("Training beendet. Sehr gut gemacht.");
+
+        alert("Training Phase " + (phaseIndex+1) + " beendet 💪");
+
+        current = phases[phaseIndex].length - 1; 
+
+        return; // ⛔ stoppt komple
     }
 
     let ex=phases[phaseIndex][current];
