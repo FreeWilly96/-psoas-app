@@ -215,12 +215,14 @@ function speak(text){
 
             msg.onend = () => setTimeout(resolve, 250);
 
-// 🔥 FIX
-speechSynthesis.cancel();
+// 🔥 FIX (stabiler Audio-Start)
+if (speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+}
+
 setTimeout(() => {
     speechSynthesis.speak(msg);
 }, 100);
-    });
 
     return speechQueue;
 }
@@ -239,12 +241,11 @@ async function start(){
     await countdown();
     run(ex);
 }
-
 async function countdown(){
-    for(let i=3;i>0;i--){
-        update(i);
-        await speak(i.toString());
-    }
+ 
+// 🔊 Countdown Stimme für letzte 3 Sekunden (nur wenn läuft + NICHT im Countdown)
+if(!isNaN(v) && v <= 3 && v > 0 && running && !countdownMode){
+    speak(v.toString());
 }
 
 function run(ex){
