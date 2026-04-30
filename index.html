@@ -132,7 +132,9 @@ button {
 
 <button id="btnP1" class="phase" onclick="setPhase(1)">Phase 1</button>
 <button id="btnP2" class="phase" onclick="setPhase(2)">Phase 2</button>
+<button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
     <button class="mode" onclick="nextPhase()">Next Phase</button>
+    
 
 <script>
 
@@ -472,7 +474,7 @@ function load(){
 
     let ex=phases[phaseIndex][current];
 
-    document.getElementById("phaseTitle").innerText="Phase "+(phaseIndex+1);
+    document.getElementById("phaseTitle").innerText="Training "+(phaseIndex+1);
     document.getElementById("exerciseTitle").innerText=ex.name;
     document.getElementById("exerciseImage").src=ex.img;
 
@@ -503,13 +505,16 @@ function sleep(ms){
 function updateButtons(){
 
     btnP1.classList.remove("active");
-    btnP2.classList.remove("active");
+btnP2.classList.remove("active");
+btnP3.classList.remove("active");
 
-    if(phaseIndex===0){
-        btnP1.classList.add("active");
-    } else {
-        btnP2.classList.add("active");
-    }
+if(phaseIndex===0){
+    btnP1.classList.add("active");
+} else if(phaseIndex===1){
+    btnP2.classList.add("active");
+} else {
+    btnP3.classList.add("active");
+}
 }
 
 // =============================
@@ -692,7 +697,85 @@ guide:[
 "Spannung ruhig halten"
 ]
 }
+],
+ /* ================= TRAINING 3 ================= */
+[
+{
+name:"Einbeiniges Standknieheben",
+subtitle:"Stabilität und Kontrolle",
+img:"images/phase2.jpg",
+type:"sideHoldReps",
+reps:10,
+guide:[
+"Aufrecht stehen",
+"Bauchnabel einziehen",
+"Knie kontrolliert heben",
+"Hüfte bleibt stabil"
 ]
+},
+
+{
+name:"Seitliche Plank kurz",
+subtitle:"Rumpfstabilität seitlich",
+img:"images/phase2.jpg",
+type:"sideHoldReps",
+reps:8,
+guide:[
+"Seitlich liegend",
+"Körper bildet eine Linie",
+"Knie leicht angewinkelt",
+"Becken nicht nach vorne oder hinten kippen",
+"Bauch und Gesäß aktiv",
+"Ruhig atmen"
+]
+},
+
+{
+name:"Plank",
+subtitle:"Ganzkörper Spannung",
+img:"images/phase2.jpg",
+type:"holdReps",
+reps:10,
+guide:[
+"Bauchlage, Ellenbogen unter den Schultern",
+"Füße hüftbreit auseinander",
+"Körper anheben – gerade Linie",
+"Kopf in Verlängerung der Wirbelsäule",
+"Blick nach unten",
+"Bauchnabel einziehen"
+]
+},
+
+{
+name:"Adduktor Kräftigung",
+subtitle:"Innenschenkel aktivieren",
+img:"images/phase2.jpg",
+type:"sideHoldReps",
+reps:10,
+guide:[
+"Seitlich liegend",
+"Körper bildet eine Linie",
+"Becken stabil halten",
+"Bauch und Gesäß aktiv",
+"Ruhig atmen"
+]
+},
+
+{
+name:"Liegendes Beinheben",
+subtitle:"Core Kontrolle",
+img:"images/phase2.jpg",
+type:"reps",
+reps:12,
+rest:3,
+guide:[
+"Rückenlage",
+"Lendenwirbelsäule bleibt am Boden",
+"Bein langsam heben",
+"Kontrolliert absenken"
+]
+}
+]   
 
 ];
 // =============================
