@@ -18,7 +18,7 @@ body {
     transition:0.3s;
 }
 
-/* Verlauf /
+/* Verlauf */
 body {
     background: linear-gradient(180deg, #f2f2f2, #e6e9ef);
 }
@@ -110,7 +110,7 @@ button:active {
     background:linear-gradient(45deg, purple, deeppink);
 }
 
-/ Progress /
+/* Progress */
 #progress {
     height:6px;
     width:80%;
@@ -125,6 +125,7 @@ button:active {
     width:0%;
     background:linear-gradient(90deg, purple, deeppink);
     transition:0.3s;
+    box-shadow:0 0 10px rgba(255,0,150,0.4);
 }
 
 h2 {
@@ -261,7 +262,7 @@ async function runReps(ex){
         update(reps);
         await speak(reps.toString());
         reps--;
-        await sleep(ex.rest1000);
+        await sleep(ex.rest * 1000);
     }
 
     next();
@@ -375,6 +376,16 @@ function load(){
 
     document.getElementById("phaseTitle").innerText="Training "+(phaseIndex+1);
     document.getElementById("exerciseTitle").innerText=ex.name;
+    // 🔥 kleiner Titel-Animationseffekt
+const title = document.getElementById("exerciseTitle");
+
+title.style.transform = "scale(0.9)";
+title.style.opacity = "0.6";
+
+setTimeout(()=>{
+    title.style.transform = "scale(1)";
+    title.style.opacity = "1";
+},150);
 
     const img = document.getElementById("exerciseImage");
 
@@ -404,12 +415,13 @@ function load(){
 }
 
 function update(v){
-    document.getElementById("timer").innerText=v;
+    document.getElementById("timer").innerText = v;
 
-    if(v<=5){
-        document.getElementById("timer").style.color="red";
+    // 🔥 Timer wird rot bei letzten Sekunden
+    if(!isNaN(v) && v <= 5){
+        document.getElementById("timer").style.color = "red";
     } else {
-        document.getElementById("timer").style.color="";
+        document.getElementById("timer").style.color = "";
     }
 }
 
