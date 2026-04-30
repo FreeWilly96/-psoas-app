@@ -116,7 +116,108 @@ button {
 /* ✅ Active Phase schöner */
 .phase.active {
     background:linear-gradient(45deg, purple, deeppink);
-}  
+} 
+    /* =============================
+   🔥 IMAGE FADE EFFECT
+============================= */
+
+img {
+    transition:0.4s;
+}
+
+.fade {
+    opacity:0;
+}
+    /* =============================
+   🔥 APP LOOK UPGRADE
+============================= */
+
+/* Hintergrund mit leichtem Verlauf */
+body {
+    background: linear-gradient(180deg, #f2f2f2, #e6e9ef);
+}
+
+body.dark {
+    background: linear-gradient(180deg, #0b1a2f, #09121f);
+}
+
+/* Hauptbild wie Card */
+img {
+    border-radius:16px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    margin-top:10px;
+}
+
+/* Timer mit Glow */
+.timer {
+    text-shadow:0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Side Anzeige als Badge */
+.side {
+    display:inline-block;
+    padding:6px 14px;
+    border-radius:20px;
+    background:#ddd;
+    margin-bottom:5px;
+}
+
+body.dark .side {
+    background:#23344d;
+}
+
+/* Guide moderner */
+.guide {
+    border-radius:16px;
+    backdrop-filter:blur(10px);
+}
+
+/* Buttons mit Tiefe */
+button {
+    box-shadow:0 4px 10px rgba(0,0,0,0.15);
+    transition:0.2s;
+}
+
+button:active {
+    transform:scale(0.95);
+}
+
+/* Start Button hervorheben */
+.start {
+    background:linear-gradient(45deg, #00c853, #00e676);
+}
+
+/* Pause */
+.pause {
+    background:linear-gradient(45deg, #d50000, #ff5252);
+}
+
+/* Skip */
+.skip {
+    background:linear-gradient(45deg, #ff6d00, #ffab40);
+}
+
+/* Mode */
+.mode {
+    background:linear-gradient(45deg, #333, #111);
+}
+    #progress {
+    height:6px;
+    width:80%;
+    margin:10px auto;
+    background:#ddd;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+#progress::after {
+    content:"";
+    display:block;
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, purple, deeppink);
+    transition:0.3s;
+}
 </style>
 </head>
 
@@ -130,7 +231,7 @@ button {
 <div id="guide" class="guide"></div>
 
 <div id="timer" class="timer">0</div>
-
+<div id="progress"></div>ü
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
 <button class="skip" onclick="next()">Skip</button>
@@ -484,7 +585,14 @@ function load(){
 
     document.getElementById("phaseTitle").innerText="Training "+(phaseIndex+1);
     document.getElementById("exerciseTitle").innerText=ex.name;
-    document.getElementById("exerciseImage").src=ex.img;
+    const img = document.getElementById("exerciseImage");
+
+img.classList.add("fade");
+
+setTimeout(()=>{
+    img.src = ex.img;
+    img.classList.remove("fade");
+},150);
 
     let html = "<ul>";
 ex.guide.forEach(g=>{
@@ -507,6 +615,14 @@ function showSide(s){
 
 function sleep(ms){
     return new Promise(r=>setTimeout(r,ms));
+    const img = document.getElementById("exerciseImage");
+
+img.classList.add("fade");
+
+setTimeout(()=>{
+    img.src = ex.img;
+    img.classList.remove("fade");
+},150);
 }
 
 // =============================
