@@ -214,10 +214,12 @@ function speak(text){
             if(deVoice) msg.voice = deVoice;
 
             msg.onend = () => setTimeout(resolve, 250);
+
+// 🔥 FIX
 speechSynthesis.cancel();
-await new Promise(r => setTimeout(r, 100));
-            speechSynthesis.speak(msg);
-        });
+setTimeout(() => {
+    speechSynthesis.speak(msg);
+}, 100);
     });
 
     return speechQueue;
@@ -269,7 +271,10 @@ function runTime(ex){
 
         if(t===10) speak("Noch zehn Sekunden");
 
-        if(t<=0) next();
+        if(t<=0){
+    clearInterval(timer);
+    next();
+}
     },1000);
 }
 
@@ -317,17 +322,19 @@ async function runSideHoldReps(ex){
 }
 
 async function runSide(ex){
-    let sides=["rechts","links"];
+    let sides = ["rechts","links"];
 
     for(let side of sides){
         showSide(side);
 
-        let t=ex.time;
+        let t = ex.time;
+        update(t); // 🔥 FIX: Startwert anzeigen
 
         await new Promise(resolve=>{
-            timer=setInterval(()=>{
+            timer = setInterval(()=>{
                 if(stopSignal){
                     clearInterval(timer);
+                    timer = null; // 🔥 FIX
                     resolve();
                     return;
                 }
@@ -335,15 +342,17 @@ async function runSide(ex){
                 t--;
                 update(t);
 
-                if(t<=0){
+                if(t <= 0){
                     clearInterval(timer);
+                    timer = null; // 🔥 FIX
                     resolve();
                 }
 
             },1000);
         });
     }
-showSide("");
+
+    showSide(""); // ✅ richtig
     next();
 }
 
@@ -443,8 +452,8 @@ function update(v){
         document.getElementById("timer").style.color = "";
     }
 
-    // 🔊 Countdown Stimme für letzte 3 Sekunden
-    if(!isNaN(v) && v <= 3 && v > 0){
+    // 🔊 Countdown Stimme für letzte 3 Sekunden (nur wenn läuft)
+    if(!isNaN(v) && v <= 3 && v > 0 && running){
         speak(v.toString());
     }
 }
