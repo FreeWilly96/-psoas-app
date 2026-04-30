@@ -132,6 +132,7 @@ button {
 
 <button id="btnP1" class="phase" onclick="setPhase(1)">Phase 1</button>
 <button id="btnP2" class="phase" onclick="setPhase(2)">Phase 2</button>
+    <button class="mode" onclick="nextPhase()">Next Phase</button>
 
 <script>
 
@@ -255,13 +256,18 @@ function runTime(ex){
 
         if(t<=0) next();
     },1000);
+    
+    if(stopSignal){
+    clearInterval(timer);
+    return;
+
 }
 
 // =============================
 async function runReps(ex){
     let reps = ex.reps;
 
-    while(reps>0){
+    while(reps>0 && !stopSignal){
         update(reps);
         await speak(reps.toString());
         reps--;
@@ -275,7 +281,7 @@ async function runReps(ex){
 async function runHoldReps(ex){
     let reps = ex.reps;
 
-    while(reps>0){
+    while(reps>0 && !stopSignal){
 
         if(reps===ex.reps){
     update("HALTEN");
@@ -314,7 +320,7 @@ async function runSideHoldReps(ex){
 
         let reps=ex.reps;
 
-        while(reps>0){
+        while(reps>0 && !stopSignal){
 
             if(reps===ex.reps){
                 update("HALTEN");
@@ -366,46 +372,52 @@ async function runSide(ex){
     }
 
     next();
+    if(stopSignal){
+    clearInterval(timer);
+    resolve();
+    return;
+
 }
 // =============================
 async function next(){
 
+    // 🔥 ALLES stoppen
+    stopSignal = true;
     clearInterval(timer);
-    running=false;
+    speechSynthesis.cancel();
 
+    await sleep(100); // Mini Reset
+    stopSignal = false;
+
+    running=false;
     current++;
-// 🔥 NEU: Training ENDE pro Phase
 
     if(current >= phases[phaseIndex].length){
 
         update("FERTIG 💪");
-
         showSide("");
 
         await speak("Training beendet. Sehr gut gemacht.");
 
         alert("Training Phase " + (phaseIndex+1) + " beendet 💪");
 
-        current = phases[phaseIndex].length - 1; 
-
-        return; // ⛔ stoppt komple
+        current = phases[phaseIndex].length - 1;
+        return;
     }
 
     let ex=phases[phaseIndex][current];
 
     await speak("Nächste Übung");
+    await speak(ex.name + ". " + ex.subtitle);
 
-// 👉 HINZUFÜGEN (das hat gefehlt)
-await speak(ex.name + ". " + ex.subtitle);
+    for(let i=10;i>0;i--){
+        if(stopSignal) return;
+        update(i);
+        await sleep(1000);
+    }
 
-// 👉 10 Sekunden Pause vor Erklärung
-for(let i=10;i>0;i--){
-    update(i);
-    await sleep(1000);
-}
-
-load();
-start();
+    load();
+    start();
 }
 // =============================
 async function rest(){
@@ -421,7 +433,26 @@ function pause(){
     running=false;
     speechSynthesis.cancel();
 }
+function nextPhase(){
 
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    stopSignal = true;
+
+    if(phaseIndex < phases.length - 1){
+        phaseIndex++;
+    } else {
+        phaseIndex = 0;
+    }
+
+    current = 0;
+    running = false;
+
+    stopSignal = false;
+
+    load();
+}
 // =============================
 function setPhase(p){
     phaseIndex=p-1;
