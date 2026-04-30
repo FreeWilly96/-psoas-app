@@ -141,6 +141,7 @@ let phaseIndex = 0;
 let current = 0;
 let timer = null;
 let running = false;
+let stopSignal = false;
 
 // =============================
 // DARK MODE
@@ -246,21 +247,22 @@ function runTime(ex){
     update(t);
 
     timer = setInterval(()=>{
+        
+        if(stopSignal){
+            clearInterval(timer);
+            return;
+        }
+
         t--;
         update(t);
 
-        // ✅ NEU: 10 Sekunden Warnung
         if(t === 10){
             speak("Noch zehn Sekunden");
         }
 
         if(t<=0) next();
-    },1000);
-    
-    if(stopSignal){
-    clearInterval(timer);
-    return;
 
+    },1000);
 }
 
 // =============================
@@ -345,6 +347,8 @@ async function runSide(ex){
 
     for(let i=0;i<sides.length;i++){
 
+        if(stopSignal) return;
+
         let side = sides[i];
 
         if(i > 0){
@@ -360,6 +364,13 @@ async function runSide(ex){
 
         await new Promise(resolve=>{
             timer=setInterval(()=>{
+
+                if(stopSignal){
+                    clearInterval(timer);
+                    resolve();
+                    return;
+                }
+
                 t--;
                 update(t);
 
@@ -367,16 +378,12 @@ async function runSide(ex){
                     clearInterval(timer);
                     resolve();
                 }
+
             },1000);
         });
     }
 
     next();
-    if(stopSignal){
-    clearInterval(timer);
-    resolve();
-    return;
-
 }
 // =============================
 async function next(){
