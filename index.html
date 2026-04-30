@@ -127,7 +127,20 @@ button:active {
     transition:0.3s;
     box-shadow:0 0 10px rgba(255,0,150,0.4);
 }
+#progressBar {
+    position:relative; /* ✅ hinzufügen */
+}
 
+#progressBar::after {
+    content:"";
+    position:absolute;
+    right:0;
+    top:0;
+    width:20px;
+    height:100%;
+    background:rgba(255,255,255,0.3);
+    filter:blur(6px);
+}
 h2 {
     margin-top:15px;
     font-size:22px;
@@ -201,7 +214,8 @@ function speak(text){
             if(deVoice) msg.voice = deVoice;
 
             msg.onend = () => setTimeout(resolve, 250);
-
+speechSynthesis.cancel();
+await new Promise(r => setTimeout(r, 100));
             speechSynthesis.speak(msg);
         });
     });
@@ -246,6 +260,7 @@ function runTime(ex){
     timer = setInterval(()=>{
         if(stopSignal){
     clearInterval(timer);
+    running = false;
     return;
 }
 
@@ -265,7 +280,7 @@ async function runReps(ex){
         update(reps);
         await speak(reps.toString());
         reps--;
-        await sleep(ex.rest * 1000);
+        await sleep((ex.rest || 2) * 1000);
     }
 
     next();
@@ -382,6 +397,7 @@ function load(){
     // 🔥 kleiner Titel-Animationseffekt
 const title = document.getElementById("exerciseTitle");
 
+title.style.transition = "0.2s"; // ✅ HIER rein
 title.style.transform = "scale(0.9)";
 title.style.opacity = "0.6";
 
@@ -425,6 +441,11 @@ function update(v){
         document.getElementById("timer").style.color = "red";
     } else {
         document.getElementById("timer").style.color = "";
+    }
+
+    // 🔊 Countdown Stimme für letzte 3 Sekunden
+    if(!isNaN(v) && v <= 3 && v > 0){
+        speak(v.toString());
     }
 }
 
