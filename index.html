@@ -59,7 +59,15 @@ button {
 .mode{background:black;}
 
 .phase { background:#666; }
-.phase.active { background:purple; }
+  .phase {
+    background:#444;
+    transition:0.2s;
+}
+
+.phase:hover {
+    transform:scale(1.05);
+}  
+.phase.active { background:purple; }    
  body {
     margin:0;
     font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
@@ -130,9 +138,9 @@ button {
 
 <br>
 
-<button id="btnP1" class="phase" onclick="setPhase(1)">Phase 1</button>
-<button id="btnP2" class="phase" onclick="setPhase(2)">Phase 2</button>
-<button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
+<button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
+<button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
+<button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>
     <button class="mode" onclick="nextPhase()">Next Phase</button>
     
 
