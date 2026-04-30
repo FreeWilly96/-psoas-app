@@ -260,7 +260,7 @@ function runTime(ex){
     timer = setInterval(()=>{
         if(stopSignal){
     clearInterval(timer);
-    running = false;
+    timer = null;
     return;
 }
 
@@ -343,7 +343,7 @@ async function runSide(ex){
             },1000);
         });
     }
-
+showSide("");
     next();
 }
 
@@ -354,7 +354,7 @@ async function next(){
     stopSignal = true;
     clearInterval(timer);
     speechSynthesis.cancel();
-
+speechQueue = Promise.resolve();
     await sleep(100);
     stopSignal = false;
 
