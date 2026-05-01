@@ -133,11 +133,12 @@ h3 { font-size:26px; margin:5px 0; }
 <script>
 
 // =============================
-// 🔥 APP STATE (ERWEITERT – nichts gelöscht)
+// 🔥 APP STATE
 const App = {
     paused:false,
     lastTime:null,
-    state:"idle" // idle | running | paused
+    state:"idle",
+    session:0 // 🔥 NEU (wichtig!)
 };
 
 // =============================
@@ -148,12 +149,14 @@ let running = false;
 let stopSignal = false;
 
 // =============================
-// 🔥 PAUSIERBARES SLEEP (NEU)
-function sleep(ms){
+// 🔥 PAUSIERBARES SLEEP
+function sleep(ms, session){
     return new Promise(resolve=>{
         let start = Date.now();
 
         function loop(){
+
+            if(session !== App.session) return resolve();
             if(stopSignal) return resolve();
 
             if(App.paused){
@@ -173,14 +176,14 @@ function sleep(ms){
 }
 
 // =============================
-// 🔥 SAFE SPEAK
-function speak(text){
+// 🔥 SAFE SPEAK (mit Session)
+function speak(text, session){
 
     speechSynthesis.cancel();
 
     return new Promise(resolve => {
 
-        if(stopSignal) return resolve();
+        if(stopSignal || session !== App.session) return resolve();
 
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = "de-DE";
@@ -193,20 +196,19 @@ function speak(text){
 }
 
 // =============================
-async function countdownTimer(sec){
+async function countdownTimer(sec, session){
     for(let i=sec;i>0;i--){
 
-        if(stopSignal) return;
+        if(stopSignal || session !== App.session) return;
 
-        while(App.paused) await sleep(200);
+        while(App.paused) await sleep(200, session);
 
         update(i);
-        await speak(i.toString());
+        await speak(i.toString(), session);
     }
 }
 
 // =============================
-// 🔥 START FIX
 async function start(){
 
     if(running || App.state==="paused") return;
@@ -215,49 +217,53 @@ async function start(){
     App.state="running";
     stopSignal = false;
 
+    App.session++; // 🔥 neue Session
+    let session = App.session;
+
     let ex = phases[phaseIndex][current];
 
-    await speak(ex.name + ". " + ex.subtitle);
+    await speak(ex.name + ". " + ex.subtitle, session);
 
     if(current === 0){
         for(let g of ex.guide){
-            if(stopSignal) return;
-            await speak(g);
+            if(stopSignal || session !== App.session) return;
+            await speak(g, session);
         }
     } else {
-        await speak("Bereit machen");
-        await countdownTimer(5);
+        await speak("Bereit machen", session);
+        await countdownTimer(5, session);
 
         for(let g of ex.guide){
-            if(stopSignal) return;
-            await speak(g);
+            if(stopSignal || session !== App.session) return;
+            await speak(g, session);
         }
     }
 
-    await sleep(300);
-    await countdownTimer(3);
+    await sleep(300, session);
+    await countdownTimer(3, session);
 
-    run(ex);
+    if(session !== App.session) return;
+
+    run(ex, session);
 }
 
 // =============================
-function run(ex){
-    if(ex.type==="time") runTime(ex);
-    if(ex.type==="reps") runReps(ex);
-    if(ex.type==="side") runSide(ex);
-    if(ex.type==="holdReps") runHoldReps(ex);
-    if(ex.type==="sideHoldReps") runSideHoldReps(ex);
+function run(ex, session){
+    if(ex.type==="time") runTime(ex, session);
+    if(ex.type==="reps") runReps(ex, session);
+    if(ex.type==="side") runSide(ex, session);
+    if(ex.type==="holdReps") runHoldReps(ex, session);
+    if(ex.type==="sideHoldReps") runSideHoldReps(ex, session);
 }
 
 // =============================
-// 🔥 FIXED TIMER
-function runTime(ex){
+function runTime(ex, session){
     let t = ex.time;
     App.lastTime = Date.now();
 
     function tick(){
 
-        if(stopSignal) return;
+        if(stopSignal || session !== App.session) return;
 
         if(App.paused){
             requestAnimationFrame(tick);
@@ -271,7 +277,7 @@ function runTime(ex){
             update(t);
             App.lastTime = now;
 
-            if(t === 10) speak("Noch zehn Sekunden");
+            if(t === 10) speak("Noch zehn Sekunden", session);
             if(t<=0) return next();
         }
 
@@ -282,125 +288,55 @@ function runTime(ex){
 }
 
 // =============================
-async function runReps(ex){
+async function runReps(ex, session){
     let reps = ex.reps;
 
     while(reps>0 && !stopSignal){
 
+        if(session !== App.session) return;
+
         if(App.paused){
-            await sleep(200);
+            await sleep(200, session);
             continue;
         }
 
         update(reps);
-        await speak(reps.toString());
+        await speak(reps.toString(), session);
 
         reps--;
-        await sleep(ex.rest*1000);
+        await sleep(ex.rest*1000, session);
     }
 
     next();
 }
 
 // =============================
-async function runHoldReps(ex){
-    let reps = ex.reps;
-
-    while(reps>0 && !stopSignal){
-
-        if(App.paused){
-            await sleep(200);
-            continue;
-        }
-
-        if(reps===ex.reps){
-            update("HALTEN");
-            await speak("Spannung halten für fünf Sekunden");
-        } else {
-            update(reps);
-            await speak(reps.toString());
-        }
-
-        reps--;
-        await sleep(5000);
-    }
-
-    next();
-}
-
-// =============================
-async function runSideHoldReps(ex){
+async function runSide(ex, session){
 
     let sides=["rechts","links"];
 
     for(let i=0;i<sides.length;i++){
 
-        if(stopSignal) return;
+        if(stopSignal || session !== App.session) return;
 
-        while(App.paused) await sleep(200);
-
-        let side = sides[i];
-
-        if(i > 0){
-            await speak("Seitenwechsel");
-            await sleep(1000);
-        }
-
-        showSide(side);
-        await speak("Seite " + side);
-
-        let reps=ex.reps;
-
-        while(reps>0 && !stopSignal){
-
-            if(App.paused){
-                await sleep(200);
-                continue;
-            }
-
-            if(reps===ex.reps){
-                update("HALTEN");
-                await speak("Spannung halten für fünf Sekunden");
-            } else {
-                update(reps);
-                await speak(reps.toString());
-            }
-
-            reps--;
-            await sleep(5000);
-        }
-    }
-
-    next();
-}
-
-// =============================
-async function runSide(ex){
-
-    let sides=["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        if(stopSignal) return;
-
-        while(App.paused) await sleep(200);
+        while(App.paused) await sleep(200, session);
 
         let side = sides[i];
 
         if(i > 0){
-            await speak("Seitenwechsel");
-            await sleep(1000);
+            await speak("Seitenwechsel", session);
+            await sleep(1000, session);
         }
 
         showSide(side);
-        await speak("Seite " + side);
+        await speak("Seite " + side, session);
 
         let t=ex.time;
 
         await new Promise(resolve=>{
             timer=setInterval(()=>{
 
-                if(stopSignal){
+                if(stopSignal || session !== App.session){
                     clearInterval(timer);
                     resolve();
                     return;
@@ -424,20 +360,23 @@ async function runSide(ex){
 }
 
 // =============================
-// 🔥 SKIP FIX
+// 🔥 SKIP FIX (JETZT STABIL)
 function skip(){
+
     stopSignal = true;
+    App.session++; // 🔥 killt ALLE alten loops
+
     speechSynthesis.cancel();
     clearInterval(timer);
 
     setTimeout(()=>{
         stopSignal = false;
-        next();
-    },50);
+        next(true);
+    },80);
 }
 
 // =============================
-async function next(){
+async function next(force=false){
 
     running=false;
     App.state="idle";
@@ -450,24 +389,24 @@ async function next(){
         update("FERTIG 💪");
         showSide("");
 
-        await speak("Training beendet. Sehr gut gemacht.");
+        await speak("Training beendet");
 
         return;
     }
 
     let ex=phases[phaseIndex][current];
 
-    await speak("Nächste Übung");
-    await speak(ex.name);
-
-    await countdownTimer(3);
+    if(!force){
+        await speak("Nächste Übung");
+        await speak(ex.name);
+        await countdownTimer(3, App.session);
+    }
 
     load();
     start();
 }
 
 // =============================
-// 🔥 PAUSE FIX
 function pause(){
     App.paused = true;
     App.state="paused";
@@ -475,10 +414,8 @@ function pause(){
 }
 
 // =============================
-// 🔥 RESUME (NEU – FEHLTE!)
 function resume(){
     if(!App.paused) return;
-
     App.paused = false;
     App.state="running";
 }
@@ -490,6 +427,7 @@ function nextPhase(){
     speechSynthesis.cancel();
 
     stopSignal = true;
+    App.session++; // 🔥 wichtig
 
     if(phaseIndex < phases.length - 1){
         phaseIndex++;
@@ -507,6 +445,7 @@ function nextPhase(){
 
 // =============================
 function setPhase(p){
+    App.session++; // 🔥 wichtig
     phaseIndex=p-1;
     current=0;
     load();
@@ -565,7 +504,6 @@ function updateButtons(){
         btnP3.classList.add("active");
     }
 }
-
 
 
 // =============================
