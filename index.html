@@ -128,9 +128,13 @@ button:active {
     box-shadow:0 0 10px rgba(255,0,150,0.4);
 }
 #progressBar {
-    position:relative; /* ✅ hinzufügen */
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, purple, deeppink);
+    transition:0.3s;
+    box-shadow:0 0 10px rgba(255,0,150,0.4);
+    position:relative;
 }
-
 #progressBar::after {
     content:"";
     position:absolute;
@@ -224,6 +228,9 @@ setTimeout(() => {
     speechSynthesis.speak(msg);
 }, 100);
 
+        });
+    });
+
     return speechQueue;
 }
 
@@ -241,11 +248,12 @@ async function start(){
     await countdown();
     run(ex);
 }
+        
 async function countdown(){
- 
-// 🔊 Countdown Stimme für letzte 3 Sekunden (nur wenn läuft + NICHT im Countdown)
-if(!isNaN(v) && v <= 3 && v > 0 && running && !countdownMode){
-    speak(v.toString());
+    for(let i=3;i>0;i--){
+        update(i);
+        await speak(i.toString());
+    }
 }
 
 function run(ex){
