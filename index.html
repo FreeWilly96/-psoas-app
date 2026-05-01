@@ -9,13 +9,11 @@
 <link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
 <link rel="manifest" href="manifest.json">
 
-<!-- 🔥 Native Feeling Meta -->
 <meta name="theme-color" content="#0b1a2f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <style>
-/* Dein kompletter bestehender Style bleibt */
 body {
     margin:0;
     font-family:Arial;
@@ -65,6 +63,8 @@ button:active {
 
 .start{background:green;}
 .pause{background:red;}
+.resume{background:#007aff;}
+
 .skip{background:orange;}
 .mode{background:black;}
 
@@ -106,7 +106,7 @@ h3 { font-size:26px; margin:5px 0; }
     border-radius:10px;
 }
 
-/* 🔥 Install Button */
+/* Install */
 #installBtn {
     display:none;
     background:#007aff;
@@ -127,9 +127,13 @@ h3 { font-size:26px; margin:5px 0; }
 
 <div id="progressBar"><div id="progress"></div></div>
 
-<button class="start" onclick="start()">Start</button>
+<!-- 🔥 SMART BUTTON -->
+<button id="mainBtn" class="start" onclick="mainAction()">Start</button>
+
+<!-- Alte Buttons bleiben (nicht gelöscht) -->
 <button class="pause" onclick="pause()">Pause</button>
-<button onclick="resume()">Resume</button>
+<button class="resume" onclick="resume()">Resume</button>
+
 <button class="skip" onclick="next()">Skip</button>
 <button class="mode" onclick="toggleMode()">Mode</button>
 <button id="installBtn">App installieren</button>
@@ -144,16 +148,49 @@ h3 { font-size:26px; margin:5px 0; }
 <script>
 
 // =============================
-// 🔥 Native App Enhancements
+// 🔥 SMART BUTTON LOGIK
+function mainAction(){
 
-// Vibrations Feedback
+    if(App.paused){
+        resume();
+        return;
+    }
+
+    if(running){
+        pause();
+        return;
+    }
+
+    start();
+}
+
+function updateMainButton(){
+
+    const btn = document.getElementById("mainBtn");
+
+    if(App.paused){
+        btn.innerText = "Weiter";
+        btn.className = "resume";
+        return;
+    }
+
+    if(running){
+        btn.innerText = "Pause";
+        btn.className = "pause";
+        return;
+    }
+
+    btn.innerText = "Start";
+    btn.className = "start";
+}
+
+// =============================
 function vibrate(ms=50){
     if(navigator.vibrate){
         navigator.vibrate(ms);
     }
 }
 
-// Screen Wake Lock (Display bleibt an)
 let wakeLock = null;
 
 async function keepScreenOn(){
@@ -164,14 +201,12 @@ async function keepScreenOn(){
     }catch(e){}
 }
 
-// Sichtbarkeits-Handling (Auto Pause)
 document.addEventListener("visibilitychange", ()=>{
     if(document.hidden){
         pause();
     }
 });
 
-// Install Button
 let deferredPrompt;
 
 window.addEventListener('beforeinstallprompt', (e)=>{
@@ -188,8 +223,6 @@ document.getElementById("installBtn").addEventListener("click", async ()=>{
 });
 
 // =============================
-// Dein bestehender Code (unverändert erweitert)
-
 const App = {
     paused:false,
     lastTime:null
@@ -201,13 +234,12 @@ let timer = null;
 let running = false;
 let stopSignal = false;
 
-// iOS Fix
 document.body.addEventListener("click", () => {
     speechSynthesis.getVoices();
     keepScreenOn();
 }, { once:true });
 
-// DARK MODE
+// =============================
 function toggleMode(){
     document.body.classList.toggle("dark");
     localStorage.setItem("darkMode", document.body.classList.contains("dark"));
@@ -216,7 +248,7 @@ if(localStorage.getItem("darkMode")==="true"){
     document.body.classList.add("dark");
 }
 
-// AUDIO
+// =============================
 function speak(text){
     speechSynthesis.cancel();
 
@@ -229,7 +261,7 @@ function speak(text){
     });
 }
 
-// PAUSIERBARES SLEEP
+// =============================
 function sleep(ms){
     return new Promise(resolve=>{
         let start = Date.now();
@@ -253,21 +285,20 @@ function sleep(ms){
     });
 }
 
-// Countdown
+// =============================
 async function countdownTimer(sec){
     for(let i=sec;i>0;i--){
         update(i);
-        vibrate(30); // 🔥 Feedback
+        vibrate(30);
         await speak(i.toString());
     }
 }
 
-// START
+// =============================
 async function start(){
     if(running) return;
     running = true;
-
-    vibrate(100);
+    updateMainButton();
 
     let ex = phases[phaseIndex][current];
 
@@ -291,7 +322,7 @@ async function start(){
     run(ex);
 }
 
-// RUN
+// =============================
 function run(ex){
     if(ex.type==="time") runTime(ex);
     if(ex.type==="reps") runReps(ex);
@@ -300,7 +331,7 @@ function run(ex){
     if(ex.type==="sideHoldReps") runSideHoldReps(ex);
 }
 
-// TIMER
+// =============================
 function runTime(ex){
     let t = ex.time;
     App.lastTime = Date.now();
@@ -334,7 +365,7 @@ function runTime(ex){
     tick();
 }
 
-// REPS
+// =============================
 async function runReps(ex){
     let reps = ex.reps;
 
@@ -351,7 +382,7 @@ async function runReps(ex){
     next();
 }
 
-// HOLD
+// =============================
 async function runHoldReps(ex){
     let reps = ex.reps;
 
@@ -374,7 +405,7 @@ async function runHoldReps(ex){
     next();
 }
 
-// SIDE HOLD
+// =============================
 async function runSideHoldReps(ex){
 
     let sides=["rechts","links"];
@@ -415,7 +446,7 @@ async function runSideHoldReps(ex){
     next();
 }
 
-// SIDE
+// =============================
 async function runSide(ex){
 
     let sides=["rechts","links"];
@@ -464,7 +495,7 @@ async function runSide(ex){
     next();
 }
 
-// NEXT
+// =============================
 async function next(){
 
     stopSignal = true;
@@ -478,6 +509,7 @@ async function next(){
     current++;
 
     updateProgress();
+    updateMainButton();
 
     if(current >= phases[phaseIndex].length){
 
@@ -503,11 +535,12 @@ async function next(){
     start();
 }
 
-// PAUSE / RESUME
+// =============================
 function pause(){
     App.paused = true;
     speechSynthesis.cancel();
     running=false;
+    updateMainButton();
 }
 
 function resume(){
@@ -515,12 +548,10 @@ function resume(){
 
     App.paused = false;
     running = true;
-
-    speak("Weiter");
+    updateMainButton();
 }
 
-
-// PHASE
+// =============================
 function nextPhase(){
 
     clearInterval(timer);
@@ -542,13 +573,14 @@ function nextPhase(){
     load();
 }
 
+// =============================
 function setPhase(p){
     phaseIndex=p-1;
     current=0;
     load();
 }
 
-// LOAD
+// =============================
 function load(){
 
     let ex=phases[phaseIndex][current];
@@ -568,9 +600,10 @@ function load(){
     update(ex.time||ex.reps);
     updateButtons();
     updateProgress();
+    updateMainButton();
 }
 
-// UI
+// =============================
 function update(v){
     document.getElementById("timer").innerText=v;
 }
