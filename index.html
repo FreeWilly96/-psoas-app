@@ -6,47 +6,54 @@
 
 <title>Psoas Ultra PRO</title>
 
-<link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
 <link rel="manifest" href="manifest.json">
 
 <style>
-body {
+body{
     margin:0;
-    font-family:Arial;
+    font-family:-apple-system, Arial;
     text-align:center;
     background:#f2f2f2;
-    transition:0.3s;
 }
 
-body.dark {
+body.dark{
     background:#0b1a2f;
     color:white;
 }
 
-img {
+img{
     width:95%;
-    height:40vh;
+    height:30vh;
     object-fit:contain;
 }
 
-.timer { font-size:80px; }
-.side { font-size:30px; height:40px; }
+.timer{
+    font-size:90px;
+    font-weight:bold;
+}
 
-.guide {
-    max-width:500px;
+.progress{
+    width:90%;
+    height:10px;
+    background:#ddd;
     margin:10px auto;
-    text-align:left;
-    padding:10px;
     border-radius:10px;
-    background:white;
+    overflow:hidden;
 }
 
-body.dark .guide {
-    background:#1e2a3a;
+.bar{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,purple,deeppink);
 }
 
-button {
-    padding:10px;
+.stats{
+    font-size:14px;
+    opacity:0.7;
+}
+
+button{
+    padding:12px;
     margin:5px;
     border:none;
     border-radius:10px;
@@ -57,58 +64,6 @@ button {
 .pause{background:red;}
 .skip{background:orange;}
 .mode{background:black;}
-
-.phase { background:#666; }
-.phase.active { background:purple; }
- body {
-    margin:0;
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
-}
-
-/* ✅ Titel schöner */
-h2 {
-    margin-top:15px;
-    font-size:22px;
-    opacity:0.7;
-}
-
-h3 {
-    font-size:26px;
-    margin:5px 0;
-}
-
-/* ✅ Timer moderner */
-.timer {
-    font-size:90px;
-    font-weight:bold;
-    letter-spacing:2px;
-}
-
-/* ✅ Side Anzeige klarer */
-.side {
-    font-size:28px;
-    font-weight:bold;
-    color:#666;
-}
-
-/* ✅ Card Design */
-.guide {
-    box-shadow:0 4px 12px rgba(0,0,0,0.1);
-}
-
-/* ✅ Buttons moderner */
-button {
-    padding:12px 16px;
-    margin:6px;
-    border:none;
-    border-radius:12px;
-    font-size:16px;
-}
-
-/* ✅ Active Phase schöner */
-.phase.active {
-    background:linear-gradient(45deg, purple, deeppink);
-}  
 </style>
 </head>
 
@@ -116,12 +71,15 @@ button {
 
 <h2 id="phaseTitle"></h2>
 <h3 id="exerciseTitle"></h3>
-<div id="side" class="side"></div>
 
 <img id="exerciseImage">
-<div id="guide" class="guide"></div>
+
+<div class="progress"><div id="bar" class="bar"></div></div>
 
 <div id="timer" class="timer">0</div>
+<div id="side"></div>
+
+<div class="stats" id="stats"></div>
 
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
@@ -130,137 +88,102 @@ button {
 
 <br>
 
-<button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
-<button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
-<button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
-    <button class="mode" onclick="nextPhase()">Nächtes Training</button>
-    
+<button onclick="setPhase(1)">Training 1</button>
+<button onclick="setPhase(2)">Training 2</button>
+<button onclick="setPhase(3)">Training 3</button>
 
 <script>
 
 // =============================
-let phaseIndex = 0;
-let current = 0;
-let timer = null;
-let running = false;
-let stopSignal = false;
+// STATE
+let phaseIndex=0, current=0, timer=null;
+let running=false;
+
+// =============================
+// 🔥 STORAGE SYSTEM
+let data = JSON.parse(localStorage.getItem("psoasData")) || {
+    workouts:0,
+    totalTime:0,
+    streak:0,
+    lastDate:null
+};
+
+// =============================
+// 📊 UPDATE STATS
+function updateStats(){
+    document.getElementById("stats").innerText =
+        "Trainings: " + data.workouts +
+        " | Zeit: " + Math.floor(data.totalTime/60) + " min" +
+        " | Streak: " + data.streak + " Tage";
+}
+
+// =============================
+// 🔥 STREAK LOGIK
+function updateStreak(){
+
+    let today = new Date().toDateString();
+
+    if(data.lastDate !== today){
+
+        let yesterday = new Date();
+        yesterday.setDate(yesterday.getDate()-1);
+
+        if(data.lastDate === yesterday.toDateString()){
+            data.streak++;
+        } else {
+            data.streak = 1;
+        }
+
+        data.lastDate = today;
+    }
+}
 
 // =============================
 // DARK MODE
 function toggleMode(){
     document.body.classList.toggle("dark");
-    localStorage.setItem("darkMode", document.body.classList.contains("dark"));
-}
-if(localStorage.getItem("darkMode")==="true"){
-    document.body.classList.add("dark");
 }
 
 // =============================
 // AUDIO
-let speechQueue = Promise.resolve();
-
 function speak(text){
-    speechQueue = speechQueue.then(() => {
-        return new Promise(resolve => {
-
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = "de-DE";
-
-            // ✅ NEU: weichere Stimme
-            msg.rate = 0.9;     // langsamer
-            msg.pitch = 1.0;    // neutral
-            msg.volume = 1;
-
-            // ✅ NEU: bessere iOS Stabilität
-            const voices = speechSynthesis.getVoices();
-            const deVoice = voices.find(v => v.lang === "de-DE");
-            if(deVoice) msg.voice = deVoice;
-
-            msg.onend = () => {
-                setTimeout(resolve, 250);
-            };
-
-            speechSynthesis.speak(msg);
-        });
-    });
-
-    return speechQueue;
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang="de-DE";
+    speechSynthesis.speak(msg);
 }
 
 // =============================
 async function start(){
+
     if(running) return;
-    running = true;
-    
-    speechSynthesis.cancel();
-    await sleep(200);
-    
+    running=true;
+
     let ex = phases[phaseIndex][current];
 
-    await speak(ex.name + ". " + ex.subtitle);
+    speak(ex.name);
+
     await sleep(300);
 
-    if(current === 0){
-
-        for(let g of ex.guide){
-            await speak(g);
-        }
-
-    } else {
-
-        await speak("Bereit machen");
-        
-        for(let i=10;i>0;i--){
-            update(i);
-            await sleep(1000);
-        }
-
-        for(let g of ex.guide){
-            await speak(g);
-        }
-    }
-
-    // 🔥 DAS HAT GEFEHLT
-    await sleep(500);
-    await countdown();
-    run(ex);
-}
-// =============================
-async function countdown(){
     for(let i=3;i>0;i--){
         update(i);
-        await speak(i.toString());
+        await sleep(1000);
     }
+
+    run(ex);
 }
 
 // =============================
 function run(ex){
-    if(ex.type==="time") runTime(ex);
-    if(ex.type==="reps") runReps(ex);
-    if(ex.type==="side") runSide(ex);
-    if(ex.type==="holdReps") runHoldReps(ex);
-    if(ex.type==="sideHoldReps") runSideHoldReps(ex);
-}
 
-// =============================
-function runTime(ex){
-    let t = ex.time;
+    let t=ex.time;
 
-    update(t);
-
-    timer = setInterval(()=>{
-        
-        if(stopSignal){
-            clearInterval(timer);
-            return;
-        }
+    timer=setInterval(()=>{
 
         t--;
         update(t);
+        updateBar(t, ex.time);
 
-        if(t === 10){
-            speak("Noch zehn Sekunden");
-        }
+        data.totalTime++;
 
         if(t<=0) next();
 
@@ -268,200 +191,57 @@ function runTime(ex){
 }
 
 // =============================
-async function runReps(ex){
-    let reps = ex.reps;
+function next(){
 
-    while(reps>0 && !stopSignal){
-        update(reps);
-        await speak(reps.toString());
-        reps--;
-        await sleep(ex.rest*1000);
-    }
-
-    next();
-}
-
-// =============================
-async function runHoldReps(ex){
-    let reps = ex.reps;
-
-    while(reps>0 && !stopSignal){
-
-        if(reps===ex.reps){
-    update("HALTEN");
-    await speak("Spannung halten für fünf Sekunden");
-} else {
-    update(reps);
-    await speak(reps.toString());
-}
-
-reps--;
-       
-
-        await sleep(5000);
-    }
-
-    next();
-}
-
-// =============================
-async function runSideHoldReps(ex){
-
-    let sides=["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        let side = sides[i];
-
-        if(i > 0){
-            await speak("Seitenwechsel");
-            await sleep(1000);
-        }
-
-        showSide(side);
-        await speak("Seite " + side);
-        await sleep(1000);
-
-        let reps=ex.reps;
-
-        while(reps>0 && !stopSignal){
-
-            if(reps===ex.reps){
-                update("HALTEN");
-                await speak("Spannung halten für fünf Sekunden");
-            } else {
-                update(reps);
-                await speak(reps.toString());
-            }
-
-            reps--;
-            await sleep(5000);
-        }
-    }
-
-    next();
-} // ✅ WICHTIG!
-
-// =============================
-async function runSide(ex){
-
-    let sides=["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        if(stopSignal) return;
-
-        let side = sides[i];
-
-        if(i > 0){
-            await speak("Seitenwechsel");
-            await sleep(1000);
-        }
-
-        showSide(side);
-        await speak("Seite " + side);
-        await sleep(1500);
-
-        let t=ex.time;
-
-        await new Promise(resolve=>{
-            timer=setInterval(()=>{
-
-                if(stopSignal){
-                    clearInterval(timer);
-                    resolve();
-                    return;
-                }
-
-                t--;
-                update(t);
-
-                if(t<=0){
-                    clearInterval(timer);
-                    resolve();
-                }
-
-            },1000);
-        });
-    }
-
-    next();
-}
-// =============================
-async function next(){
-
-    // 🔥 ALLES stoppen
-    stopSignal = true;
     clearInterval(timer);
-    speechSynthesis.cancel();
 
-    await sleep(100); // Mini Reset
-    stopSignal = false;
-
-    running=false;
     current++;
 
     if(current >= phases[phaseIndex].length){
 
-        update("FERTIG 💪");
-        showSide("");
-
-        await speak("Training beendet. Sehr gut gemacht.");
-
-        alert("Training Phase " + (phaseIndex+1) + " beendet 💪");
-
-        current = phases[phaseIndex].length - 1;
+        finishWorkout();
         return;
-    }
-
-    let ex=phases[phaseIndex][current];
-
-    await speak("Nächste Übung");
-    await speak(ex.name + ". " + ex.subtitle);
-
-    for(let i=10;i>0;i--){
-        if(stopSignal) return;
-        update(i);
-        await sleep(1000);
     }
 
     load();
     start();
 }
+
 // =============================
-async function rest(){
-    for(let i=15;i>0;i--){
-        update(i);
-        await sleep(1000);
-    }
+// 🏁 WORKOUT ENDE
+function finishWorkout(){
+
+    speak("Training beendet");
+
+    data.workouts++;
+    updateStreak();
+
+    localStorage.setItem("psoasData", JSON.stringify(data));
+
+    updateStats();
+
+    alert("Stark 💪 Streak: " + data.streak);
+
+    current=0;
+}
+
+// =============================
+function updateBar(t,total){
+    let p=(1-t/total)*100;
+    document.getElementById("bar").style.width=p+"%";
+}
+
+// =============================
+function update(v){
+    document.getElementById("timer").innerText=v;
 }
 
 // =============================
 function pause(){
     clearInterval(timer);
     running=false;
-    speechSynthesis.cancel();
 }
-function nextPhase(){
 
-    clearInterval(timer);
-    speechSynthesis.cancel();
-
-    stopSignal = true;
-
-    if(phaseIndex < phases.length - 1){
-        phaseIndex++;
-    } else {
-        phaseIndex = 0;
-    }
-
-    current = 0;
-    running = false;
-
-    stopSignal = false;
-
-    load();
-}
 // =============================
 function setPhase(p){
     phaseIndex=p-1;
@@ -472,50 +252,51 @@ function setPhase(p){
 // =============================
 function load(){
 
-    let ex=phases[phaseIndex][current];
+    let ex = phases[phaseIndex][current];
 
     document.getElementById("phaseTitle").innerText="Training "+(phaseIndex+1);
     document.getElementById("exerciseTitle").innerText=ex.name;
     document.getElementById("exerciseImage").src=ex.img;
 
-    let html = "<ul>";
-ex.guide.forEach(g=>{
-    html += "<li>" + g + "</li>";
-});
-html += "</ul>";
+    update(ex.time);
+    document.getElementById("bar").style.width="0%";
 
-document.getElementById("guide").innerHTML = html;
-    update(ex.time||ex.reps);
-    updateButtons();
+    updateStats();
 }
 
-function update(v){
-    document.getElementById("timer").innerText=v;
-}
-
-function showSide(s){
-    document.getElementById("side").innerText=s;
-}
-
+// =============================
 function sleep(ms){
     return new Promise(r=>setTimeout(r,ms));
 }
 
 // =============================
-function updateButtons(){
+// 🧠 AUTO TRAININGSPLAN
+function autoPlan(){
 
-    btnP1.classList.remove("active");
-btnP2.classList.remove("active");
-btnP3.classList.remove("active");
+    let day = new Date().getDay();
 
-if(phaseIndex===0){
-    btnP1.classList.add("active");
-} else if(phaseIndex===1){
-    btnP2.classList.add("active");
-} else {
-    btnP3.classList.add("active");
+    if(day===1) phaseIndex=0; // Montag
+    if(day===3) phaseIndex=1; // Mittwoch
+    if(day===5) phaseIndex=2; // Freitag
 }
-}
+
+// =============================
+// 🔔 BASIC REMINDER
+setInterval(()=>{
+    let hour = new Date().getHours();
+
+    if(hour===18){
+        speak("Zeit für dein Training");
+    }
+},60000);
+
+// =============================
+// DEMO PHASEN
+const phases = [
+[{name:"Atmung", img:"images/phase3.jpg", time:30}],
+[{name:"Dead Bug", img:"images/phase2.jpg", time:30}],
+[{name:"Plank", img:"images/training3.jpg", time:30}]
+];
 
 // =============================
 // 🔥 STABILE PHASEN
@@ -779,6 +560,8 @@ guide:[
 
 ];
 // =============================
+// =============================
+autoPlan();
 load();
 
 </script>
