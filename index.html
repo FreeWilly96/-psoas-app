@@ -6,12 +6,16 @@
 
 <title>Psoas Ultra PRO</title>
 
+<link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
+<link rel="manifest" href="manifest.json">
+
 <style>
 body {
     margin:0;
-    font-family:-apple-system, Arial;
+    font-family:Arial;
     text-align:center;
     background:#f2f2f2;
+    transition:0.3s;
 }
 
 body.dark {
@@ -21,33 +25,28 @@ body.dark {
 
 img {
     width:95%;
-    height:35vh;
+    height:40vh;
     object-fit:contain;
 }
 
-.timer {
-    font-size:90px;
-    font-weight:bold;
-}
+.timer { font-size:80px; }
+.side { font-size:30px; height:40px; }
 
-.progress {
-    width:90%;
-    height:10px;
-    background:#ddd;
+.guide {
+    max-width:500px;
     margin:10px auto;
+    text-align:left;
+    padding:10px;
     border-radius:10px;
-    overflow:hidden;
+    background:white;
 }
 
-.bar {
-    height:100%;
-    width:0%;
-    background:linear-gradient(90deg, purple, deeppink);
-    transition:width 0.5s;
+body.dark .guide {
+    background:#1e2a3a;
 }
 
 button {
-    padding:12px;
+    padding:10px;
     margin:5px;
     border:none;
     border-radius:10px;
@@ -59,9 +58,57 @@ button {
 .skip{background:orange;}
 .mode{background:black;}
 
+.phase { background:#666; }
+.phase.active { background:purple; }
+ body {
+    margin:0;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
+}
+
+/* ✅ Titel schöner */
+h2 {
+    margin-top:15px;
+    font-size:22px;
+    opacity:0.7;
+}
+
+h3 {
+    font-size:26px;
+    margin:5px 0;
+}
+
+/* ✅ Timer moderner */
+.timer {
+    font-size:90px;
+    font-weight:bold;
+    letter-spacing:2px;
+}
+
+/* ✅ Side Anzeige klarer */
+.side {
+    font-size:28px;
+    font-weight:bold;
+    color:#666;
+}
+
+/* ✅ Card Design */
+.guide {
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ✅ Buttons moderner */
+button {
+    padding:12px 16px;
+    margin:6px;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+}
+
+/* ✅ Active Phase schöner */
 .phase.active {
     background:linear-gradient(45deg, purple, deeppink);
-}
+}  
 </style>
 </head>
 
@@ -69,137 +116,324 @@ button {
 
 <h2 id="phaseTitle"></h2>
 <h3 id="exerciseTitle"></h3>
+<div id="side" class="side"></div>
 
 <img id="exerciseImage">
-
-<div class="progress"><div id="bar" class="bar"></div></div>
+<div id="guide" class="guide"></div>
 
 <div id="timer" class="timer">0</div>
-<div id="side"></div>
 
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
 <button class="skip" onclick="next()">Skip</button>
+<button class="mode" onclick="toggleMode()">Mode</button>
 
 <br>
 
-<button id="btnP1" onclick="setPhase(1)">Training 1</button>
-<button id="btnP2" onclick="setPhase(2)">Training 2</button>
-<button id="btnP3" onclick="setPhase(3)">Training 3</button>
+<button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
+<button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
+<button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
+    <button class="mode" onclick="nextPhase()">Nächtes Training</button>
+    
 
 <script>
 
 // =============================
-let phaseIndex=0, current=0, timer=null;
-let running=false, stopSignal=false;
+let phaseIndex = 0;
+let current = 0;
+let timer = null;
+let running = false;
+let stopSignal = false;
 
 // =============================
-// 🔊 SOUND
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-
-// =============================
-// 📳 VIBRATION
-function vibrate(ms=200){
-    if(navigator.vibrate) navigator.vibrate(ms);
+// DARK MODE
+function toggleMode(){
+    document.body.classList.toggle("dark");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark"));
 }
-
-// =============================
-// 🧠 MOTIVATION
-const motivation = [
-"Sehr stark",
-"Du ziehst das durch",
-"Perfekte Kontrolle",
-"Bleib stabil",
-"Genau so"
-];
-
-function coach(){
-    let txt = motivation[Math.floor(Math.random()*motivation.length)];
-    speak(txt);
+if(localStorage.getItem("darkMode")==="true"){
+    document.body.classList.add("dark");
 }
 
 // =============================
 // AUDIO
+let speechQueue = Promise.resolve();
+
 function speak(text){
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang="de-DE";
-    speechSynthesis.speak(msg);
+    speechQueue = speechQueue.then(() => {
+        return new Promise(resolve => {
+
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = "de-DE";
+
+            // ✅ NEU: weichere Stimme
+            msg.rate = 0.9;     // langsamer
+            msg.pitch = 1.0;    // neutral
+            msg.volume = 1;
+
+            // ✅ NEU: bessere iOS Stabilität
+            const voices = speechSynthesis.getVoices();
+            const deVoice = voices.find(v => v.lang === "de-DE");
+            if(deVoice) msg.voice = deVoice;
+
+            msg.onend = () => {
+                setTimeout(resolve, 250);
+            };
+
+            speechSynthesis.speak(msg);
+        });
+    });
+
+    return speechQueue;
 }
 
 // =============================
 async function start(){
-
     if(running) return;
-    running=true;
-
+    running = true;
+    
+    speechSynthesis.cancel();
+    await sleep(200);
+    
     let ex = phases[phaseIndex][current];
 
-    speak(ex.name);
+    await speak(ex.name + ". " + ex.subtitle);
+    await sleep(300);
 
-    await sleep(500);
+    if(current === 0){
 
-    // 3-2-1 SOUND COUNTDOWN
-    for(let i=3;i>0;i--){
-        update(i);
-        beep.play();
-        await sleep(1000);
+        for(let g of ex.guide){
+            await speak(g);
+        }
+
+    } else {
+
+        await speak("Bereit machen");
+        
+        for(let i=10;i>0;i--){
+            update(i);
+            await sleep(1000);
+        }
+
+        for(let g of ex.guide){
+            await speak(g);
+        }
     }
 
-    vibrate(300);
-    coach();
-
+    // 🔥 DAS HAT GEFEHLT
+    await sleep(500);
+    await countdown();
     run(ex);
+}
+// =============================
+async function countdown(){
+    for(let i=3;i>0;i--){
+        update(i);
+        await speak(i.toString());
+    }
 }
 
 // =============================
 function run(ex){
+    if(ex.type==="time") runTime(ex);
+    if(ex.type==="reps") runReps(ex);
+    if(ex.type==="side") runSide(ex);
+    if(ex.type==="holdReps") runHoldReps(ex);
+    if(ex.type==="sideHoldReps") runSideHoldReps(ex);
+}
 
-    if(ex.type==="time"){
-        let t=ex.time;
+// =============================
+function runTime(ex){
+    let t = ex.time;
 
-        timer=setInterval(()=>{
-            t--;
-            update(t);
-            updateBar(t, ex.time);
+    update(t);
 
-            if(t===5){
-                coach();
+    timer = setInterval(()=>{
+        
+        if(stopSignal){
+            clearInterval(timer);
+            return;
+        }
+
+        t--;
+        update(t);
+
+        if(t === 10){
+            speak("Noch zehn Sekunden");
+        }
+
+        if(t<=0) next();
+
+    },1000);
+}
+
+// =============================
+async function runReps(ex){
+    let reps = ex.reps;
+
+    while(reps>0 && !stopSignal){
+        update(reps);
+        await speak(reps.toString());
+        reps--;
+        await sleep(ex.rest*1000);
+    }
+
+    next();
+}
+
+// =============================
+async function runHoldReps(ex){
+    let reps = ex.reps;
+
+    while(reps>0 && !stopSignal){
+
+        if(reps===ex.reps){
+    update("HALTEN");
+    await speak("Spannung halten für fünf Sekunden");
+} else {
+    update(reps);
+    await speak(reps.toString());
+}
+
+reps--;
+       
+
+        await sleep(5000);
+    }
+
+    next();
+}
+
+// =============================
+async function runSideHoldReps(ex){
+
+    let sides=["rechts","links"];
+
+    for(let i=0;i<sides.length;i++){
+
+        let side = sides[i];
+
+        if(i > 0){
+            await speak("Seitenwechsel");
+            await sleep(1000);
+        }
+
+        showSide(side);
+        await speak("Seite " + side);
+        await sleep(1000);
+
+        let reps=ex.reps;
+
+        while(reps>0 && !stopSignal){
+
+            if(reps===ex.reps){
+                update("HALTEN");
+                await speak("Spannung halten für fünf Sekunden");
+            } else {
+                update(reps);
+                await speak(reps.toString());
             }
 
-            if(t<=0) next();
-
-        },1000);
+            reps--;
+            await sleep(5000);
+        }
     }
-}
+
+    next();
+} // ✅ WICHTIG!
 
 // =============================
-function updateBar(t, total){
-    let percent = (1 - t/total) * 100;
-    document.getElementById("bar").style.width = percent + "%";
+async function runSide(ex){
+
+    let sides=["rechts","links"];
+
+    for(let i=0;i<sides.length;i++){
+
+        if(stopSignal) return;
+
+        let side = sides[i];
+
+        if(i > 0){
+            await speak("Seitenwechsel");
+            await sleep(1000);
+        }
+
+        showSide(side);
+        await speak("Seite " + side);
+        await sleep(1500);
+
+        let t=ex.time;
+
+        await new Promise(resolve=>{
+            timer=setInterval(()=>{
+
+                if(stopSignal){
+                    clearInterval(timer);
+                    resolve();
+                    return;
+                }
+
+                t--;
+                update(t);
+
+                if(t<=0){
+                    clearInterval(timer);
+                    resolve();
+                }
+
+            },1000);
+        });
+    }
+
+    next();
 }
-
 // =============================
-function update(v){
-    document.getElementById("timer").innerText=v;
-}
+async function next(){
 
-// =============================
-function next(){
-
+    // 🔥 ALLES stoppen
+    stopSignal = true;
     clearInterval(timer);
-    vibrate(400);
+    speechSynthesis.cancel();
 
+    await sleep(100); // Mini Reset
+    stopSignal = false;
+
+    running=false;
     current++;
 
     if(current >= phases[phaseIndex].length){
-        speak("Fertig");
-        alert("Training beendet 💪");
-        current=0;
+
+        update("FERTIG 💪");
+        showSide("");
+
+        await speak("Training beendet. Sehr gut gemacht.");
+
+        alert("Training Phase " + (phaseIndex+1) + " beendet 💪");
+
+        current = phases[phaseIndex].length - 1;
         return;
+    }
+
+    let ex=phases[phaseIndex][current];
+
+    await speak("Nächste Übung");
+    await speak(ex.name + ". " + ex.subtitle);
+
+    for(let i=10;i>0;i--){
+        if(stopSignal) return;
+        update(i);
+        await sleep(1000);
     }
 
     load();
     start();
+}
+// =============================
+async function rest(){
+    for(let i=15;i>0;i--){
+        update(i);
+        await sleep(1000);
+    }
 }
 
 // =============================
@@ -208,7 +442,26 @@ function pause(){
     running=false;
     speechSynthesis.cancel();
 }
+function nextPhase(){
 
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    stopSignal = true;
+
+    if(phaseIndex < phases.length - 1){
+        phaseIndex++;
+    } else {
+        phaseIndex = 0;
+    }
+
+    current = 0;
+    running = false;
+
+    stopSignal = false;
+
+    load();
+}
 // =============================
 function setPhase(p){
     phaseIndex=p-1;
@@ -219,17 +472,31 @@ function setPhase(p){
 // =============================
 function load(){
 
-    let ex = phases[phaseIndex][current];
+    let ex=phases[phaseIndex][current];
 
     document.getElementById("phaseTitle").innerText="Training "+(phaseIndex+1);
     document.getElementById("exerciseTitle").innerText=ex.name;
     document.getElementById("exerciseImage").src=ex.img;
 
-    update(ex.time||0);
-    document.getElementById("bar").style.width="0%";
+    let html = "<ul>";
+ex.guide.forEach(g=>{
+    html += "<li>" + g + "</li>";
+});
+html += "</ul>";
+
+document.getElementById("guide").innerHTML = html;
+    update(ex.time||ex.reps);
+    updateButtons();
 }
 
-// =============================
+function update(v){
+    document.getElementById("timer").innerText=v;
+}
+
+function showSide(s){
+    document.getElementById("side").innerText=s;
+}
+
 function sleep(ms){
     return new Promise(r=>setTimeout(r,ms));
 }
