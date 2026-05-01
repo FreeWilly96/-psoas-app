@@ -118,7 +118,7 @@ h3 { font-size:26px; margin:5px 0; }
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
 <button onclick="resume()">Resume</button>
-<button class="skip" onclick="next()">Skip</button>
+<button class="skip" onclick="skip()">Skip</button>
 <button class="mode" onclick="toggleMode()">Mode</button>
 
 <br>
@@ -128,8 +128,6 @@ h3 { font-size:26px; margin:5px 0; }
 <button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
 <button class="mode" onclick="nextPhase()">Nächstes Training</button>
 
-<!-- NUR SCRIPT TEIL ERSETZT – REST BLEIBT -->
-
 <script>
 
 // =============================
@@ -138,7 +136,7 @@ const App = {
     paused:false,
     lastTime:null,
     state:"idle",
-    session:0 // 🔥 NEU (wichtig!)
+    session:0
 };
 
 // =============================
@@ -149,7 +147,17 @@ let running = false;
 let stopSignal = false;
 
 // =============================
-// 🔥 PAUSIERBARES SLEEP
+// 🔥 DARK MODE FIX
+function toggleMode(){
+    document.body.classList.toggle("dark");
+    const isDark = document.body.classList.contains("dark");
+    localStorage.setItem("darkMode", isDark);
+}
+if(localStorage.getItem("darkMode")==="true"){
+    document.body.classList.add("dark");
+}
+
+// =============================
 function sleep(ms, session){
     return new Promise(resolve=>{
         let start = Date.now();
@@ -176,7 +184,6 @@ function sleep(ms, session){
 }
 
 // =============================
-// 🔥 SAFE SPEAK (mit Session)
 function speak(text, session){
 
     speechSynthesis.cancel();
@@ -213,11 +220,16 @@ async function start(){
 
     if(running || App.state==="paused") return;
 
+    if(!phases || !phases[phaseIndex] || !phases[phaseIndex][current]){
+        console.warn("Keine Übung geladen");
+        return;
+    }
+
     running = true;
     App.state="running";
     stopSignal = false;
 
-    App.session++; // 🔥 neue Session
+    App.session++;
     let session = App.session;
 
     let ex = phases[phaseIndex][current];
@@ -360,11 +372,10 @@ async function runSide(ex, session){
 }
 
 // =============================
-// 🔥 SKIP FIX (JETZT STABIL)
 function skip(){
 
     stopSignal = true;
-    App.session++; // 🔥 killt ALLE alten loops
+    App.session++;
 
     speechSynthesis.cancel();
     clearInterval(timer);
@@ -397,9 +408,10 @@ async function next(force=false){
     let ex=phases[phaseIndex][current];
 
     if(!force){
-        await speak("Nächste Übung");
-        await speak(ex.name);
-        await countdownTimer(3, App.session);
+        const session = App.session;
+        await speak("Nächste Übung", session);
+        await speak(ex.name, session);
+        await countdownTimer(3, session);
     }
 
     load();
@@ -418,6 +430,7 @@ function resume(){
     if(!App.paused) return;
     App.paused = false;
     App.state="running";
+    App.lastTime = Date.now();
 }
 
 // =============================
@@ -427,7 +440,7 @@ function nextPhase(){
     speechSynthesis.cancel();
 
     stopSignal = true;
-    App.session++; // 🔥 wichtig
+    App.session++;
 
     if(phaseIndex < phases.length - 1){
         phaseIndex++;
@@ -445,7 +458,7 @@ function nextPhase(){
 
 // =============================
 function setPhase(p){
-    App.session++; // 🔥 wichtig
+    App.session++;
     phaseIndex=p-1;
     current=0;
     load();
@@ -504,6 +517,7 @@ function updateButtons(){
         btnP3.classList.add("active");
     }
 }
+
 
 
 // =============================
