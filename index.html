@@ -6,33 +6,31 @@
 
 <title>Psoas Ultra PRO</title>
 
-<link rel="manifest" href="manifest.json">
-
 <style>
-body{
+body {
     margin:0;
     font-family:-apple-system, Arial;
     text-align:center;
     background:#f2f2f2;
 }
 
-body.dark{
+body.dark {
     background:#0b1a2f;
     color:white;
 }
 
-img{
+img {
     width:95%;
-    height:30vh;
+    height:35vh;
     object-fit:contain;
 }
 
-.timer{
+.timer {
     font-size:90px;
     font-weight:bold;
 }
 
-.progress{
+.progress {
     width:90%;
     height:10px;
     background:#ddd;
@@ -41,18 +39,14 @@ img{
     overflow:hidden;
 }
 
-.bar{
+.bar {
     height:100%;
     width:0%;
-    background:linear-gradient(90deg,purple,deeppink);
+    background:linear-gradient(90deg, purple, deeppink);
+    transition:width 0.5s;
 }
 
-.stats{
-    font-size:14px;
-    opacity:0.7;
-}
-
-button{
+button {
     padding:12px;
     margin:5px;
     border:none;
@@ -64,6 +58,10 @@ button{
 .pause{background:red;}
 .skip{background:orange;}
 .mode{background:black;}
+
+.phase.active {
+    background:linear-gradient(45deg, purple, deeppink);
+}
 </style>
 </head>
 
@@ -79,69 +77,45 @@ button{
 <div id="timer" class="timer">0</div>
 <div id="side"></div>
 
-<div class="stats" id="stats"></div>
-
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
 <button class="skip" onclick="next()">Skip</button>
-<button class="mode" onclick="toggleMode()">Mode</button>
 
 <br>
 
-<button onclick="setPhase(1)">Training 1</button>
-<button onclick="setPhase(2)">Training 2</button>
-<button onclick="setPhase(3)">Training 3</button>
+<button id="btnP1" onclick="setPhase(1)">Training 1</button>
+<button id="btnP2" onclick="setPhase(2)">Training 2</button>
+<button id="btnP3" onclick="setPhase(3)">Training 3</button>
 
 <script>
 
 // =============================
-// STATE
 let phaseIndex=0, current=0, timer=null;
-let running=false;
+let running=false, stopSignal=false;
 
 // =============================
-// 🔥 STORAGE SYSTEM
-let data = JSON.parse(localStorage.getItem("psoasData")) || {
-    workouts:0,
-    totalTime:0,
-    streak:0,
-    lastDate:null
-};
+// 🔊 SOUND
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
 // =============================
-// 📊 UPDATE STATS
-function updateStats(){
-    document.getElementById("stats").innerText =
-        "Trainings: " + data.workouts +
-        " | Zeit: " + Math.floor(data.totalTime/60) + " min" +
-        " | Streak: " + data.streak + " Tage";
+// 📳 VIBRATION
+function vibrate(ms=200){
+    if(navigator.vibrate) navigator.vibrate(ms);
 }
 
 // =============================
-// 🔥 STREAK LOGIK
-function updateStreak(){
+// 🧠 MOTIVATION
+const motivation = [
+"Sehr stark",
+"Du ziehst das durch",
+"Perfekte Kontrolle",
+"Bleib stabil",
+"Genau so"
+];
 
-    let today = new Date().toDateString();
-
-    if(data.lastDate !== today){
-
-        let yesterday = new Date();
-        yesterday.setDate(yesterday.getDate()-1);
-
-        if(data.lastDate === yesterday.toDateString()){
-            data.streak++;
-        } else {
-            data.streak = 1;
-        }
-
-        data.lastDate = today;
-    }
-}
-
-// =============================
-// DARK MODE
-function toggleMode(){
-    document.body.classList.toggle("dark");
+function coach(){
+    let txt = motivation[Math.floor(Math.random()*motivation.length)];
+    speak(txt);
 }
 
 // =============================
@@ -162,12 +136,17 @@ async function start(){
 
     speak(ex.name);
 
-    await sleep(300);
+    await sleep(500);
 
+    // 3-2-1 SOUND COUNTDOWN
     for(let i=3;i>0;i--){
         update(i);
+        beep.play();
         await sleep(1000);
     }
+
+    vibrate(300);
+    coach();
 
     run(ex);
 }
@@ -175,60 +154,28 @@ async function start(){
 // =============================
 function run(ex){
 
-    let t=ex.time;
+    if(ex.type==="time"){
+        let t=ex.time;
 
-    timer=setInterval(()=>{
+        timer=setInterval(()=>{
+            t--;
+            update(t);
+            updateBar(t, ex.time);
 
-        t--;
-        update(t);
-        updateBar(t, ex.time);
+            if(t===5){
+                coach();
+            }
 
-        data.totalTime++;
+            if(t<=0) next();
 
-        if(t<=0) next();
-
-    },1000);
-}
-
-// =============================
-function next(){
-
-    clearInterval(timer);
-
-    current++;
-
-    if(current >= phases[phaseIndex].length){
-
-        finishWorkout();
-        return;
+        },1000);
     }
-
-    load();
-    start();
 }
 
 // =============================
-// 🏁 WORKOUT ENDE
-function finishWorkout(){
-
-    speak("Training beendet");
-
-    data.workouts++;
-    updateStreak();
-
-    localStorage.setItem("psoasData", JSON.stringify(data));
-
-    updateStats();
-
-    alert("Stark 💪 Streak: " + data.streak);
-
-    current=0;
-}
-
-// =============================
-function updateBar(t,total){
-    let p=(1-t/total)*100;
-    document.getElementById("bar").style.width=p+"%";
+function updateBar(t, total){
+    let percent = (1 - t/total) * 100;
+    document.getElementById("bar").style.width = percent + "%";
 }
 
 // =============================
@@ -237,9 +184,29 @@ function update(v){
 }
 
 // =============================
+function next(){
+
+    clearInterval(timer);
+    vibrate(400);
+
+    current++;
+
+    if(current >= phases[phaseIndex].length){
+        speak("Fertig");
+        alert("Training beendet 💪");
+        current=0;
+        return;
+    }
+
+    load();
+    start();
+}
+
+// =============================
 function pause(){
     clearInterval(timer);
     running=false;
+    speechSynthesis.cancel();
 }
 
 // =============================
@@ -258,10 +225,8 @@ function load(){
     document.getElementById("exerciseTitle").innerText=ex.name;
     document.getElementById("exerciseImage").src=ex.img;
 
-    update(ex.time);
+    update(ex.time||0);
     document.getElementById("bar").style.width="0%";
-
-    updateStats();
 }
 
 // =============================
@@ -270,33 +235,20 @@ function sleep(ms){
 }
 
 // =============================
-// 🧠 AUTO TRAININGSPLAN
-function autoPlan(){
+function updateButtons(){
 
-    let day = new Date().getDay();
+    btnP1.classList.remove("active");
+btnP2.classList.remove("active");
+btnP3.classList.remove("active");
 
-    if(day===1) phaseIndex=0; // Montag
-    if(day===3) phaseIndex=1; // Mittwoch
-    if(day===5) phaseIndex=2; // Freitag
+if(phaseIndex===0){
+    btnP1.classList.add("active");
+} else if(phaseIndex===1){
+    btnP2.classList.add("active");
+} else {
+    btnP3.classList.add("active");
 }
-
-// =============================
-// 🔔 BASIC REMINDER
-setInterval(()=>{
-    let hour = new Date().getHours();
-
-    if(hour===18){
-        speak("Zeit für dein Training");
-    }
-},60000);
-
-// =============================
-// DEMO PHASEN
-const phases = [
-[{name:"Atmung", img:"images/phase3.jpg", time:30}],
-[{name:"Dead Bug", img:"images/phase2.jpg", time:30}],
-[{name:"Plank", img:"images/training3.jpg", time:30}]
-];
+}
 
 // =============================
 // 🔥 STABILE PHASEN
@@ -560,8 +512,6 @@ guide:[
 
 ];
 // =============================
-// =============================
-autoPlan();
 load();
 
 </script>
