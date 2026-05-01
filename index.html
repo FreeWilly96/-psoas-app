@@ -512,9 +512,13 @@ function pause(){
 
 function resume(){
     if(!App.paused) return;
+
     App.paused = false;
-    start();
+    running = true;
+
+    speak("Weiter");
 }
+
 
 // PHASE
 function nextPhase(){
