@@ -12,19 +12,14 @@
 <style>
 body {
     margin:0;
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
+    font-family:Arial;
     text-align:center;
     background:#f2f2f2;
     transition:0.3s;
 }
 
-/* Verlauf */
-body {
-    background: linear-gradient(180deg, #f2f2f2, #e6e9ef);
-}
-
 body.dark {
-    background: linear-gradient(180deg, #0b1a2f, #09121f);
+    background:#0b1a2f;
     color:white;
 }
 
@@ -32,45 +27,18 @@ img {
     width:95%;
     height:40vh;
     object-fit:contain;
-    border-radius:16px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.15);
-    margin-top:10px;
-    transition:0.4s;
 }
 
-.fade { opacity:0; }
-
-.timer {
-    font-size:90px;
-    font-weight:bold;
-    letter-spacing:2px;
-    text-shadow:0 4px 15px rgba(0,0,0,0.2);
-}
-
-.side {
-    font-size:28px;
-    font-weight:bold;
-    color:#666;
-    display:inline-block;
-    padding:6px 14px;
-    border-radius:20px;
-    background:#ddd;
-    margin-bottom:5px;
-}
-
-body.dark .side {
-    background:#23344d;
-}
+.timer { font-size:80px; }
+.side { font-size:30px; height:40px; }
 
 .guide {
     max-width:500px;
     margin:10px auto;
     text-align:left;
     padding:10px;
-    border-radius:16px;
+    border-radius:10px;
     background:white;
-    box-shadow:0 4px 12px rgba(0,0,0,0.1);
-    backdrop-filter:blur(10px);
 }
 
 body.dark .guide {
@@ -78,73 +46,26 @@ body.dark .guide {
 }
 
 button {
-    padding:12px 16px;
-    margin:6px;
+    padding:10px;
+    margin:5px;
     border:none;
-    border-radius:12px;
-    font-size:16px;
-    color:white;
-    box-shadow:0 4px 10px rgba(0,0,0,0.15);
-    transition:0.2s;
-}
-
-button:active {
-    transform:scale(0.95);
-}
-
-.start { background:linear-gradient(45deg, #00c853, #00e676); }
-.pause { background:linear-gradient(45deg, #d50000, #ff5252); }
-.skip { background:linear-gradient(45deg, #ff6d00, #ffab40); }
-.mode { background:linear-gradient(45deg, #333, #111); }
-
-.phase {
-    background:#444;
-    transition:0.2s;
-}
-
-.phase:hover {
-    transform:scale(1.05);
-}
-
-.phase.active {
-    background:linear-gradient(45deg, purple, deeppink);
-}
-
-/* Progress */
-#progress {
-    height:6px;
-    width:80%;
-    margin:10px auto;
-    background:#ddd;
     border-radius:10px;
-    overflow:hidden;
+    color:white;
 }
 
-#progressBar {
-    height:100%;
-    width:0%;
-    background:linear-gradient(90deg, purple, deeppink);
-    transition:0.3s;
-    box-shadow:0 0 10px rgba(255,0,150,0.4);
+.start{background:green;}
+.pause{background:red;}
+.skip{background:orange;}
+.mode{background:black;}
+
+.phase { background:#666; }
+.phase.active { background:purple; }
+ body {
+    margin:0;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
 }
-#progressBar {
-    height:100%;
-    width:0%;
-    background:linear-gradient(90deg, purple, deeppink);
-    transition:0.3s;
-    box-shadow:0 0 10px rgba(255,0,150,0.4);
-    position:relative;
-}
-#progressBar::after {
-    content:"";
-    position:absolute;
-    right:0;
-    top:0;
-    width:20px;
-    height:100%;
-    background:rgba(255,255,255,0.3);
-    filter:blur(6px);
-}
+
+/* ✅ Titel schöner */
 h2 {
     margin-top:15px;
     font-size:22px;
@@ -155,6 +76,39 @@ h3 {
     font-size:26px;
     margin:5px 0;
 }
+
+/* ✅ Timer moderner */
+.timer {
+    font-size:90px;
+    font-weight:bold;
+    letter-spacing:2px;
+}
+
+/* ✅ Side Anzeige klarer */
+.side {
+    font-size:28px;
+    font-weight:bold;
+    color:#666;
+}
+
+/* ✅ Card Design */
+.guide {
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ✅ Buttons moderner */
+button {
+    padding:12px 16px;
+    margin:6px;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+}
+
+/* ✅ Active Phase schöner */
+.phase.active {
+    background:linear-gradient(45deg, purple, deeppink);
+}  
 </style>
 </head>
 
@@ -169,12 +123,6 @@ h3 {
 
 <div id="timer" class="timer">0</div>
 
-<div id="progress">
-    <div id="progressBar"></div>
-</div>
-
-<div id="progressText"></div>
-
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
 <button class="skip" onclick="next()">Skip</button>
@@ -182,19 +130,21 @@ h3 {
 
 <br>
 
-<button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
-<button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
-<button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>
-<button class="mode" onclick="nextPhase()">Nächtes Training</button>
+<button id="btnP1" class="phase" onclick="setPhase(1)">Phase 1</button>
+<button id="btnP2" class="phase" onclick="setPhase(2)">Phase 2</button>
+    <button class="mode" onclick="nextPhase()">Next Phase</button>
 
 <script>
 
+// =============================
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
 let running = false;
 let stopSignal = false;
 
+// =============================
+// DARK MODE
 function toggleMode(){
     document.body.classList.toggle("dark");
     localStorage.setItem("darkMode", document.body.classList.contains("dark"));
@@ -203,6 +153,8 @@ if(localStorage.getItem("darkMode")==="true"){
     document.body.classList.add("dark");
 }
 
+// =============================
+// AUDIO
 let speechQueue = Promise.resolve();
 
 function speak(text){
@@ -211,44 +163,67 @@ function speak(text){
 
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = "de-DE";
-            msg.rate = 0.9;
 
+            // ✅ NEU: weichere Stimme
+            msg.rate = 0.9;     // langsamer
+            msg.pitch = 1.0;    // neutral
+            msg.volume = 1;
+
+            // ✅ NEU: bessere iOS Stabilität
             const voices = speechSynthesis.getVoices();
             const deVoice = voices.find(v => v.lang === "de-DE");
             if(deVoice) msg.voice = deVoice;
 
-            msg.onend = () => setTimeout(resolve, 250);
+            msg.onend = () => {
+                setTimeout(resolve, 250);
+            };
 
-// 🔥 FIX (stabiler Audio-Start)
-if (speechSynthesis.speaking) {
-    speechSynthesis.cancel();
-}
-
-setTimeout(() => {
-    speechSynthesis.speak(msg);
-}, 100);
-
+            speechSynthesis.speak(msg);
         });
     });
 
     return speechQueue;
 }
 
+// =============================
 async function start(){
     if(running) return;
     running = true;
-
+    
     speechSynthesis.cancel();
     await sleep(200);
-
+    
     let ex = phases[phaseIndex][current];
 
     await speak(ex.name + ". " + ex.subtitle);
+    await sleep(300);
 
+    if(current === 0){
+
+        for(let g of ex.guide){
+            await speak(g);
+        }
+
+    } else {
+
+        await speak("Bereit machen");
+        
+        for(let i=10;i>0;i--){
+            update(i);
+            await sleep(1000);
+        }
+
+        for(let g of ex.guide){
+            await speak(g);
+        }
+    }
+
+    // 🔥 DAS HAT GEFEHLT
+    await sleep(500);
     await countdown();
     run(ex);
 }
-        
+// =============================
 async function countdown(){
     for(let i=3;i>0;i--){
         update(i);
@@ -256,6 +231,7 @@ async function countdown(){
     }
 }
 
+// =============================
 function run(ex){
     if(ex.type==="time") runTime(ex);
     if(ex.type==="reps") runReps(ex);
@@ -264,29 +240,32 @@ function run(ex){
     if(ex.type==="sideHoldReps") runSideHoldReps(ex);
 }
 
+// =============================
 function runTime(ex){
     let t = ex.time;
+
     update(t);
 
     timer = setInterval(()=>{
+        
         if(stopSignal){
-    clearInterval(timer);
-    timer = null;
-    return;
-}
+            clearInterval(timer);
+            return;
+        }
 
         t--;
         update(t);
 
-        if(t===10) speak("Noch zehn Sekunden");
+        if(t === 10){
+            speak("Noch zehn Sekunden");
+        }
 
-        if(t<=0){
-    clearInterval(timer);
-    next();
-}
+        if(t<=0) next();
+
     },1000);
 }
 
+// =============================
 async function runReps(ex){
     let reps = ex.reps;
 
@@ -294,56 +273,100 @@ async function runReps(ex){
         update(reps);
         await speak(reps.toString());
         reps--;
-        await sleep((ex.rest || 2) * 1000);
+        await sleep(ex.rest*1000);
     }
 
     next();
 }
 
+// =============================
 async function runHoldReps(ex){
     let reps = ex.reps;
 
     while(reps>0 && !stopSignal){
-        update(reps);
+
+        if(reps===ex.reps){
+    update("HALTEN");
+    await speak("Spannung halten für fünf Sekunden");
+} else {
+    update(reps);
+    await speak(reps.toString());
+}
+
+reps--;
+       
+
         await sleep(5000);
-        reps--;
     }
 
     next();
 }
 
+// =============================
 async function runSideHoldReps(ex){
+
     let sides=["rechts","links"];
 
-    for(let side of sides){
+    for(let i=0;i<sides.length;i++){
+
+        let side = sides[i];
+
+        if(i > 0){
+            await speak("Seitenwechsel");
+            await sleep(1000);
+        }
+
         showSide(side);
+        await speak("Seite " + side);
+        await sleep(1000);
 
         let reps=ex.reps;
 
         while(reps>0 && !stopSignal){
-            update(reps);
-            await sleep(5000);
+
+            if(reps===ex.reps){
+                update("HALTEN");
+                await speak("Spannung halten für fünf Sekunden");
+            } else {
+                update(reps);
+                await speak(reps.toString());
+            }
+
             reps--;
+            await sleep(5000);
         }
     }
 
     next();
-}
+} // ✅ WICHTIG!
 
+// =============================
 async function runSide(ex){
-    let sides = ["rechts","links"];
 
-    for(let side of sides){
+    let sides=["rechts","links"];
+
+    for(let i=0;i<sides.length;i++){
+
+        if(stopSignal) return;
+
+        let side = sides[i];
+
+        if(i > 0){
+            await speak("Seitenwechsel");
+            await sleep(1000);
+        }
+
         showSide(side);
+        await speak("Seite " + side);
+        await sleep(1500);
 
-        let t = ex.time;
-        update(t); // 🔥 FIX: Startwert anzeigen
+        let t=ex.time;
 
         await new Promise(resolve=>{
-            timer = setInterval(()=>{
+            timer=setInterval(()=>{
+
                 if(stopSignal){
                     clearInterval(timer);
-                    timer = null; // 🔥 FIX
                     resolve();
                     return;
                 }
@@ -351,9 +374,8 @@ async function runSide(ex){
                 t--;
                 update(t);
 
-                if(t <= 0){
+                if(t<=0){
                     clearInterval(timer);
-                    timer = null; // 🔥 FIX
                     resolve();
                 }
 
@@ -361,110 +383,112 @@ async function runSide(ex){
         });
     }
 
-    showSide(""); // ✅ richtig
     next();
 }
-
+// =============================
 async function next(){
 
-    if(navigator.vibrate) navigator.vibrate(100);
-
+    // 🔥 ALLES stoppen
     stopSignal = true;
     clearInterval(timer);
     speechSynthesis.cancel();
-speechQueue = Promise.resolve();
-    await sleep(100);
+
+    await sleep(100); // Mini Reset
     stopSignal = false;
 
     running=false;
     current++;
 
     if(current >= phases[phaseIndex].length){
+
         update("FERTIG 💪");
+        showSide("");
+
+        await speak("Training beendet. Sehr gut gemacht.");
+
+        alert("Training Phase " + (phaseIndex+1) + " beendet 💪");
+
+        current = phases[phaseIndex].length - 1;
         return;
+    }
+
+    let ex=phases[phaseIndex][current];
+
+    await speak("Nächste Übung");
+    await speak(ex.name + ". " + ex.subtitle);
+
+    for(let i=10;i>0;i--){
+        if(stopSignal) return;
+        update(i);
+        await sleep(1000);
     }
 
     load();
     start();
 }
+// =============================
+async function rest(){
+    for(let i=15;i>0;i--){
+        update(i);
+        await sleep(1000);
+    }
+}
 
+// =============================
 function pause(){
     clearInterval(timer);
     running=false;
     speechSynthesis.cancel();
 }
-
 function nextPhase(){
-    phaseIndex = (phaseIndex+1) % phases.length;
+
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    stopSignal = true;
+
+    if(phaseIndex < phases.length - 1){
+        phaseIndex++;
+    } else {
+        phaseIndex = 0;
+    }
+
     current = 0;
+    running = false;
+
+    stopSignal = false;
+
     load();
 }
-
+// =============================
 function setPhase(p){
     phaseIndex=p-1;
     current=0;
     load();
 }
 
+// =============================
 function load(){
 
     let ex=phases[phaseIndex][current];
 
-    document.getElementById("phaseTitle").innerText="Training "+(phaseIndex+1);
+    document.getElementById("phaseTitle").innerText="Phase "+(phaseIndex+1);
     document.getElementById("exerciseTitle").innerText=ex.name;
-    // 🔥 kleiner Titel-Animationseffekt
-const title = document.getElementById("exerciseTitle");
-
-title.style.transition = "0.2s"; // ✅ HIER rein
-title.style.transform = "scale(0.9)";
-title.style.opacity = "0.6";
-
-setTimeout(()=>{
-    title.style.transform = "scale(1)";
-    title.style.opacity = "1";
-},150);
-
-    const img = document.getElementById("exerciseImage");
-
-    img.classList.add("fade");
-
-    setTimeout(()=>{
-        img.src = ex.img;
-        img.classList.remove("fade");
-    },150);
+    document.getElementById("exerciseImage").src=ex.img;
 
     let html = "<ul>";
-    ex.guide.forEach(g=> html += "<li>"+g+"</li>");
-    html += "</ul>";
+ex.guide.forEach(g=>{
+    html += "<li>" + g + "</li>";
+});
+html += "</ul>";
 
-    document.getElementById("guide").innerHTML = html;
-
+document.getElementById("guide").innerHTML = html;
     update(ex.time||ex.reps);
-
-    // Progress
-    let percent = ((current+1)/phases[phaseIndex].length)*100;
-    document.getElementById("progressBar").style.width = percent+"%";
-
-    document.getElementById("progressText").innerText =
-        (current+1)+" / "+phases[phaseIndex].length;
-
     updateButtons();
 }
 
 function update(v){
-    document.getElementById("timer").innerText = v;
-
-    // 🔥 Timer wird rot bei letzten Sekunden
-    if(!isNaN(v) && v <= 5){
-        document.getElementById("timer").style.color = "red";
-    } else {
-        document.getElementById("timer").style.color = "";
-    }
-
-    // 🔊 Countdown Stimme für letzte 3 Sekunden (nur wenn läuft)
-    if(!isNaN(v) && v <= 3 && v > 0 && running){
-        speak(v.toString());
-    }
+    document.getElementById("timer").innerText=v;
 }
 
 function showSide(s){
@@ -475,22 +499,18 @@ function sleep(ms){
     return new Promise(r=>setTimeout(r,ms));
 }
 
+// =============================
 function updateButtons(){
+
     btnP1.classList.remove("active");
     btnP2.classList.remove("active");
-    btnP3.classList.remove("active");
 
-    if(phaseIndex===0) btnP1.classList.add("active");
-    else if(phaseIndex===1) btnP2.classList.add("active");
-    else btnP3.classList.add("active");
+    if(phaseIndex===0){
+        btnP1.classList.add("active");
+    } else {
+        btnP2.classList.add("active");
+    }
 }
-
-load();
-
-</script>
-
-</body>
-</html>
 
 // =============================
 // 🔥 STABILE PHASEN
@@ -672,85 +692,713 @@ guide:[
 "Spannung ruhig halten"
 ]
 }
-],
- /* ================= TRAINING 3 ================= */
+]
+
+];
+// =============================
+load();
+
+</script>
+
+</body>
+</html>
+Läuft 
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Psoas Ultra PRO</title>
+
+<link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+    margin:0;
+    font-family:Arial;
+    text-align:center;
+    background:#f2f2f2;
+    transition:0.3s;
+}
+
+body.dark {
+    background:#0b1a2f;
+    color:white;
+}
+
+img {
+    width:95%;
+    height:40vh;
+    object-fit:contain;
+}
+
+.timer { font-size:80px; }
+.side { font-size:30px; height:40px; }
+
+.guide {
+    max-width:500px;
+    margin:10px auto;
+    text-align:left;
+    padding:10px;
+    border-radius:10px;
+    background:white;
+}
+
+body.dark .guide {
+    background:#1e2a3a;
+}
+
+button {
+    padding:10px;
+    margin:5px;
+    border:none;
+    border-radius:10px;
+    color:white;
+}
+
+.start{background:green;}
+.pause{background:red;}
+.skip{background:orange;}
+.mode{background:black;}
+
+.phase { background:#666; }
+.phase.active { background:purple; }
+ body {
+    margin:0;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
+}
+
+/* ✅ Titel schöner */
+h2 {
+    margin-top:15px;
+    font-size:22px;
+    opacity:0.7;
+}
+
+h3 {
+    font-size:26px;
+    margin:5px 0;
+}
+
+/* ✅ Timer moderner */
+.timer {
+    font-size:90px;
+    font-weight:bold;
+    letter-spacing:2px;
+}
+
+/* ✅ Side Anzeige klarer */
+.side {
+    font-size:28px;
+    font-weight:bold;
+    color:#666;
+}
+
+/* ✅ Card Design */
+.guide {
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ✅ Buttons moderner */
+button {
+    padding:12px 16px;
+    margin:6px;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+}
+
+/* ✅ Active Phase schöner */
+.phase.active {
+    background:linear-gradient(45deg, purple, deeppink);
+}  
+</style>
+</head>
+
+<body>
+
+<h2 id="phaseTitle"></h2>
+<h3 id="exerciseTitle"></h3>
+<div id="side" class="side"></div>
+
+<img id="exerciseImage">
+<div id="guide" class="guide"></div>
+
+<div id="timer" class="timer">0</div>
+
+<button class="start" onclick="start()">Start</button>
+<button class="pause" onclick="pause()">Pause</button>
+<button class="skip" onclick="next()">Skip</button>
+<button class="mode" onclick="toggleMode()">Mode</button>
+
+<br>
+
+<button id="btnP1" class="phase" onclick="setPhase(1)">Phase 1</button>
+<button id="btnP2" class="phase" onclick="setPhase(2)">Phase 2</button>
+    <button class="mode" onclick="nextPhase()">Next Phase</button>
+
+<script>
+
+// =============================
+let phaseIndex = 0;
+let current = 0;
+let timer = null;
+let running = false;
+let stopSignal = false;
+
+// =============================
+// DARK MODE
+function toggleMode(){
+    document.body.classList.toggle("dark");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+}
+if(localStorage.getItem("darkMode")==="true"){
+    document.body.classList.add("dark");
+}
+
+// =============================
+// AUDIO
+let speechQueue = Promise.resolve();
+
+function speak(text){
+    speechQueue = speechQueue.then(() => {
+        return new Promise(resolve => {
+
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = "de-DE";
+
+            // ✅ NEU: weichere Stimme
+            msg.rate = 0.9;     // langsamer
+            msg.pitch = 1.0;    // neutral
+            msg.volume = 1;
+
+            // ✅ NEU: bessere iOS Stabilität
+            const voices = speechSynthesis.getVoices();
+            const deVoice = voices.find(v => v.lang === "de-DE");
+            if(deVoice) msg.voice = deVoice;
+
+            msg.onend = () => {
+                setTimeout(resolve, 250);
+            };
+
+            speechSynthesis.speak(msg);
+        });
+    });
+
+    return speechQueue;
+}
+
+// =============================
+async function start(){
+    if(running) return;
+    running = true;
+    
+    speechSynthesis.cancel();
+    await sleep(200);
+    
+    let ex = phases[phaseIndex][current];
+
+    await speak(ex.name + ". " + ex.subtitle);
+    await sleep(300);
+
+    if(current === 0){
+
+        for(let g of ex.guide){
+            await speak(g);
+        }
+
+    } else {
+
+        await speak("Bereit machen");
+        
+        for(let i=10;i>0;i--){
+            update(i);
+            await sleep(1000);
+        }
+
+        for(let g of ex.guide){
+            await speak(g);
+        }
+    }
+
+    // 🔥 DAS HAT GEFEHLT
+    await sleep(500);
+    await countdown();
+    run(ex);
+}
+// =============================
+async function countdown(){
+    for(let i=3;i>0;i--){
+        update(i);
+        await speak(i.toString());
+    }
+}
+
+// =============================
+function run(ex){
+    if(ex.type==="time") runTime(ex);
+    if(ex.type==="reps") runReps(ex);
+    if(ex.type==="side") runSide(ex);
+    if(ex.type==="holdReps") runHoldReps(ex);
+    if(ex.type==="sideHoldReps") runSideHoldReps(ex);
+}
+
+// =============================
+function runTime(ex){
+    let t = ex.time;
+
+    update(t);
+
+    timer = setInterval(()=>{
+        
+        if(stopSignal){
+            clearInterval(timer);
+            return;
+        }
+
+        t--;
+        update(t);
+
+        if(t === 10){
+            speak("Noch zehn Sekunden");
+        }
+
+        if(t<=0) next();
+
+    },1000);
+}
+
+// =============================
+async function runReps(ex){
+    let reps = ex.reps;
+
+    while(reps>0 && !stopSignal){
+        update(reps);
+        await speak(reps.toString());
+        reps--;
+        await sleep(ex.rest*1000);
+    }
+
+    next();
+}
+
+// =============================
+async function runHoldReps(ex){
+    let reps = ex.reps;
+
+    while(reps>0 && !stopSignal){
+
+        if(reps===ex.reps){
+    update("HALTEN");
+    await speak("Spannung halten für fünf Sekunden");
+} else {
+    update(reps);
+    await speak(reps.toString());
+}
+
+reps--;
+       
+
+        await sleep(5000);
+    }
+
+    next();
+}
+
+// =============================
+async function runSideHoldReps(ex){
+
+    let sides=["rechts","links"];
+
+    for(let i=0;i<sides.length;i++){
+
+        let side = sides[i];
+
+        if(i > 0){
+            await speak("Seitenwechsel");
+            await sleep(1000);
+        }
+
+        showSide(side);
+        await speak("Seite " + side);
+        await sleep(1000);
+
+        let reps=ex.reps;
+
+        while(reps>0 && !stopSignal){
+
+            if(reps===ex.reps){
+                update("HALTEN");
+                await speak("Spannung halten für fünf Sekunden");
+            } else {
+                update(reps);
+                await speak(reps.toString());
+            }
+
+            reps--;
+            await sleep(5000);
+        }
+    }
+
+    next();
+} // ✅ WICHTIG!
+
+// =============================
+async function runSide(ex){
+
+    let sides=["rechts","links"];
+
+    for(let i=0;i<sides.length;i++){
+
+        if(stopSignal) return;
+
+        let side = sides[i];
+
+        if(i > 0){
+            await speak("Seitenwechsel");
+            await sleep(1000);
+        }
+
+        showSide(side);
+        await speak("Seite " + side);
+        await sleep(1500);
+
+        let t=ex.time;
+
+        await new Promise(resolve=>{
+            timer=setInterval(()=>{
+
+                if(stopSignal){
+                    clearInterval(timer);
+                    resolve();
+                    return;
+                }
+
+                t--;
+                update(t);
+
+                if(t<=0){
+                    clearInterval(timer);
+                    resolve();
+                }
+
+            },1000);
+        });
+    }
+
+    next();
+}
+// =============================
+async function next(){
+
+    // 🔥 ALLES stoppen
+    stopSignal = true;
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    await sleep(100); // Mini Reset
+    stopSignal = false;
+
+    running=false;
+    current++;
+
+    if(current >= phases[phaseIndex].length){
+
+        update("FERTIG 💪");
+        showSide("");
+
+        await speak("Training beendet. Sehr gut gemacht.");
+
+        alert("Training Phase " + (phaseIndex+1) + " beendet 💪");
+
+        current = phases[phaseIndex].length - 1;
+        return;
+    }
+
+    let ex=phases[phaseIndex][current];
+
+    await speak("Nächste Übung");
+    await speak(ex.name + ". " + ex.subtitle);
+
+    for(let i=10;i>0;i--){
+        if(stopSignal) return;
+        update(i);
+        await sleep(1000);
+    }
+
+    load();
+    start();
+}
+// =============================
+async function rest(){
+    for(let i=15;i>0;i--){
+        update(i);
+        await sleep(1000);
+    }
+}
+
+// =============================
+function pause(){
+    clearInterval(timer);
+    running=false;
+    speechSynthesis.cancel();
+}
+function nextPhase(){
+
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    stopSignal = true;
+
+    if(phaseIndex < phases.length - 1){
+        phaseIndex++;
+    } else {
+        phaseIndex = 0;
+    }
+
+    current = 0;
+    running = false;
+
+    stopSignal = false;
+
+    load();
+}
+// =============================
+function setPhase(p){
+    phaseIndex=p-1;
+    current=0;
+    load();
+}
+
+// =============================
+function load(){
+
+    let ex=phases[phaseIndex][current];
+
+    document.getElementById("phaseTitle").innerText="Phase "+(phaseIndex+1);
+    document.getElementById("exerciseTitle").innerText=ex.name;
+    document.getElementById("exerciseImage").src=ex.img;
+
+    let html = "<ul>";
+ex.guide.forEach(g=>{
+    html += "<li>" + g + "</li>";
+});
+html += "</ul>";
+
+document.getElementById("guide").innerHTML = html;
+    update(ex.time||ex.reps);
+    updateButtons();
+}
+
+function update(v){
+    document.getElementById("timer").innerText=v;
+}
+
+function showSide(s){
+    document.getElementById("side").innerText=s;
+}
+
+function sleep(ms){
+    return new Promise(r=>setTimeout(r,ms));
+}
+
+// =============================
+function updateButtons(){
+
+    btnP1.classList.remove("active");
+    btnP2.classList.remove("active");
+
+    if(phaseIndex===0){
+        btnP1.classList.add("active");
+    } else {
+        btnP2.classList.add("active");
+    }
+}
+
+// =============================
+// 🔥 STABILE PHASEN
+const phases = [
+
+/* ================= PHASE 1 ================= */
 [
 {
-name:"Einbeiniges Standknieheben",
-subtitle:"Stabilität und Kontrolle",
-img:"images/training3.jpg",
-type:"sideHoldReps",
-reps:10,
+name:"Bauchatmung",
+subtitle:"Nervensystem beruhigen",
+img:"images/phase3.jpg",
+type:"time",
+time:120,
 guide:[
-"Aufrecht stehen",
-"Bauchnabel einziehen",
-"Knie kontrolliert heben",
-"Hüfte bleibt stabil"
+"Rückenlage, Füße aufgestellt",
+"Eine Hand auf Bauch, eine auf Brust",
+"Langsam in den Bauch atmen",
+"5 Sekunden einatmen, 7 Sekunden ausatmen"
 ]
 },
 
 {
-name:"Seitliche Plank kurz",
-subtitle:"Rumpfstabilität seitlich",
-img:"images/training3.jpg",
-type:"sideHoldReps",
-reps:8,
+name:"Knie zur Brust",
+subtitle:"Psoas Entlastung",
+img:"images/phase3.jpg",
+type:"side",
+time:45,
 guide:[
-"Seitlich liegend",
-"Körper bildet eine Linie",
-"Knie leicht angewinkelt",
-"Becken nicht nach vorne oder hinten kippen",
-"Bauch und Gesäß aktiv",
-"Ruhig atmen"
+"Rückenlage",
+"Ein Knie zur Brust ziehen und mit Händen halten",
+"Anderes Bein bleibt gestreckt und locker",
+"Tief weiteratmen und entspannen"
 ]
 },
 
 {
-name:"Plank",
-subtitle:"Ganzkörper Spannung",
-img:"images/training3.jpg",
+name:"Mini-Becken-Kippung",
+subtitle:"Kontrolle und Entlastung",
+img:"images/phase3.jpg",
+type:"reps",
+reps:15,
+rest:3,
+guide:[
+"Rückenlage, Füße aufgestellt",
+"Unterer Rücken leicht in den Boden drücken",
+"Becken kippt nach hinten",
+"Spannung kurz halten und wieder lösen",
+"Kleine ruhige Bewegung"
+]
+},
+
+{
+name:"Hüftbeuger Dehnung",
+subtitle:"Psoas und Hüftbeuger dehnen",
+img:"images/phase3.jpg",
+type:"side",
+time:40,
+guide:[
+"Halbkniestand",
+"Gesäß der hinteren Seite anspannen",
+"Becken leicht nach hinten kippen",
+"Oberkörper aufrecht, kein Hohlkreuz",
+"Dehnung vorne in der Hüfte spüren"
+]
+},
+
+{
+name:"Glute Bridge",
+subtitle:"Gesäßmuskulatur stärken",
+img:"images/phase3.jpg",
 type:"holdReps",
-reps:10,
+reps:15,
 guide:[
-"Bauchlage, Ellenbogen unter den Schultern",
-"Füße hüftbreit auseinander",
-"Körper anheben – gerade Linie",
-"Kopf in Verlängerung der Wirbelsäule",
-"Blick nach unten",
-"Bauchnabel einziehen"
+"Rückenlage, Füße hüftbreit aufstellen",
+"Hüfte nach oben drücken, Gesäß anspannen",
+"Oben 5 Sekunden halten",
+"Langsam wieder absenken"
 ]
 },
 
 {
-name:"Adduktor Kräftigung",
-subtitle:"Innenschenkel aktivieren",
-img:"images/training3.jpg",
+name:"Adduktor Dehnung",
+subtitle:"Leisten und Innenschenkel dehnen",
+img:"images/phase3.jpg",
+type:"side", // ✅ WAR "time"
+time:45,
+guide:[
+"Breiten Stand einnehmen",
+"Gewicht zur Seite verlagern",
+"Andere Seite bleibt gestreckt",
+"Rücken gerade halten",
+"Dehnung innen spüren"
+]
+}
+],
+
+/* ================= PHASE 2 ================= */
+[
+{
+name:"Bauchatmung Aktivierung",
+subtitle:"Rumpf aktivieren",
+img:"images/phase2.jpg",
+type:"time",
+time:60,
+guide:[
+"Ruhig atmen",
+"Spannung im Rumpf aufbauen",
+"Kontrollierte Atmung"
+]
+},
+
+{
+name:"Dynamische Hüftöffnung",
+subtitle:"Beweglichkeit und Kontrolle",
+img:"images/phase2.jpg",
 type:"sideHoldReps",
 reps:10,
 guide:[
-"Seitlich liegend",
-"Körper bildet eine Linie",
-"Becken stabil halten",
-"Bauch und Gesäß aktiv",
-"Ruhig atmen"
+"Ausfallschritt nach vorne",
+"Hüfte vor und zurück bewegen",
+"Spannung halten",
+"Bewegung kontrolliert ausführen"
 ]
 },
 
 {
-name:"Liegendes Beinheben",
-subtitle:"Core Kontrolle",
-img:"images/training3.jpg",
+name:"Glute Bridge einbeinig",
+subtitle:"Stabilität und Kraft",
+img:"images/phase2.jpg",
+type:"sideHoldReps",
+reps:10,
+guide:[
+"Ein Bein anheben",
+"Hüfte nach oben drücken",
+"Spannung im Gesäß halten",
+"Stabil bleiben"
+]
+},
+
+{
+name:"Dead Bug",
+subtitle:"Rumpfstabilität",
+img:"images/phase2.jpg",
 type:"reps",
 reps:12,
 rest:3,
 guide:[
 "Rückenlage",
-"Lendenwirbelsäule bleibt am Boden",
-"Bein langsam heben",
-"Kontrolliert absenken"
+"Arme und Beine anheben",
+"Gegengleich bewegen",
+"Rumpf stabil halten",
+"Unterer Rücken bleibt am Boden"
+]
+},
+
+{
+name:"Seitliche Ausfallschritte",
+subtitle:"Beweglichkeit Hüfte",
+img:"images/phase2.jpg",
+type:"sideHoldReps",
+reps:10,
+guide:[
+"Seitlich ausweichen",
+"Hüfte nach hinten schieben",
+"Gewicht verlagern",
+"Spannung halten"
+]
+},
+
+{
+name:"Adduktor Hüfte Kombi",
+subtitle:"Mobilität und Dehnung",
+img:"images/phase2.jpg",
+type:"side", // ✅ WAR "time"
+time:40,
+guide:[
+"Dehnung halten",
+"Kleine Bewegungen ausführen",
+"Spannung ruhig halten"
 ]
 }
-]   
+]
 
 ];
 // =============================
