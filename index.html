@@ -145,7 +145,6 @@ let running = false;
 let stopSignal = false;
 
 // =============================
-// DARK MODE
 function toggleMode(){
     document.body.classList.toggle("dark");
     localStorage.setItem("darkMode", document.body.classList.contains("dark"));
@@ -209,7 +208,8 @@ async function countdownTimer(sec, session){
 // =============================
 async function start(){
 
-    if((running && App.state==="running") || App.state==="paused") return;
+    // 🔥 FIX: nicht mehr blockieren durch falschen state
+    if(running && !App.paused) return;
 
     if(!phases || !phases[phaseIndex] || !phases[phaseIndex][current]){
         console.warn("Keine Übung geladen");
@@ -405,11 +405,6 @@ async function next(force=false){
     }
 
     load();
-
-    if(force){
-        running = false;
-    }
-
     start();
 }
 
@@ -423,9 +418,14 @@ function pause(){
 // =============================
 function resume(){
     if(!App.paused) return;
+
     App.paused = false;
     App.state="running";
     App.lastTime = Date.now();
+
+    if(!running){
+        start();
+    }
 }
 
 // =============================
@@ -512,7 +512,6 @@ function updateButtons(){
         btnP3.classList.add("active");
     }
 }
-
 
 
 
