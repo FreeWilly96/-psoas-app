@@ -9,7 +9,13 @@
 <link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
 <link rel="manifest" href="manifest.json">
 
+<!-- 🔥 Native Feeling Meta -->
+<meta name="theme-color" content="#0b1a2f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <style>
+/* Dein kompletter bestehender Style bleibt */
 body {
     margin:0;
     font-family:Arial;
@@ -84,7 +90,7 @@ h3 { font-size:26px; margin:5px 0; }
     box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* 🔥 Progress Bar */
+/* Progress */
 #progressBar {
     width:90%;
     height:10px;
@@ -98,6 +104,12 @@ h3 { font-size:26px; margin:5px 0; }
     width:0%;
     background:linear-gradient(90deg, purple, deeppink);
     border-radius:10px;
+}
+
+/* 🔥 Install Button */
+#installBtn {
+    display:none;
+    background:#007aff;
 }
 </style>
 </head>
@@ -117,8 +129,10 @@ h3 { font-size:26px; margin:5px 0; }
 
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
+<button onclick="resume()">Resume</button>
 <button class="skip" onclick="next()">Skip</button>
 <button class="mode" onclick="toggleMode()">Mode</button>
+<button id="installBtn">App installieren</button>
 
 <br>
 
@@ -130,26 +144,69 @@ h3 { font-size:26px; margin:5px 0; }
 <script>
 
 // =============================
-// 🔥 APP STATE (NEU – ohne alten Code zu brechen)
+// 🔥 Native App Enhancements
+
+// Vibrations Feedback
+function vibrate(ms=50){
+    if(navigator.vibrate){
+        navigator.vibrate(ms);
+    }
+}
+
+// Screen Wake Lock (Display bleibt an)
+let wakeLock = null;
+
+async function keepScreenOn(){
+    try{
+        if('wakeLock' in navigator){
+            wakeLock = await navigator.wakeLock.request('screen');
+        }
+    }catch(e){}
+}
+
+// Sichtbarkeits-Handling (Auto Pause)
+document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden){
+        pause();
+    }
+});
+
+// Install Button
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById("installBtn").style.display="inline-block";
+});
+
+document.getElementById("installBtn").addEventListener("click", async ()=>{
+    if(deferredPrompt){
+        deferredPrompt.prompt();
+        deferredPrompt = null;
+    }
+});
+
+// =============================
+// Dein bestehender Code (unverändert erweitert)
+
 const App = {
     paused:false,
     lastTime:null
 };
 
-// =============================
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
 let running = false;
 let stopSignal = false;
 
-// =============================
-// iOS Speech Fix
+// iOS Fix
 document.body.addEventListener("click", () => {
     speechSynthesis.getVoices();
+    keepScreenOn();
 }, { once:true });
 
-// =============================
 // DARK MODE
 function toggleMode(){
     document.body.classList.toggle("dark");
@@ -159,40 +216,59 @@ if(localStorage.getItem("darkMode")==="true"){
     document.body.classList.add("dark");
 }
 
-// =============================
-// 🔥 AUDIO FIX (kein Queue Bug mehr)
+// AUDIO
 function speak(text){
-
     speechSynthesis.cancel();
 
     return new Promise(resolve => {
-
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = "de-DE";
         msg.rate = 0.9;
-
         msg.onend = () => setTimeout(resolve,150);
-
         speechSynthesis.speak(msg);
     });
 }
 
-// =============================
+// PAUSIERBARES SLEEP
+function sleep(ms){
+    return new Promise(resolve=>{
+        let start = Date.now();
+
+        function check(){
+            if(stopSignal) return;
+
+            if(App.paused){
+                setTimeout(check,100);
+                return;
+            }
+
+            if(Date.now() - start >= ms){
+                resolve();
+            } else {
+                requestAnimationFrame(check);
+            }
+        }
+
+        check();
+    });
+}
+
+// Countdown
 async function countdownTimer(sec){
     for(let i=sec;i>0;i--){
         update(i);
+        vibrate(30); // 🔥 Feedback
         await speak(i.toString());
     }
 }
 
-// =============================
+// START
 async function start(){
     if(running) return;
     running = true;
-    
-    speechSynthesis.cancel();
-    await sleep(200);
-    
+
+    vibrate(100);
+
     let ex = phases[phaseIndex][current];
 
     await speak(ex.name + ". " + ex.subtitle);
@@ -215,7 +291,7 @@ async function start(){
     run(ex);
 }
 
-// =============================
+// RUN
 function run(ex){
     if(ex.type==="time") runTime(ex);
     if(ex.type==="reps") runReps(ex);
@@ -224,8 +300,7 @@ function run(ex){
     if(ex.type==="sideHoldReps") runSideHoldReps(ex);
 }
 
-// =============================
-// 🔥 BESSERER TIMER (kein Drift)
+// TIMER
 function runTime(ex){
     let t = ex.time;
     App.lastTime = Date.now();
@@ -233,6 +308,11 @@ function runTime(ex){
     function tick(){
 
         if(stopSignal) return;
+
+        if(App.paused){
+            requestAnimationFrame(tick);
+            return;
+        }
 
         let now = Date.now();
 
@@ -254,12 +334,15 @@ function runTime(ex){
     tick();
 }
 
-// =============================
+// REPS
 async function runReps(ex){
     let reps = ex.reps;
 
     while(reps>0 && !stopSignal){
+        if(App.paused){ await sleep(200); continue; }
+
         update(reps);
+        vibrate(20);
         await speak(reps.toString());
         reps--;
         await sleep(ex.rest*1000);
@@ -268,11 +351,13 @@ async function runReps(ex){
     next();
 }
 
-// =============================
+// HOLD
 async function runHoldReps(ex){
     let reps = ex.reps;
 
     while(reps>0 && !stopSignal){
+
+        if(App.paused){ await sleep(200); continue; }
 
         if(reps===ex.reps){
             update("HALTEN");
@@ -289,12 +374,14 @@ async function runHoldReps(ex){
     next();
 }
 
-// =============================
+// SIDE HOLD
 async function runSideHoldReps(ex){
 
     let sides=["rechts","links"];
 
     for(let i=0;i<sides.length;i++){
+
+        if(App.paused){ await sleep(200); i--; continue; }
 
         let side = sides[i];
 
@@ -305,11 +392,12 @@ async function runSideHoldReps(ex){
 
         showSide(side);
         await speak("Seite " + side);
-        await sleep(1000);
 
         let reps=ex.reps;
 
         while(reps>0 && !stopSignal){
+
+            if(App.paused){ await sleep(200); continue; }
 
             if(reps===ex.reps){
                 update("HALTEN");
@@ -327,7 +415,7 @@ async function runSideHoldReps(ex){
     next();
 }
 
-// =============================
+// SIDE
 async function runSide(ex){
 
     let sides=["rechts","links"];
@@ -335,6 +423,8 @@ async function runSide(ex){
     for(let i=0;i<sides.length;i++){
 
         if(stopSignal) return;
+
+        if(App.paused){ await sleep(200); i--; continue; }
 
         let side = sides[i];
 
@@ -345,7 +435,6 @@ async function runSide(ex){
 
         showSide(side);
         await speak("Seite " + side);
-        await sleep(1500);
 
         let t=ex.time;
 
@@ -357,6 +446,8 @@ async function runSide(ex){
                     resolve();
                     return;
                 }
+
+                if(App.paused) return;
 
                 t--;
                 update(t);
@@ -373,7 +464,7 @@ async function runSide(ex){
     next();
 }
 
-// =============================
+// NEXT
 async function next(){
 
     stopSignal = true;
@@ -412,15 +503,20 @@ async function next(){
     start();
 }
 
-// =============================
+// PAUSE / RESUME
 function pause(){
     App.paused = true;
-    clearInterval(timer);
     speechSynthesis.cancel();
     running=false;
 }
 
-// =============================
+function resume(){
+    if(!App.paused) return;
+    App.paused = false;
+    start();
+}
+
+// PHASE
 function nextPhase(){
 
     clearInterval(timer);
@@ -442,14 +538,13 @@ function nextPhase(){
     load();
 }
 
-// =============================
 function setPhase(p){
     phaseIndex=p-1;
     current=0;
     load();
 }
 
-// =============================
+// LOAD
 function load(){
 
     let ex=phases[phaseIndex][current];
@@ -471,7 +566,7 @@ function load(){
     updateProgress();
 }
 
-// =============================
+// UI
 function update(v){
     document.getElementById("timer").innerText=v;
 }
@@ -480,19 +575,12 @@ function showSide(s){
     document.getElementById("side").innerText=s;
 }
 
-function sleep(ms){
-    return new Promise(r=>setTimeout(r,ms));
-}
-
-// =============================
-// 🔥 Progress Update
 function updateProgress(){
     let total = phases[phaseIndex].length;
     let percent = (current / total) * 100;
     document.getElementById("progress").style.width = percent + "%";
 }
 
-// =============================
 function updateButtons(){
 
     btnP1.classList.remove("active");
