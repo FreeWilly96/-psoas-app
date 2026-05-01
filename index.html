@@ -51,6 +51,10 @@ button {
     border:none;
     border-radius:10px;
     color:white;
+    transition:0.2s;
+}
+button:active {
+    transform:scale(0.95);
 }
 
 .start{background:green;}
@@ -60,55 +64,41 @@ button {
 
 .phase { background:#666; }
 .phase.active { background:purple; }
- body {
-    margin:0;
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
-}
 
-/* ✅ Titel schöner */
-h2 {
-    margin-top:15px;
-    font-size:22px;
-    opacity:0.7;
-}
+h2 { margin-top:15px; font-size:22px; opacity:0.7; }
+h3 { font-size:26px; margin:5px 0; }
 
-h3 {
-    font-size:26px;
-    margin:5px 0;
-}
-
-/* ✅ Timer moderner */
 .timer {
     font-size:90px;
     font-weight:bold;
     letter-spacing:2px;
 }
 
-/* ✅ Side Anzeige klarer */
 .side {
     font-size:28px;
     font-weight:bold;
     color:#666;
 }
 
-/* ✅ Card Design */
 .guide {
     box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* ✅ Buttons moderner */
-button {
-    padding:12px 16px;
-    margin:6px;
-    border:none;
-    border-radius:12px;
-    font-size:16px;
+/* 🔥 Progress Bar */
+#progressBar {
+    width:90%;
+    height:10px;
+    background:#ccc;
+    margin:10px auto;
+    border-radius:10px;
 }
 
-/* ✅ Active Phase schöner */
-.phase.active {
-    background:linear-gradient(45deg, purple, deeppink);
-}  
+#progress {
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, purple, deeppink);
+    border-radius:10px;
+}
 </style>
 </head>
 
@@ -123,6 +113,8 @@ button {
 
 <div id="timer" class="timer">0</div>
 
+<div id="progressBar"><div id="progress"></div></div>
+
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
 <button class="skip" onclick="next()">Skip</button>
@@ -133,10 +125,16 @@ button {
 <button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
 <button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
 <button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
-    <button class="mode" onclick="nextPhase()">Nächtes Training</button>
-    
+<button class="mode" onclick="nextPhase()">Nächstes Training</button>
 
 <script>
+
+// =============================
+// 🔥 APP STATE (NEU – ohne alten Code zu brechen)
+const App = {
+    paused:false,
+    lastTime:null
+};
 
 // =============================
 let phaseIndex = 0;
@@ -144,6 +142,12 @@ let current = 0;
 let timer = null;
 let running = false;
 let stopSignal = false;
+
+// =============================
+// iOS Speech Fix
+document.body.addEventListener("click", () => {
+    speechSynthesis.getVoices();
+}, { once:true });
 
 // =============================
 // DARK MODE
@@ -156,35 +160,29 @@ if(localStorage.getItem("darkMode")==="true"){
 }
 
 // =============================
-// AUDIO
-let speechQueue = Promise.resolve();
-
+// 🔥 AUDIO FIX (kein Queue Bug mehr)
 function speak(text){
-    speechQueue = speechQueue.then(() => {
-        return new Promise(resolve => {
 
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = "de-DE";
+    speechSynthesis.cancel();
 
-            // ✅ NEU: weichere Stimme
-            msg.rate = 0.9;     // langsamer
-            msg.pitch = 1.0;    // neutral
-            msg.volume = 1;
+    return new Promise(resolve => {
 
-            // ✅ NEU: bessere iOS Stabilität
-            const voices = speechSynthesis.getVoices();
-            const deVoice = voices.find(v => v.lang === "de-DE");
-            if(deVoice) msg.voice = deVoice;
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = "de-DE";
+        msg.rate = 0.9;
 
-            msg.onend = () => {
-                setTimeout(resolve, 250);
-            };
+        msg.onend = () => setTimeout(resolve,150);
 
-            speechSynthesis.speak(msg);
-        });
+        speechSynthesis.speak(msg);
     });
+}
 
-    return speechQueue;
+// =============================
+async function countdownTimer(sec){
+    for(let i=sec;i>0;i--){
+        update(i);
+        await speak(i.toString());
+    }
 }
 
 // =============================
@@ -198,39 +196,23 @@ async function start(){
     let ex = phases[phaseIndex][current];
 
     await speak(ex.name + ". " + ex.subtitle);
-    await sleep(300);
 
     if(current === 0){
-
         for(let g of ex.guide){
             await speak(g);
         }
-
     } else {
-
         await speak("Bereit machen");
-        
-        for(let i=10;i>0;i--){
-            update(i);
-            await sleep(1000);
-        }
+        await countdownTimer(10);
 
         for(let g of ex.guide){
             await speak(g);
         }
     }
 
-    // 🔥 DAS HAT GEFEHLT
     await sleep(500);
-    await countdown();
+    await countdownTimer(3);
     run(ex);
-}
-// =============================
-async function countdown(){
-    for(let i=3;i>0;i--){
-        update(i);
-        await speak(i.toString());
-    }
 }
 
 // =============================
@@ -243,28 +225,33 @@ function run(ex){
 }
 
 // =============================
+// 🔥 BESSERER TIMER (kein Drift)
 function runTime(ex){
     let t = ex.time;
+    App.lastTime = Date.now();
 
-    update(t);
+    function tick(){
 
-    timer = setInterval(()=>{
-        
-        if(stopSignal){
-            clearInterval(timer);
-            return;
+        if(stopSignal) return;
+
+        let now = Date.now();
+
+        if(now - App.lastTime >= 1000){
+            t--;
+            update(t);
+            App.lastTime = now;
+
+            if(t === 10){
+                speak("Noch zehn Sekunden");
+            }
+
+            if(t<=0) return next();
         }
 
-        t--;
-        update(t);
+        requestAnimationFrame(tick);
+    }
 
-        if(t === 10){
-            speak("Noch zehn Sekunden");
-        }
-
-        if(t<=0) next();
-
-    },1000);
+    tick();
 }
 
 // =============================
@@ -288,16 +275,14 @@ async function runHoldReps(ex){
     while(reps>0 && !stopSignal){
 
         if(reps===ex.reps){
-    update("HALTEN");
-    await speak("Spannung halten für fünf Sekunden");
-} else {
-    update(reps);
-    await speak(reps.toString());
-}
+            update("HALTEN");
+            await speak("Spannung halten für fünf Sekunden");
+        } else {
+            update(reps);
+            await speak(reps.toString());
+        }
 
-reps--;
-       
-
+        reps--;
         await sleep(5000);
     }
 
@@ -340,7 +325,7 @@ async function runSideHoldReps(ex){
     }
 
     next();
-} // ✅ WICHTIG!
+}
 
 // =============================
 async function runSide(ex){
@@ -387,19 +372,21 @@ async function runSide(ex){
 
     next();
 }
+
 // =============================
 async function next(){
 
-    // 🔥 ALLES stoppen
     stopSignal = true;
     clearInterval(timer);
     speechSynthesis.cancel();
 
-    await sleep(100); // Mini Reset
+    await sleep(100);
     stopSignal = false;
 
     running=false;
     current++;
+
+    updateProgress();
 
     if(current >= phases[phaseIndex].length){
 
@@ -419,29 +406,21 @@ async function next(){
     await speak("Nächste Übung");
     await speak(ex.name + ". " + ex.subtitle);
 
-    for(let i=10;i>0;i--){
-        if(stopSignal) return;
-        update(i);
-        await sleep(1000);
-    }
+    await countdownTimer(10);
 
     load();
     start();
 }
-// =============================
-async function rest(){
-    for(let i=15;i>0;i--){
-        update(i);
-        await sleep(1000);
-    }
-}
 
 // =============================
 function pause(){
+    App.paused = true;
     clearInterval(timer);
-    running=false;
     speechSynthesis.cancel();
+    running=false;
 }
+
+// =============================
 function nextPhase(){
 
     clearInterval(timer);
@@ -462,6 +441,7 @@ function nextPhase(){
 
     load();
 }
+
 // =============================
 function setPhase(p){
     phaseIndex=p-1;
@@ -479,16 +459,19 @@ function load(){
     document.getElementById("exerciseImage").src=ex.img;
 
     let html = "<ul>";
-ex.guide.forEach(g=>{
-    html += "<li>" + g + "</li>";
-});
-html += "</ul>";
+    ex.guide.forEach(g=>{
+        html += "<li>" + g + "</li>";
+    });
+    html += "</ul>";
 
-document.getElementById("guide").innerHTML = html;
+    document.getElementById("guide").innerHTML = html;
+
     update(ex.time||ex.reps);
     updateButtons();
+    updateProgress();
 }
 
+// =============================
 function update(v){
     document.getElementById("timer").innerText=v;
 }
@@ -502,19 +485,27 @@ function sleep(ms){
 }
 
 // =============================
+// 🔥 Progress Update
+function updateProgress(){
+    let total = phases[phaseIndex].length;
+    let percent = (current / total) * 100;
+    document.getElementById("progress").style.width = percent + "%";
+}
+
+// =============================
 function updateButtons(){
 
     btnP1.classList.remove("active");
-btnP2.classList.remove("active");
-btnP3.classList.remove("active");
+    btnP2.classList.remove("active");
+    btnP3.classList.remove("active");
 
-if(phaseIndex===0){
-    btnP1.classList.add("active");
-} else if(phaseIndex===1){
-    btnP2.classList.add("active");
-} else {
-    btnP3.classList.add("active");
-}
+    if(phaseIndex===0){
+        btnP1.classList.add("active");
+    } else if(phaseIndex===1){
+        btnP2.classList.add("active");
+    } else {
+        btnP3.classList.add("active");
+    }
 }
 
 // =============================
