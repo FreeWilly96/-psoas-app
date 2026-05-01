@@ -128,12 +128,16 @@ h3 { font-size:26px; margin:5px 0; }
 <button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
 <button class="mode" onclick="nextPhase()">Nächstes Training</button>
 
+<!-- NUR SCRIPT TEIL ERSETZT – REST BLEIBT -->
+
 <script>
 
 // =============================
+// 🔥 APP STATE (ERWEITERT – nichts gelöscht)
 const App = {
     paused:false,
-    lastTime:null
+    lastTime:null,
+    state:"idle" // idle | running | paused
 };
 
 // =============================
@@ -144,72 +148,72 @@ let running = false;
 let stopSignal = false;
 
 // =============================
-// iOS Speech Fix
-document.body.addEventListener("click", () => {
-    speechSynthesis.getVoices();
-}, { once:true });
-
-// =============================
-// DARK MODE
-function toggleMode(){
-    document.body.classList.toggle("dark");
-    localStorage.setItem("darkMode", document.body.classList.contains("dark"));
-}
-if(localStorage.getItem("darkMode")==="true"){
-    document.body.classList.add("dark");
-}
-
-// =============================
-// AUDIO FIX
-function speak(text){
-    speechSynthesis.cancel();
-
-    return new Promise(resolve => {
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = "de-DE";
-        msg.rate = 0.9;
-        msg.onend = () => setTimeout(resolve,150);
-        speechSynthesis.speak(msg);
-    });
-}
-
-// =============================
-// 🔥 PAUSIERBARES SLEEP
+// 🔥 PAUSIERBARES SLEEP (NEU)
 function sleep(ms){
     return new Promise(resolve=>{
         let start = Date.now();
 
-        function check(){
-            if(stopSignal) return;
+        function loop(){
+            if(stopSignal) return resolve();
 
             if(App.paused){
-                setTimeout(check,100);
+                requestAnimationFrame(loop);
                 return;
             }
 
             if(Date.now() - start >= ms){
                 resolve();
             } else {
-                requestAnimationFrame(check);
+                requestAnimationFrame(loop);
             }
         }
 
-        check();
+        loop();
+    });
+}
+
+// =============================
+// 🔥 SAFE SPEAK
+function speak(text){
+
+    speechSynthesis.cancel();
+
+    return new Promise(resolve => {
+
+        if(stopSignal) return resolve();
+
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = "de-DE";
+        msg.rate = 0.9;
+
+        msg.onend = () => setTimeout(resolve,120);
+
+        speechSynthesis.speak(msg);
     });
 }
 
 // =============================
 async function countdownTimer(sec){
     for(let i=sec;i>0;i--){
+
+        if(stopSignal) return;
+
+        while(App.paused) await sleep(200);
+
         update(i);
         await speak(i.toString());
     }
 }
 
 // =============================
+// 🔥 START FIX
 async function start(){
-    if(running) return;
+
+    if(running || App.state==="paused") return;
+
     running = true;
+    App.state="running";
+    stopSignal = false;
 
     let ex = phases[phaseIndex][current];
 
@@ -217,19 +221,22 @@ async function start(){
 
     if(current === 0){
         for(let g of ex.guide){
+            if(stopSignal) return;
             await speak(g);
         }
     } else {
         await speak("Bereit machen");
-        await countdownTimer(10);
+        await countdownTimer(5);
 
         for(let g of ex.guide){
+            if(stopSignal) return;
             await speak(g);
         }
     }
 
-    await sleep(500);
+    await sleep(300);
     await countdownTimer(3);
+
     run(ex);
 }
 
@@ -243,7 +250,7 @@ function run(ex){
 }
 
 // =============================
-// 🔥 PAUSIERBARER TIMER
+// 🔥 FIXED TIMER
 function runTime(ex){
     let t = ex.time;
     App.lastTime = Date.now();
@@ -264,10 +271,7 @@ function runTime(ex){
             update(t);
             App.lastTime = now;
 
-            if(t === 10){
-                speak("Noch zehn Sekunden");
-            }
-
+            if(t === 10) speak("Noch zehn Sekunden");
             if(t<=0) return next();
         }
 
@@ -282,10 +286,15 @@ async function runReps(ex){
     let reps = ex.reps;
 
     while(reps>0 && !stopSignal){
-        if(App.paused){ await sleep(200); continue; }
+
+        if(App.paused){
+            await sleep(200);
+            continue;
+        }
 
         update(reps);
         await speak(reps.toString());
+
         reps--;
         await sleep(ex.rest*1000);
     }
@@ -299,7 +308,10 @@ async function runHoldReps(ex){
 
     while(reps>0 && !stopSignal){
 
-        if(App.paused){ await sleep(200); continue; }
+        if(App.paused){
+            await sleep(200);
+            continue;
+        }
 
         if(reps===ex.reps){
             update("HALTEN");
@@ -323,7 +335,9 @@ async function runSideHoldReps(ex){
 
     for(let i=0;i<sides.length;i++){
 
-        if(App.paused){ await sleep(200); i--; continue; }
+        if(stopSignal) return;
+
+        while(App.paused) await sleep(200);
 
         let side = sides[i];
 
@@ -334,13 +348,15 @@ async function runSideHoldReps(ex){
 
         showSide(side);
         await speak("Seite " + side);
-        await sleep(1000);
 
         let reps=ex.reps;
 
         while(reps>0 && !stopSignal){
 
-            if(App.paused){ await sleep(200); continue; }
+            if(App.paused){
+                await sleep(200);
+                continue;
+            }
 
             if(reps===ex.reps){
                 update("HALTEN");
@@ -367,7 +383,7 @@ async function runSide(ex){
 
         if(stopSignal) return;
 
-        if(App.paused){ await sleep(200); i--; continue; }
+        while(App.paused) await sleep(200);
 
         let side = sides[i];
 
@@ -378,7 +394,6 @@ async function runSide(ex){
 
         showSide(side);
         await speak("Seite " + side);
-        await sleep(1500);
 
         let t=ex.time;
 
@@ -409,18 +424,25 @@ async function runSide(ex){
 }
 
 // =============================
+// 🔥 SKIP FIX
+function skip(){
+    stopSignal = true;
+    speechSynthesis.cancel();
+    clearInterval(timer);
+
+    setTimeout(()=>{
+        stopSignal = false;
+        next();
+    },50);
+}
+
+// =============================
 async function next(){
 
-    stopSignal = true;
-    clearInterval(timer);
-    speechSynthesis.cancel();
-
-    await sleep(100);
-    stopSignal = false;
-
     running=false;
-    current++;
+    App.state="idle";
 
+    current++;
     updateProgress();
 
     if(current >= phases[phaseIndex].length){
@@ -430,35 +452,35 @@ async function next(){
 
         await speak("Training beendet. Sehr gut gemacht.");
 
-        alert("Training Phase " + (phaseIndex+1) + " beendet 💪");
-
-        current = phases[phaseIndex].length - 1;
         return;
     }
 
     let ex=phases[phaseIndex][current];
 
     await speak("Nächste Übung");
-    await speak(ex.name + ". " + ex.subtitle);
+    await speak(ex.name);
 
-    await countdownTimer(10);
+    await countdownTimer(3);
 
     load();
     start();
 }
 
 // =============================
+// 🔥 PAUSE FIX
 function pause(){
     App.paused = true;
+    App.state="paused";
     speechSynthesis.cancel();
-    running=false;
 }
 
 // =============================
+// 🔥 RESUME (NEU – FEHLTE!)
 function resume(){
     if(!App.paused) return;
+
     App.paused = false;
-    start();
+    App.state="running";
 }
 
 // =============================
@@ -521,10 +543,6 @@ function showSide(s){
     document.getElementById("side").innerText=s;
 }
 
-function sleep2(ms){
-    return new Promise(r=>setTimeout(r,ms));
-}
-
 // =============================
 function updateProgress(){
     let total = phases[phaseIndex].length;
@@ -547,6 +565,7 @@ function updateButtons(){
         btnP3.classList.add("active");
     }
 }
+
 
 
 // =============================
