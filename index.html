@@ -131,7 +131,6 @@ h3 { font-size:26px; margin:5px 0; }
 <script>
 
 // =============================
-// 🔥 APP STATE
 const App = {
     paused:false,
     lastTime:null,
@@ -139,7 +138,6 @@ const App = {
     session:0
 };
 
-// =============================
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
@@ -147,11 +145,10 @@ let running = false;
 let stopSignal = false;
 
 // =============================
-// 🔥 DARK MODE FIX
+// DARK MODE
 function toggleMode(){
     document.body.classList.toggle("dark");
-    const isDark = document.body.classList.contains("dark");
-    localStorage.setItem("darkMode", isDark);
+    localStorage.setItem("darkMode", document.body.classList.contains("dark"));
 }
 if(localStorage.getItem("darkMode")==="true"){
     document.body.classList.add("dark");
@@ -163,7 +160,6 @@ function sleep(ms, session){
         let start = Date.now();
 
         function loop(){
-
             if(session !== App.session) return resolve();
             if(stopSignal) return resolve();
 
@@ -178,24 +174,20 @@ function sleep(ms, session){
                 requestAnimationFrame(loop);
             }
         }
-
         loop();
     });
 }
 
 // =============================
 function speak(text, session){
-
     speechSynthesis.cancel();
 
     return new Promise(resolve => {
-
         if(stopSignal || session !== App.session) return resolve();
 
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = "de-DE";
         msg.rate = 0.9;
-
         msg.onend = () => setTimeout(resolve,120);
 
         speechSynthesis.speak(msg);
@@ -205,7 +197,6 @@ function speak(text, session){
 // =============================
 async function countdownTimer(sec, session){
     for(let i=sec;i>0;i--){
-
         if(stopSignal || session !== App.session) return;
 
         while(App.paused) await sleep(200, session);
@@ -218,7 +209,7 @@ async function countdownTimer(sec, session){
 // =============================
 async function start(){
 
-    if(running || App.state==="paused") return;
+    if((running && App.state==="running") || App.state==="paused") return;
 
     if(!phases || !phases[phaseIndex] || !phases[phaseIndex][current]){
         console.warn("Keine Übung geladen");
@@ -274,7 +265,6 @@ function runTime(ex, session){
     App.lastTime = Date.now();
 
     function tick(){
-
         if(stopSignal || session !== App.session) return;
 
         if(App.paused){
@@ -295,7 +285,6 @@ function runTime(ex, session){
 
         requestAnimationFrame(tick);
     }
-
     tick();
 }
 
@@ -304,7 +293,6 @@ async function runReps(ex, session){
     let reps = ex.reps;
 
     while(reps>0 && !stopSignal){
-
         if(session !== App.session) return;
 
         if(App.paused){
@@ -318,7 +306,6 @@ async function runReps(ex, session){
         reps--;
         await sleep(ex.rest*1000, session);
     }
-
     next();
 }
 
@@ -380,6 +367,9 @@ function skip(){
     speechSynthesis.cancel();
     clearInterval(timer);
 
+    running = false;
+    App.state = "idle";
+
     setTimeout(()=>{
         stopSignal = false;
         next(true);
@@ -415,6 +405,11 @@ async function next(force=false){
     }
 
     load();
+
+    if(force){
+        running = false;
+    }
+
     start();
 }
 
@@ -517,6 +512,7 @@ function updateButtons(){
         btnP3.classList.add("active");
     }
 }
+
 
 
 
