@@ -79,41 +79,67 @@ const side = document.getElementById("side");
 const progress = document.getElementById("progress");
 
 // =============================
+// 🔥 MODE
 function toggleMode(){
     document.body.classList.toggle("dark");
 }
 
 // =============================
+// 🔥 SMART SLEEP (pausable)
 function sleep(ms){
-    return new Promise(r=>setTimeout(r,ms));
+    return new Promise(resolve=>{
+        const start = Date.now();
+
+        function loop(){
+            if(!running) return resolve();
+            if(App.paused) return requestAnimationFrame(loop);
+
+            if(Date.now() - start >= ms) resolve();
+            else requestAnimationFrame(loop);
+        }
+
+        loop();
+    });
 }
 
 // =============================
-function speak(text){
-    speechSynthesis.cancel();
+// 🔥 COACH SPEAK V2
+function speak(text, pauseAfter=250){
 
     return new Promise(resolve=>{
+
+        if(!text) return resolve();
+
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = "de-DE";
         msg.rate = 0.95;
-        msg.onend = () => setTimeout(resolve, 80);
+
+        msg.onend = async ()=>{
+            await sleep(pauseAfter);
+            resolve();
+        };
+
         speechSynthesis.speak(msg);
     });
 }
 
 // =============================
+// 🔥 COUNTDOWN (ruhiger Rhythmus)
 async function countdown(sec){
+
     for(let i=sec;i>0;i--){
+
         if(!running) return;
         while(App.paused) await sleep(150);
 
         update(i);
-        await speak(i.toString());
+
+        await speak(i.toString(), 150);
     }
 }
 
 // =============================
-// 🔥 START FIX (nur Entry Point)
+// 🔥 START FLOW (Coach Style)
 async function start(){
 
     if(running) return;
@@ -126,36 +152,34 @@ async function start(){
 }
 
 // =============================
-// 🔥 NEUER SAUBERER FLOW (WICHTIG FIX)
+// 🔥 COACH FLOW
 async function playExercise(){
 
     let ex = phases[phaseIndex][current];
 
-    // =========================
-    // 1. Übung ansagen
-    await speak(ex.name);
+    // 1️⃣ Übung
+    await speak(ex.name, 300);
 
-    // =========================
-    // 2. Beschreibung komplett
-    if(ex.subtitle) await speak(ex.subtitle);
+    // 2️⃣ Beschreibung natürlich
+    if(ex.subtitle){
+        await speak(ex.subtitle, 350);
+    }
 
     if(ex.guide){
         for(let g of ex.guide){
-            await speak(g);
+            await speak(g, 300);
         }
     }
 
-    // =========================
-    // 3. Pause zwischen Übungen
-    await sleep(1000);
+    // 3️⃣ Denkpause
+    await sleep(900);
 
-    // =========================
-    // 4. Ready Phase
-    await speak("Bereit machen");
+    // 4️⃣ Ready Phase
+    await speak("Bereit machen", 400);
+
     await countdown(3);
 
-    // =========================
-    // 5. RUN
+    // 5️⃣ RUN
     run(ex);
 }
 
@@ -170,6 +194,7 @@ function run(ex){
 }
 
 // =============================
+// 🔥 TIME
 function runTime(ex){
 
     let t = ex.time;
@@ -187,7 +212,9 @@ function runTime(ex){
         t--;
         update(t);
 
-        if(t <= 0){
+        if(t === 10) speak("Noch zehn Sekunden", 200);
+
+        if(t<=0){
             clearInterval(timer);
             next();
         }
@@ -196,6 +223,7 @@ function runTime(ex){
 }
 
 // =============================
+// 🔥 REPS
 async function runReps(ex){
 
     let reps = ex.reps;
@@ -208,7 +236,8 @@ async function runReps(ex){
         }
 
         update(reps);
-        await speak(reps.toString());
+
+        await speak(reps.toString(), 120);
 
         reps--;
         await sleep(ex.rest * 1000);
@@ -218,16 +247,20 @@ async function runReps(ex){
 }
 
 // =============================
+// 🔥 SIDE
 async function runSide(ex){
 
     let sides = ["rechts","links"];
 
-    for(let s of sides){
+    for(let i=0;i<sides.length;i++){
+
+        let s = sides[i];
 
         if(!running) return;
 
         showSide(s);
-        await speak("Seite " + s);
+
+        await speak("Seite " + s, 300);
 
         let t = ex.time;
 
@@ -243,13 +276,17 @@ async function runSide(ex){
             t--;
         }
 
-        await sleep(1500);
+        if(i===0){
+            await sleep(1500);
+            await speak("Seitenwechsel", 400);
+        }
     }
 
     next();
 }
 
 // =============================
+// 🔥 HOLD
 async function runHoldReps(ex){
 
     let reps = ex.reps;
@@ -262,7 +299,8 @@ async function runHoldReps(ex){
         }
 
         update("HALTEN");
-        await speak("Halten");
+
+        await speak("Halten", 200);
 
         await sleep(ex.holdTime || 4000);
 
@@ -273,17 +311,20 @@ async function runHoldReps(ex){
 }
 
 // =============================
-// 🔥 FIX: SIDEHOLDREPS STABIL
+// 🔥 SIDE HOLD (Coach Timing)
 async function runSideHoldReps(ex){
 
     let sides = ["rechts","links"];
 
-    for(let s of sides){
+    for(let i=0;i<sides.length;i++){
+
+        let s = sides[i];
 
         if(!running) return;
 
         showSide(s);
-        await speak("Seite " + s);
+
+        await speak("Seite " + s, 300);
 
         let reps = ex.reps;
 
@@ -296,21 +337,24 @@ async function runSideHoldReps(ex){
 
             update(reps);
 
-            await speak("Halten");
+            await speak("Halten", 200);
+
             await sleep(ex.holdTime || 4000);
 
             reps--;
         }
 
-        await sleep(1800);
-        await speak("Seitenwechsel");
+        if(i===0){
+            await sleep(1700);
+            await speak("Seitenwechsel", 400);
+        }
     }
 
     next();
 }
 
 // =============================
-// 🔥 SKIP FIX
+// 🔥 SKIP
 function skip(){
 
     running = false;
@@ -325,7 +369,7 @@ function skip(){
 }
 
 // =============================
-// 🔥 NEXT FIX (KEIN START IN START LOOP!)
+// 🔥 NEXT
 async function next(){
 
     running = false;
@@ -337,7 +381,7 @@ async function next(){
     if(current >= phases[phaseIndex].length){
 
         update("FERTIG 💪");
-        await speak("Training beendet");
+        await speak("Training beendet", 400);
         return;
     }
 
@@ -351,10 +395,8 @@ async function next(){
 // =============================
 function pause(){
     App.paused = true;
-    speechSynthesis.cancel();
 }
 
-// =============================
 function resume(){
     App.paused = false;
 }
@@ -409,8 +451,6 @@ function updateProgress(){
     progress.style.width = ((current / total) * 100) + "%";
 }
 
-</script>
-
 
 // =============================
 // 🔥 STABILE PHASEN
@@ -456,7 +496,7 @@ rest:3,
 guide:[
 "Rückenlage, Füße aufgestellt",
 "Unterer Rücken leicht in den Boden drücken",
-"Becken kippt nach hinten",
+"Becken kippt nach vorne",
 "Spannung kurz halten und wieder lösen",
 "Kleine ruhige Bewegung"
 ]
