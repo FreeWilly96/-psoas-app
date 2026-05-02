@@ -104,6 +104,8 @@ async function countdown(sec){
 
 // =============================
 // 🔥 START (STABIL)
+// =============================
+// 🔥 SMART START (INTELLIGENTE ANSAGEN)
 async function start(){
 
     if(running) return;
@@ -113,8 +115,30 @@ async function start(){
 
     let ex = phases[phaseIndex][current];
 
+    // 👉 Immer: Übungsname
     await speak(ex.name);
 
+    // =============================
+    // 🔥 SMART LOGIK
+    if(current === 0){
+        // ERSTE ÜBUNG → volle Erklärung
+        if(ex.guide && ex.guide.length){
+            for(let g of ex.guide){
+                if(!running) return;
+                while(App.paused) await sleep(200);
+                await speak(g);
+            }
+        }
+    } else {
+        // SPÄTERE ÜBUNGEN → kurzer Hinweis
+        await speak("Weiter zur nächsten Übung");
+
+        if(ex.guide && ex.guide.length){
+            await speak(ex.guide[0]); // nur 1 Satz
+        }
+    }
+
+    // =============================
     await speak("Bereit machen");
     await countdown(3);
 
