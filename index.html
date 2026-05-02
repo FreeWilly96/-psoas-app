@@ -261,39 +261,44 @@ async function runHoldReps(ex, session){
 }
 
 // =============================
-// 🔥 SIDE HOLD REPS FIX (HAUPTBUG FIX)
-async function runSideHoldReps(ex, session){
+// 🔥 SIDE HOLD REPS FIX v2 (KORREKT STRUKTURIERT)
+async function runSideHoldReps(ex){
 
-    let sides=["rechts","links"];
+    let sides = ["rechts","links"];
 
     for(let s of sides){
 
-        if(session !== App.session) return;
+        if(!running) return;
 
         showSide(s);
-        await speak("Seite " + s, session);
+        await speak("Seite " + s);
 
+        // 🔥 WICHTIG: jede Seite bekommt volle Reps separat
         let reps = ex.reps;
 
-        while(reps>0){
+        for(let i = reps; i > 0 && running; i--){
 
-            if(session !== App.session) return;
+            // Pause sauber respektieren
+            while(App.paused){
+                await sleep(150);
+                if(!running) return;
+            }
 
-            while(App.paused) await sleep(200);
+            update(i);
 
-            update(reps);
+            // 🔥 klare Struktur: Ansage nur am Anfang jeder Wiederholung optional
+            await speak(i.toString());
 
-            await speak("Halten", session);
+            // 🔥 Haltephase sauber getrennt
             await sleep(ex.holdTime || 4000);
-
-            reps--;
         }
 
-        await sleep(1500);
-        await speak("Seitenwechsel", session);
+        // 🔥 sauberer Seitenwechsel (kein Overlap mehr)
+        await sleep(1200);
+        await speak("Seitenwechsel");
     }
 
-    next(session);
+    next();
 }
 
 // =============================
