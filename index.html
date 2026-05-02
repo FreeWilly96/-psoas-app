@@ -103,9 +103,7 @@ function speak(text){
 
 // =============================
 async function countdown(sec){
-
     for(let i=sec;i>0;i--){
-
         if(!running) return;
         while(App.paused) await sleep(150);
 
@@ -115,41 +113,49 @@ async function countdown(sec){
 }
 
 // =============================
-// 🔥 START (FIX: jetzt komplette Übungslogik)
+// 🔥 START FIX (nur Entry Point)
 async function start(){
 
     if(running) return;
 
+    App.session++;
     running = true;
     App.state = "running";
-    App.session++;
+
+    await playExercise();
+}
+
+// =============================
+// 🔥 NEUER SAUBERER FLOW (WICHTIG FIX)
+async function playExercise(){
 
     let ex = phases[phaseIndex][current];
 
     // =========================
-    // 🔥 1. ÜBUNG ANSAGE
+    // 1. Übung ansagen
     await speak(ex.name);
 
     // =========================
-    // 🔥 2. BESCHREIBUNG FIX (WICHTIG)
+    // 2. Beschreibung komplett
     if(ex.subtitle) await speak(ex.subtitle);
 
-    if(ex.guide && Array.isArray(ex.guide)){
+    if(ex.guide){
         for(let g of ex.guide){
             await speak(g);
         }
     }
 
     // =========================
-    // 🔥 3. PAUSE VOR START
-    await sleep(900);
+    // 3. Pause zwischen Übungen
+    await sleep(1000);
 
     // =========================
-    // 🔥 4. START SIGNAL
+    // 4. Ready Phase
     await speak("Bereit machen");
-
     await countdown(3);
 
+    // =========================
+    // 5. RUN
     run(ex);
 }
 
@@ -237,7 +243,7 @@ async function runSide(ex){
             t--;
         }
 
-        await sleep(1500); // 🔥 stabiler Seitenwechsel
+        await sleep(1500);
     }
 
     next();
@@ -267,7 +273,7 @@ async function runHoldReps(ex){
 }
 
 // =============================
-// 🔥 FIX: SIDEHOLDREPS (korrekte Struktur)
+// 🔥 FIX: SIDEHOLDREPS STABIL
 async function runSideHoldReps(ex){
 
     let sides = ["rechts","links"];
@@ -296,8 +302,7 @@ async function runSideHoldReps(ex){
             reps--;
         }
 
-        // 🔥 klarer Übergang
-        await sleep(1700);
+        await sleep(1800);
         await speak("Seitenwechsel");
     }
 
@@ -320,7 +325,7 @@ function skip(){
 }
 
 // =============================
-// 🔥 NEXT FIX (GANZ WICHTIG)
+// 🔥 NEXT FIX (KEIN START IN START LOOP!)
 async function next(){
 
     running = false;
@@ -338,8 +343,6 @@ async function next(){
 
     load();
 
-    // =========================
-    // 🔥 WICHTIG: neue Übung → erst kurze Ruhe
     await sleep(1200);
 
     start();
@@ -351,6 +354,7 @@ function pause(){
     speechSynthesis.cancel();
 }
 
+// =============================
 function resume(){
     App.paused = false;
 }
@@ -405,6 +409,7 @@ function updateProgress(){
     progress.style.width = ((current / total) * 100) + "%";
 }
 
+</script>
 
 
 // =============================
@@ -609,8 +614,8 @@ guide:[
 name:"Seitliche Plank kurz",
 subtitle:"Rumpfstabilität seitlich",
 img:"images/training3.jpg",
-type:"sideHoldReps",
-reps:8,
+type:"side",
+time:45,
 guide:[
 "Seitlich liegend",
 "Körper bildet eine Linie",
@@ -625,8 +630,8 @@ guide:[
 name:"Plank",
 subtitle:"Ganzkörper Spannung",
 img:"images/training3.jpg",
-type:"holdReps",
-reps:10,
+type:"time",
+time:30,
 guide:[
 "Bauchlage, Ellenbogen unter den Schultern",
 "Füße hüftbreit auseinander",
@@ -656,9 +661,8 @@ guide:[
 name:"Liegendes Beinheben",
 subtitle:"Core Kontrolle",
 img:"images/training3.jpg",
-type:"reps",
+type:"sideHoldReps",
 reps:12,
-rest:3,
 guide:[
 "Rückenlage",
 "Lendenwirbelsäule bleibt am Boden",
