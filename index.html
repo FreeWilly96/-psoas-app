@@ -57,16 +57,17 @@ button {padding:10px;margin:5px;border:none;border-radius:10px;color:white;}
 <script>
 
 // =============================
-// 🔥 CORE ENGINE (FLOW FIX FINAL)
+// 🔥 CORE STATE
 const App = {
     paused: false,
-    session: 0,
-    running: false
+    state: "idle",
+    session: 0
 };
 
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
+let running = false;
 
 // =============================
 const phaseTitle = document.getElementById("phaseTitle");
@@ -83,98 +84,94 @@ function toggleMode(){
 }
 
 // =============================
-function sleep(ms, session){
-    return new Promise(resolve=>{
-        const start = Date.now();
-
-        function loop(){
-            if(session !== App.session) return resolve();
-            if(App.paused) return requestAnimationFrame(loop);
-
-            if(Date.now() - start >= ms) return resolve();
-            requestAnimationFrame(loop);
-        }
-
-        loop();
-    });
+function sleep(ms){
+    return new Promise(r=>setTimeout(r,ms));
 }
 
 // =============================
-function speak(text, session){
+function speak(text){
     speechSynthesis.cancel();
 
     return new Promise(resolve=>{
-        if(session !== App.session) return resolve();
-
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = "de-DE";
         msg.rate = 0.95;
-
-        msg.onend = () => setTimeout(resolve, 90);
-
+        msg.onend = () => setTimeout(resolve, 80);
         speechSynthesis.speak(msg);
     });
 }
 
 // =============================
-async function countdown(sec, session){
+async function countdown(sec){
 
     for(let i=sec;i>0;i--){
-        if(session !== App.session) return;
 
-        while(App.paused) await sleep(150, session);
+        if(!running) return;
+        while(App.paused) await sleep(150);
 
         update(i);
-        await speak(i.toString(), session);
+        await speak(i.toString());
     }
 }
 
 // =============================
-// 🔥 START
+// 🔥 START (FIX: jetzt komplette Übungslogik)
 async function start(){
 
-    if(App.running) return;
+    if(running) return;
 
-    App.running = true;
+    running = true;
+    App.state = "running";
     App.session++;
-
-    const session = App.session;
 
     let ex = phases[phaseIndex][current];
 
-    await speak(ex.name, session);
+    // =========================
+    // 🔥 1. ÜBUNG ANSAGE
+    await speak(ex.name);
 
-    if(ex.subtitle){
-        await speak(ex.subtitle, session);
+    // =========================
+    // 🔥 2. BESCHREIBUNG FIX (WICHTIG)
+    if(ex.subtitle) await speak(ex.subtitle);
+
+    if(ex.guide && Array.isArray(ex.guide)){
+        for(let g of ex.guide){
+            await speak(g);
+        }
     }
 
-    await sleep(600, session);
+    // =========================
+    // 🔥 3. PAUSE VOR START
+    await sleep(900);
 
-    await speak("Bereit machen", session);
-    await countdown(3, session);
+    // =========================
+    // 🔥 4. START SIGNAL
+    await speak("Bereit machen");
 
-    run(ex, session);
+    await countdown(3);
+
+    run(ex);
 }
 
 // =============================
-function run(ex, session){
+function run(ex){
 
-    if(ex.type === "time") runTime(ex, session);
-    if(ex.type === "reps") runReps(ex, session);
-    if(ex.type === "side") runSide(ex, session);
-    if(ex.type === "holdReps") runHoldReps(ex, session);
-    if(ex.type === "sideHoldReps") runSideHoldReps(ex, session);
+    if(ex.type==="time") runTime(ex);
+    if(ex.type==="reps") runReps(ex);
+    if(ex.type==="side") runSide(ex);
+    if(ex.type==="holdReps") runHoldReps(ex);
+    if(ex.type==="sideHoldReps") runSideHoldReps(ex);
 }
 
 // =============================
-function runTime(ex, session){
+function runTime(ex){
 
     let t = ex.time;
     update(t);
 
     timer = setInterval(()=>{
 
-        if(session !== App.session){
+        if(!running){
             clearInterval(timer);
             return;
         }
@@ -186,157 +183,166 @@ function runTime(ex, session){
 
         if(t <= 0){
             clearInterval(timer);
-            next(session);
+            next();
         }
 
     },1000);
 }
 
 // =============================
-async function runReps(ex, session){
+async function runReps(ex){
 
     let reps = ex.reps;
 
-    while(reps > 0){
+    while(reps > 0 && running){
 
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(150, session);
+        if(App.paused){
+            await sleep(150);
+            continue;
+        }
 
         update(reps);
-        await speak(reps.toString(), session);
+        await speak(reps.toString());
 
         reps--;
-        await sleep(ex.rest * 1000, session);
+        await sleep(ex.rest * 1000);
     }
 
-    next(session);
+    next();
 }
 
 // =============================
-async function runSide(ex, session){
+async function runSide(ex){
 
     let sides = ["rechts","links"];
 
     for(let s of sides){
 
-        if(session !== App.session) return;
+        if(!running) return;
 
         showSide(s);
-        await speak("Seite " + s, session);
+        await speak("Seite " + s);
 
         let t = ex.time;
 
-        while(t > 0){
+        while(t > 0 && running){
 
-            if(session !== App.session) return;
-
-            while(App.paused) await sleep(150, session);
+            if(App.paused){
+                await sleep(150);
+                continue;
+            }
 
             update(t);
-            await sleep(1000, session);
+            await sleep(1000);
             t--;
         }
 
-        await sleep(1400, session);
-        await speak("Wechsel", session);
+        await sleep(1500); // 🔥 stabiler Seitenwechsel
     }
 
-    next(session);
+    next();
 }
 
 // =============================
-async function runHoldReps(ex, session){
+async function runHoldReps(ex){
 
     let reps = ex.reps;
 
-    while(reps > 0){
+    while(reps > 0 && running){
 
-        if(session !== App.session) return;
+        if(App.paused){
+            await sleep(150);
+            continue;
+        }
 
         update("HALTEN");
-        await speak("Halten", session);
+        await speak("Halten");
 
-        await sleep(ex.holdTime || 4000, session);
+        await sleep(ex.holdTime || 4000);
 
         reps--;
     }
 
-    next(session);
+    next();
 }
 
 // =============================
-// 🔥 SIDE HOLD REPS (keine neue Übungsansage!)
-async function runSideHoldReps(ex, session){
+// 🔥 FIX: SIDEHOLDREPS (korrekte Struktur)
+async function runSideHoldReps(ex){
 
     let sides = ["rechts","links"];
 
     for(let s of sides){
 
-        if(session !== App.session) return;
+        if(!running) return;
 
         showSide(s);
-        await speak("Seite " + s, session);
+        await speak("Seite " + s);
 
         let reps = ex.reps;
 
-        while(reps > 0){
+        while(reps > 0 && running){
 
-            if(session !== App.session) return;
-
-            while(App.paused) await sleep(150, session);
+            if(App.paused){
+                await sleep(150);
+                continue;
+            }
 
             update(reps);
 
-            await speak("Halten", session);
-            await sleep(ex.holdTime || 4000, session);
+            await speak("Halten");
+            await sleep(ex.holdTime || 4000);
 
             reps--;
         }
 
-        await sleep(1600, session);
-        await speak("Seitenwechsel", session);
+        // 🔥 klarer Übergang
+        await sleep(1700);
+        await speak("Seitenwechsel");
     }
 
-    next(session);
+    next();
 }
 
 // =============================
-// 🔥 NEXT (WICHTIG: HIER IST DER FIX)
-async function next(session){
+// 🔥 SKIP FIX
+function skip(){
 
-    if(session !== App.session) return;
+    running = false;
+    App.session++;
 
-    App.running = false;
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    setTimeout(()=>{
+        next();
+    },120);
+}
+
+// =============================
+// 🔥 NEXT FIX (GANZ WICHTIG)
+async function next(){
+
+    running = false;
+
     current++;
 
     updateProgress();
 
     if(current >= phases[phaseIndex].length){
+
         update("FERTIG 💪");
-        await speak("Training beendet", session);
+        await speak("Training beendet");
         return;
     }
 
-    let ex = phases[phaseIndex][current];
+    load();
 
-    // =============================
-    // 🔥 WICHTIGER FLOW FIX:
-    // IMMER NEUE ÜBUNG ANSAGEN HIER
-    await sleep(500, session);
+    // =========================
+    // 🔥 WICHTIG: neue Übung → erst kurze Ruhe
+    await sleep(1200);
 
-    await speak(ex.name, session);
-
-    if(ex.subtitle){
-        await speak(ex.subtitle, session);
-    }
-
-    await sleep(500, session);
-
-    await speak("Bereit machen", session);
-    await countdown(3, session);
-
-    run(ex, session);
+    start();
 }
 
 // =============================
@@ -350,21 +356,7 @@ function resume(){
 }
 
 // =============================
-function skip(){
-    App.session++;
-    speechSynthesis.cancel();
-    clearInterval(timer);
-
-    App.running = false;
-
-    setTimeout(()=>{
-        next(App.session);
-    },120);
-}
-
-// =============================
 function nextPhase(){
-    App.session++;
     phaseIndex = (phaseIndex + 1) % phases.length;
     current = 0;
     load();
@@ -372,7 +364,6 @@ function nextPhase(){
 
 // =============================
 function setPhase(p){
-    App.session++;
     phaseIndex = p - 1;
     current = 0;
     load();
@@ -411,7 +402,7 @@ function showSide(s){
 // =============================
 function updateProgress(){
     let total = phases[phaseIndex].length;
-    progress.style.width = Math.min(100, (current / total) * 100) + "%";
+    progress.style.width = ((current / total) * 100) + "%";
 }
 
 
