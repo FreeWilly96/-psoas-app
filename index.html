@@ -54,12 +54,10 @@ button {padding:10px;margin:5px;border:none;border-radius:10px;color:white;}
 <button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
 <button class="mode" onclick="nextPhase()">Nächstes Training</button>
 
-
-    
 <script>
 
 // =============================
-// 🔥 CORE ENGINE V3 (STABIL)
+// 🔥 CORE ENGINE V3.1 (FLOW FIX)
 const App = {
     paused: false,
     session: 0,
@@ -71,7 +69,6 @@ let current = 0;
 let timer = null;
 
 // =============================
-// DOM
 const phaseTitle = document.getElementById("phaseTitle");
 const exerciseTitle = document.getElementById("exerciseTitle");
 const exerciseImage = document.getElementById("exerciseImage");
@@ -79,11 +76,6 @@ const guide = document.getElementById("guide");
 const timerEl = document.getElementById("timer");
 const side = document.getElementById("side");
 const progress = document.getElementById("progress");
-
-// =============================
-function toggleMode(){
-    document.body.classList.toggle("dark");
-}
 
 // =============================
 function sleep(ms, session){
@@ -104,7 +96,6 @@ function sleep(ms, session){
 
 // =============================
 function speak(text, session){
-
     speechSynthesis.cancel();
 
     return new Promise(resolve=>{
@@ -134,7 +125,7 @@ async function countdown(sec, session){
 }
 
 // =============================
-// 🔥 START (LOCKED FLOW)
+// 🔥 START (STABIL + FLOW FIX)
 async function start(){
 
     if(App.running) return;
@@ -146,18 +137,21 @@ async function start(){
 
     let ex = phases[phaseIndex][current];
 
-    // 🔥 ÜBUNG + BESCHREIBUNG
+    // =============================
+    // 🔥 EINHEITLICHE ÜBUNGS-INTRO LOGIK
     await speak(ex.name, session);
-    if(ex.subtitle) await speak(ex.subtitle, session);
 
-    if(ex.guide){
+    if(ex.subtitle){
+        await speak(ex.subtitle, session);
+    }
+
+    if(ex.guide && ex.type !== "sideHoldReps"){
         for(let g of ex.guide){
             if(session !== App.session) return;
             await speak(g, session);
         }
     }
 
-    // 🔥 Ruhe zwischen Übungen
     await sleep(700, session);
 
     await speak("Bereit machen", session);
@@ -204,7 +198,7 @@ function runTime(ex, session){
 }
 
 // =============================
-// 🔥 REPS (STABIL)
+// 🔥 REPS
 async function runReps(ex, session){
 
     let reps = ex.reps;
@@ -226,7 +220,7 @@ async function runReps(ex, session){
 }
 
 // =============================
-// 🔥 SIDE (sauber + langsamer Wechsel)
+// 🔥 SIDE
 async function runSide(ex, session){
 
     let sides = ["rechts","links"];
@@ -251,8 +245,8 @@ async function runSide(ex, session){
             t--;
         }
 
-        await speak("Wechsel", session);
         await sleep(1200, session);
+        await speak("Wechsel", session);
     }
 
     next(session);
@@ -280,16 +274,22 @@ async function runHoldReps(ex, session){
 }
 
 // =============================
-// 🔥 SIDE HOLD REPS (FIXED CORE BUG)
+// 🔥 SIDE HOLD REPS (FIXED FLOW BREAK)
 async function runSideHoldReps(ex, session){
 
     let sides = ["rechts","links"];
+
+    // 🔥 KEINE ÜBUNGS-REPETITION MEHR PRO SEITE
+    await speak("Start Position halten", session);
+    await sleep(600, session);
 
     for(let s of sides){
 
         if(session !== App.session) return;
 
         showSide(s);
+
+        // 🔥 NUR SEITE ANSAGE (KEINE NEUE ÜBUNG!)
         await speak("Seite " + s, session);
 
         let reps = ex.reps;
@@ -303,20 +303,22 @@ async function runSideHoldReps(ex, session){
             update(reps);
 
             await speak("Halten", session);
+
             await sleep(ex.holdTime || 4000, session);
 
             reps--;
         }
 
+        // 🔥 sauberer Seitenwechsel
+        await sleep(1600, session);
         await speak("Seitenwechsel", session);
-        await sleep(1500, session);
     }
 
     next(session);
 }
 
 // =============================
-// 🔥 SKIP (NO DOUBLE EXECUTION)
+// 🔥 SKIP
 function skip(){
 
     App.session++;
@@ -327,11 +329,11 @@ function skip(){
 
     setTimeout(()=>{
         next(App.session);
-    },100);
+    },120);
 }
 
 // =============================
-// 🔥 NEXT (FULLY CONTROLLED FLOW)
+// 🔥 NEXT (FLOW SAFE)
 async function next(session){
 
     if(session !== App.session) return;
@@ -344,7 +346,6 @@ async function next(session){
     await sleep(500, session);
 
     if(current >= phases[phaseIndex].length){
-
         update("FERTIG 💪");
         await speak("Training beendet", session);
         return;
@@ -352,7 +353,7 @@ async function next(session){
 
     load();
 
-    await sleep(600, session);
+    await sleep(700, session);
 
     start();
 }
@@ -363,6 +364,7 @@ function pause(){
     speechSynthesis.cancel();
 }
 
+// =============================
 function resume(){
     App.paused = false;
 }
@@ -418,6 +420,8 @@ function updateProgress(){
     let total = phases[phaseIndex].length;
     progress.style.width = Math.min(100, (current / total) * 100) + "%";
 }
+
+    
 
 
 // =============================
@@ -563,7 +567,7 @@ name:"Dead Bug",
 subtitle:"Rumpfstabilität",
 img:"images/phase2.jpg",
 type:"reps",
-reps:12,
+reps:24,
 rest:3,
 guide:[
 "Rückenlage",
