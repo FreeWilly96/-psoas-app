@@ -54,15 +54,12 @@ button {padding:10px;margin:5px;border:none;border-radius:10px;color:white;}
 <button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
 <button class="mode" onclick="nextPhase()">Nächstes Training</button>
 
-
-<script>
-
 // =============================
-// 🔥 CORE STATE (STABILISIERT)
+// 🔥 CORE STATE
 const App = {
-    paused:false,
-    state:"idle",
-    session:0   // 🔥 FIX: verhindert alte Loops
+    paused: false,
+    state: "idle",
+    session: 0
 };
 
 let phaseIndex = 0;
@@ -90,82 +87,82 @@ function sleep(ms){
 }
 
 // =============================
-// 🔥 SPEAK FIX (kein Queue Chaos mehr)
-function speak(text, session){
-
+function speak(text){
     speechSynthesis.cancel();
 
     return new Promise(resolve=>{
-        if(session !== App.session) return resolve();
-
         const msg = new SpeechSynthesisUtterance(text);
-        msg.lang="de-DE";
-
-        msg.onend = ()=> setTimeout(resolve,80);
-
+        msg.lang = "de-DE";
+        msg.rate = 0.95;
+        msg.onend = () => setTimeout(resolve, 90);
         speechSynthesis.speak(msg);
     });
 }
 
 // =============================
-// 🔥 COUNTDOWN FIX
-async function countdown(sec, session){
+async function countdown(sec){
 
     for(let i=sec;i>0;i--){
 
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(200);
+        if(!running) return;
+        while(App.paused) await sleep(150);
 
         update(i);
-        await speak(i.toString(), session);
+        await speak(i.toString());
     }
 }
 
 // =============================
-// 🔥 START (STABIL + SINGLE RUN PROTECTION)
+// 🔥 START (JETZT KORREKT: Ansage + Beschreibung bleibt)
 async function start(){
 
     if(running) return;
 
     running = true;
-    App.session++; // 🔥 neue Session = kill alte Prozesse
-
-    const session = App.session;
+    App.state = "running";
+    App.session++;
 
     let ex = phases[phaseIndex][current];
 
-    await speak(ex.name, session);
-    await speak("Bereit machen", session);
+    // ✔ Übungs-Ansage + Beschreibung VOR Start
+    await speak(ex.name);
+    await speak(ex.subtitle || "");
 
-    await countdown(3, session);
+    // optional: Guide nur wenn vorhanden
+    if(ex.guide){
+        for(let g of ex.guide){
+            await speak(g);
+        }
+    }
 
-    run(ex, session);
+    // ✔ kleine Ruhe zwischen Übung und Countdown
+    await sleep(800);
+
+    await speak("Bereit machen");
+    await countdown(3);
+
+    run(ex);
 }
 
 // =============================
-// 🔥 DISPATCHER (SAFE)
-function run(ex, session){
+function run(ex){
 
-    if(session !== App.session) return;
-
-    if(ex.type==="time") runTime(ex, session);
-    if(ex.type==="reps") runReps(ex, session);
-    if(ex.type==="side") runSide(ex, session);
-    if(ex.type==="holdReps") runHoldReps(ex, session);
-    if(ex.type==="sideHoldReps") runSideHoldReps(ex, session);
+    if(ex.type==="time") runTime(ex);
+    if(ex.type==="reps") runReps(ex);
+    if(ex.type==="side") runSide(ex);
+    if(ex.type==="holdReps") runHoldReps(ex);
+    if(ex.type==="sideHoldReps") runSideHoldReps(ex);
 }
 
 // =============================
-// 🔥 TIME FIX
-function runTime(ex, session){
+function runTime(ex){
 
     let t = ex.time;
     update(t);
 
     timer = setInterval(()=>{
 
-        if(session !== App.session){
+        if(!running){
             clearInterval(timer);
             return;
         }
@@ -175,93 +172,95 @@ function runTime(ex, session){
         t--;
         update(t);
 
-        if(t<=0){
+        if(t <= 0){
             clearInterval(timer);
-            next(session);
+            next();
         }
 
     },1000);
 }
 
 // =============================
-// 🔥 REPS FIX (kein Hängen mehr)
-async function runReps(ex, session){
+async function runReps(ex){
 
     let reps = ex.reps;
 
-    while(reps>0){
+    while(reps > 0 && running){
 
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(200);
+        if(App.paused){
+            await sleep(150);
+            continue;
+        }
 
         update(reps);
-        await speak(reps.toString(), session);
+        await speak(reps.toString());
 
         reps--;
-        await sleep(ex.rest*1000);
+        await sleep(ex.rest * 1000);
     }
 
-    next(session);
+    next();
 }
 
 // =============================
-// 🔥 SIDE FIX (+ stabilere Pause)
-async function runSide(ex, session){
+// 🔥 SIDE FIX (langsamer + stabiler)
+async function runSide(ex){
 
-    let sides=["rechts","links"];
+    let sides = ["rechts","links"];
 
     for(let s of sides){
 
-        if(session !== App.session) return;
+        if(!running) return;
 
         showSide(s);
-        await speak("Seite "+s, session);
+        await speak("Seite " + s);
 
         let t = ex.time;
 
-        while(t>0){
+        while(t > 0 && running){
 
-            if(session !== App.session) return;
-
-            while(App.paused) await sleep(200);
+            if(App.paused){
+                await sleep(150);
+                continue;
+            }
 
             update(t);
             await sleep(1000);
             t--;
         }
 
-        await sleep(1200); // 🔥 mehr Ruhe zwischen Seiten
+        // ✔ längere Pause zwischen Seitenwechsel
+        await sleep(1500);
     }
 
-    next(session);
+    next();
 }
 
 // =============================
-// 🔥 HOLD REPS FIX
-async function runHoldReps(ex, session){
+async function runHoldReps(ex){
 
     let reps = ex.reps;
 
-    while(reps>0){
+    while(reps > 0 && running){
 
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(200);
+        if(App.paused){
+            await sleep(150);
+            continue;
+        }
 
         update("HALTEN");
-        await speak("Halten", session);
+        await speak("Halten");
 
         await sleep(ex.holdTime || 4000);
 
         reps--;
     }
 
-    next(session);
+    next();
 }
 
 // =============================
-// 🔥 SIDE HOLD REPS FIX v2 (KORREKT STRUKTURIERT)
+// 🔥 SIDE HOLD REPS (stabil + sauber getrennt)
 async function runSideHoldReps(ex){
 
     let sides = ["rechts","links"];
@@ -273,28 +272,25 @@ async function runSideHoldReps(ex){
         showSide(s);
         await speak("Seite " + s);
 
-        // 🔥 WICHTIG: jede Seite bekommt volle Reps separat
         let reps = ex.reps;
 
-        for(let i = reps; i > 0 && running; i--){
+        while(reps > 0 && running){
 
-            // Pause sauber respektieren
-            while(App.paused){
+            if(App.paused){
                 await sleep(150);
-                if(!running) return;
+                continue;
             }
 
-            update(i);
+            update(reps);
 
-            // 🔥 klare Struktur: Ansage nur am Anfang jeder Wiederholung optional
-            await speak(i.toString());
-
-            // 🔥 Haltephase sauber getrennt
+            await speak("Halten");
             await sleep(ex.holdTime || 4000);
+
+            reps--;
         }
 
-        // 🔥 sauberer Seitenwechsel (kein Overlap mehr)
-        await sleep(1200);
+        // ✔ langsamer Seitenwechsel
+        await sleep(1600);
         await speak("Seitenwechsel");
     }
 
@@ -302,40 +298,41 @@ async function runSideHoldReps(ex){
 }
 
 // =============================
-// 🔥 SKIP FIX (KEIN DOPPEL NEXT)
+// 🔥 SKIP FIX
 function skip(){
 
-    App.session++; // 🔥 killt ALLE alten Loops
-    speechSynthesis.cancel();
-    clearInterval(timer);
-
     running = false;
+    App.session++;
+
+    clearInterval(timer);
+    speechSynthesis.cancel();
 
     setTimeout(()=>{
-        next(App.session);
-    },80);
+        next();
+    },120);
 }
 
 // =============================
-// 🔥 NEXT FIX (kein Doppelstart)
-async function next(session){
-
-    if(session !== App.session) return;
+// 🔥 NEXT FIX (mit sauberer Pause zwischen Übungen)
+async function next(){
 
     running = false;
+
     current++;
 
     updateProgress();
 
     if(current >= phases[phaseIndex].length){
+
         update("FERTIG 💪");
-        await speak("Training beendet", session);
+        await speak("Training beendet");
         return;
     }
 
     load();
 
-    await sleep(300);
+    // ✔ Pause zwischen Übungen
+    await sleep(1400);
 
     start();
 }
@@ -346,22 +343,21 @@ function pause(){
     speechSynthesis.cancel();
 }
 
+// =============================
 function resume(){
     App.paused = false;
 }
 
 // =============================
 function nextPhase(){
-    App.session++;
-    phaseIndex = (phaseIndex+1)%phases.length;
+    phaseIndex = (phaseIndex + 1) % phases.length;
     current = 0;
     load();
 }
 
 // =============================
 function setPhase(p){
-    App.session++;
-    phaseIndex = p-1;
+    phaseIndex = p - 1;
     current = 0;
     load();
 }
@@ -371,35 +367,36 @@ function load(){
 
     let ex = phases[phaseIndex][current];
 
-    phaseTitle.innerText="Training "+(phaseIndex+1);
-    exerciseTitle.innerText=ex.name;
-    exerciseImage.src=ex.img;
+    phaseTitle.innerText = "Training " + (phaseIndex + 1);
+    exerciseTitle.innerText = ex.name;
+    exerciseImage.src = ex.img;
 
-    guide.innerHTML = "<ul>" +
-        ex.guide.map(g=>"<li>"+g+"</li>").join("") +
-        "</ul>";
+    let html = "<ul>";
+    ex.guide.forEach(g=>{
+        html += "<li>" + g + "</li>";
+    });
+    html += "</ul>";
 
-    update(ex.time||ex.reps);
+    guide.innerHTML = html;
+
+    update(ex.time || ex.reps);
     updateProgress();
 }
 
 // =============================
 function update(v){
-    timerEl.innerText=v;
+    timerEl.innerText = v;
 }
 
 function showSide(s){
-    side.innerText=s;
+    side.innerText = s;
 }
 
 // =============================
 function updateProgress(){
     let total = phases[phaseIndex].length;
-    progress.style.width = (current/total*100)+"%";
+    progress.style.width = ((current / total) * 100) + "%";
 }
-
-
-
 
 // =============================
 // 🔥 STABILE PHASEN
