@@ -10,22 +10,133 @@
 <link rel="manifest" href="manifest.json">
 
 <style>
-body {margin:0;font-family:Arial;text-align:center;background:#f2f2f2;transition:0.3s;}
-body.dark {background:#0b1a2f;color:white;}
-img {width:95%;height:40vh;object-fit:contain;}
-.timer {font-size:90px;font-weight:bold;}
-.side {font-size:28px;height:40px;}
-.guide {max-width:500px;margin:10px auto;padding:10px;border-radius:10px;background:white;}
-body.dark .guide {background:#1e2a3a;}
-button {padding:10px;margin:5px;border:none;border-radius:10px;color:white;}
-.start{background:green;}
-.pause{background:red;}
-.skip{background:orange;}
-.mode{background:black;}
-.phase {background:#666;}
-.phase.active {background:purple;}
-#progressBar {width:90%;height:10px;background:#ccc;margin:10px auto;border-radius:10px;}
-#progress {height:100%;width:0%;background:linear-gradient(90deg,purple,deeppink);}
+:root{
+    --primary:#7b2ff7;
+    --accent:#ff2d75;
+    --bg:#f2f2f2;
+    --card:#ffffff;
+    --text:#111;
+}
+
+body {
+    margin:0;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+    text-align:center;
+    background:var(--bg);
+    color:var(--text);
+    transition:0.3s;
+}
+
+body.dark {
+    --bg:#0b1a2f;
+    --card:#16263a;
+    --text:#ffffff;
+}
+
+/* HEADER */
+h2{
+    margin-top:20px;
+    font-size:20px;
+    opacity:0.7;
+}
+h3{
+    margin:5px 0 10px;
+    font-size:26px;
+}
+
+/* CARD */
+.guide {
+    max-width:520px;
+    margin:10px auto;
+    padding:15px;
+    border-radius:18px;
+    background:var(--card);
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* IMAGE */
+img {
+    width:90%;
+    height:38vh;
+    object-fit:contain;
+    margin-top:10px;
+    filter:drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+}
+
+/* TIMER */
+.timer {
+    font-size:85px;
+    font-weight:700;
+    margin-top:10px;
+    background:linear-gradient(90deg,var(--primary),var(--accent));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+/* SIDE TEXT */
+.side {
+    font-size:24px;
+    height:35px;
+    opacity:0.7;
+}
+
+/* PROGRESS BAR */
+#progressBar {
+    width:85%;
+    height:12px;
+    background:#ddd;
+    margin:15px auto;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+#progress {
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--primary),var(--accent));
+    transition:width 0.3s linear;
+}
+
+/* BUTTONS */
+button {
+    padding:12px 16px;
+    margin:6px;
+    border:none;
+    border-radius:14px;
+    color:white;
+    font-weight:600;
+    font-size:14px;
+    transition:0.2s;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+}
+
+button:active{
+    transform:scale(0.95);
+}
+
+.start{background:#2ecc71;}
+.pause{background:#e74c3c;}
+.skip{background:#f39c12;}
+.mode{background:#222;}
+.phase {background:#888;}
+.phase.active {background:var(--primary);}
+
+/* FLOATING CONTROL BAR */
+.controls{
+    position:fixed;
+    bottom:10px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--card);
+    padding:10px;
+    border-radius:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* TRAINING BAR */
+.trainingBar{
+    margin-top:10px;
+}
 </style>
 </head>
 
@@ -33,26 +144,37 @@ button {padding:10px;margin:5px;border:none;border-radius:10px;color:white;}
 
 <h2 id="phaseTitle"></h2>
 <h3 id="exerciseTitle"></h3>
+
 <div id="side" class="side"></div>
 
 <img id="exerciseImage">
+
 <div id="guide" class="guide"></div>
 
 <div id="timer" class="timer">0</div>
-<div id="progressBar"><div id="progress"></div></div>
 
-<button class="start" onclick="start()">Start</button>
-<button class="pause" onclick="pause()">Pause</button>
-<button onclick="resume()">Resume</button>
-<button class="skip" onclick="skip()">Skip</button>
-<button class="mode" onclick="toggleMode()">Mode</button>
+<div id="progressBar">
+    <div id="progress"></div>
+</div>
 
-<br>
+<!-- FLOATING CONTROLS -->
+<div class="controls">
+    <button class="start" onclick="start()">Start</button>
+    <button class="pause" onclick="pause()">Pause</button>
+    <button onclick="resume()">Resume</button>
+    <button class="skip" onclick="skip()">Skip</button>
+</div>
 
-<button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
-<button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
-<button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
-<button class="mode" onclick="nextPhase()">Nächstes Training</button>
+<!-- TRAINING SELECT -->
+<div class="trainingBar">
+    <button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
+    <button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
+    <button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
+    <button class="mode" onclick="nextPhase()">Next</button>
+    <button class="mode" onclick="toggleMode()">Mode</button>
+</div>
+
+
 
 <script>
 
@@ -61,7 +183,7 @@ button {padding:10px;margin:5px;border:none;border-radius:10px;color:white;}
 const App = {
     paused: false,
     state: "idle",
-    session: 0 // 🔥 killt alte Loops
+    session: 0
 };
 
 let phaseIndex = 0;
@@ -84,13 +206,12 @@ function toggleMode(){
 }
 
 // =============================
-// 🔥 INTELLIGENTES SLEEP (Session-safe)
 function sleep(ms, session){
     return new Promise(resolve=>{
         const start = Date.now();
 
         function loop(){
-            if(session !== App.session) return resolve(); // 🔥 kill alt
+            if(session !== App.session) return resolve();
             if(App.paused) return requestAnimationFrame(loop);
 
             if(Date.now() - start >= ms) return resolve();
@@ -101,7 +222,6 @@ function sleep(ms, session){
 }
 
 // =============================
-// 🔥 VOICE ENGINE (natürlich)
 function speak(text, session){
 
     speechSynthesis.cancel();
@@ -134,15 +254,12 @@ async function countdown(sec, session){
 }
 
 // =============================
-// 🔥 COACH FLOW (JETZT 100% RICHTIG)
 async function coachIntro(ex, session){
 
     if(session !== App.session) return;
 
-    // 1️⃣ Übung
     await speak(ex.name, session);
 
-    // 2️⃣ Beschreibung KOMPLETT
     if(ex.subtitle) await speak(ex.subtitle, session);
 
     if(ex.guide){
@@ -152,18 +269,14 @@ async function coachIntro(ex, session){
         }
     }
 
-    // 3️⃣ Pause
     await sleep(900, session);
 
-    // 4️⃣ Ready
     await speak("Bereit machen", session);
 
-    // 5️⃣ Countdown
     await countdown(3, session);
 }
 
 // =============================
-// 🔥 START
 async function start(){
 
     if(running) return;
@@ -184,7 +297,6 @@ async function start(){
 }
 
 // =============================
-// 🔥 DISPATCH
 function run(ex, session){
 
     if(ex.type==="time") runTime(ex, session);
@@ -264,6 +376,7 @@ async function runHoldReps(ex, session){
 }
 
 // =============================
+// 🔥 SIDE (Pause jetzt ~5 Sekunden)
 async function runSide(ex, session){
 
     let sides=["rechts","links"];
@@ -291,7 +404,7 @@ async function runSide(ex, session){
         }
 
         if(i < sides.length-1){
-            await sleep(1500, session);
+            await sleep(5000, session); // 🔥 FIX: 5 Sekunden Pause
             await speak("Seitenwechsel", session);
         }
     }
@@ -301,6 +414,7 @@ async function runSide(ex, session){
 }
 
 // =============================
+// 🔥 SIDE HOLD REPS (Pause jetzt ~5 Sekunden)
 async function runSideHoldReps(ex, session){
 
     let sides=["rechts","links"];
@@ -331,7 +445,7 @@ async function runSideHoldReps(ex, session){
         }
 
         if(i < sides.length-1){
-            await sleep(1800, session);
+            await sleep(5000, session); // 🔥 FIX: 5 Sekunden Pause
             await speak("Seitenwechsel", session);
         }
     }
@@ -341,17 +455,14 @@ async function runSideHoldReps(ex, session){
 }
 
 // =============================
-// 🔥 SKIP (FINAL FIX – KEIN PARALLELER TIMER MEHR)
 function skip(){
 
-    // 🔥 ALLES SOFORT KILLEN
-    App.session++; // kill async
+    App.session++;
     running = false;
 
     clearInterval(timer);
     speechSynthesis.cancel();
 
-    // 🔥 sicherer Übergang
     setTimeout(()=>{
         next(App.session);
     },120);
@@ -375,7 +486,6 @@ async function next(session){
 
     load();
 
-    // 🔥 echte Pause zwischen Übungen
     await sleep(1400, session);
 
     start();
@@ -442,6 +552,7 @@ function updateProgress(){
     progress.style.width = (current/total*100)+"%";
 }
 
+</script>
 
 
 // =============================
