@@ -57,7 +57,7 @@ button {padding:10px;margin:5px;border:none;border-radius:10px;color:white;}
 <script>
 
 // =============================
-// 🔥 FITNESS APP ENGINE V4 (STABLE FLOW)
+// 🔥 CORE ENGINE (FLOW FIX FINAL)
 const App = {
     paused: false,
     session: 0,
@@ -83,7 +83,6 @@ function toggleMode(){
 }
 
 // =============================
-// 🔥 CORE WAIT SYSTEM
 function sleep(ms, session){
     return new Promise(resolve=>{
         const start = Date.now();
@@ -101,9 +100,7 @@ function sleep(ms, session){
 }
 
 // =============================
-// 🔥 VOICE ENGINE
 function speak(text, session){
-
     speechSynthesis.cancel();
 
     return new Promise(resolve=>{
@@ -113,18 +110,16 @@ function speak(text, session){
         msg.lang = "de-DE";
         msg.rate = 0.95;
 
-        msg.onend = () => setTimeout(resolve, 100);
+        msg.onend = () => setTimeout(resolve, 90);
 
         speechSynthesis.speak(msg);
     });
 }
 
 // =============================
-// 🔥 COUNTDOWN ENGINE
 async function countdown(sec, session){
 
     for(let i=sec;i>0;i--){
-
         if(session !== App.session) return;
 
         while(App.paused) await sleep(150, session);
@@ -135,7 +130,7 @@ async function countdown(sec, session){
 }
 
 // =============================
-// 🔥 START FLOW (COACH LOGIC)
+// 🔥 START
 async function start(){
 
     if(App.running) return;
@@ -147,33 +142,17 @@ async function start(){
 
     let ex = phases[phaseIndex][current];
 
-    // =============================
-    // ✔ 1. ÜBUNG ANSAGE + BESCHREIBUNG
     await speak(ex.name, session);
 
     if(ex.subtitle){
         await speak(ex.subtitle, session);
     }
 
-    if(ex.guide){
-        for(let g of ex.guide){
-            if(session !== App.session) return;
-            await speak(g, session);
-        }
-    }
+    await sleep(600, session);
 
-    // =============================
-    // ✔ 2. PAUSE ZWISCHEN ÜBUNGEN (COACH FEEL)
-    await sleep(900, session);
-
-    // =============================
-    // ✔ 3. READY PHASE
     await speak("Bereit machen", session);
-    await sleep(400, session);
-
     await countdown(3, session);
 
-    // =============================
     run(ex, session);
 }
 
@@ -188,7 +167,6 @@ function run(ex, session){
 }
 
 // =============================
-// 🔥 TIME
 function runTime(ex, session){
 
     let t = ex.time;
@@ -215,7 +193,6 @@ function runTime(ex, session){
 }
 
 // =============================
-// 🔥 REPS
 async function runReps(ex, session){
 
     let reps = ex.reps;
@@ -237,7 +214,6 @@ async function runReps(ex, session){
 }
 
 // =============================
-// 🔥 SIDE (stabil + natürlicher Rhythmus)
 async function runSide(ex, session){
 
     let sides = ["rechts","links"];
@@ -262,7 +238,6 @@ async function runSide(ex, session){
             t--;
         }
 
-        // ✔ natürliche Coach-Pause
         await sleep(1400, session);
         await speak("Wechsel", session);
     }
@@ -271,7 +246,6 @@ async function runSide(ex, session){
 }
 
 // =============================
-// 🔥 HOLD REPS
 async function runHoldReps(ex, session){
 
     let reps = ex.reps;
@@ -292,14 +266,10 @@ async function runHoldReps(ex, session){
 }
 
 // =============================
-// 🔥 SIDE HOLD REPS (FIXED COACH LOGIC)
+// 🔥 SIDE HOLD REPS (keine neue Übungsansage!)
 async function runSideHoldReps(ex, session){
 
     let sides = ["rechts","links"];
-
-    // ✔ nur EINMAL Intro (wichtig für Flow)
-    await speak("Position halten", session);
-    await sleep(500, session);
 
     for(let s of sides){
 
@@ -324,8 +294,7 @@ async function runSideHoldReps(ex, session){
             reps--;
         }
 
-        // ✔ sauberer Seitenwechsel
-        await sleep(1500, session);
+        await sleep(1600, session);
         await speak("Seitenwechsel", session);
     }
 
@@ -333,22 +302,7 @@ async function runSideHoldReps(ex, session){
 }
 
 // =============================
-// 🔥 SKIP (ROBUST RESET)
-function skip(){
-
-    App.session++;
-    speechSynthesis.cancel();
-    clearInterval(timer);
-
-    App.running = false;
-
-    setTimeout(()=>{
-        next(App.session);
-    },120);
-}
-
-// =============================
-// 🔥 NEXT (COACH FLOW CONTROL)
+// 🔥 NEXT (WICHTIG: HIER IST DER FIX)
 async function next(session){
 
     if(session !== App.session) return;
@@ -358,22 +312,31 @@ async function next(session){
 
     updateProgress();
 
-    // ✔ echte Fitness-App Pause zwischen Übungen
-    await sleep(1200, session);
-
     if(current >= phases[phaseIndex].length){
-
         update("FERTIG 💪");
         await speak("Training beendet", session);
         return;
     }
 
-    load();
+    let ex = phases[phaseIndex][current];
 
-    // ✔ kleine Pause vor Start (Coach feeling)
-    await sleep(800, session);
+    // =============================
+    // 🔥 WICHTIGER FLOW FIX:
+    // IMMER NEUE ÜBUNG ANSAGEN HIER
+    await sleep(500, session);
 
-    start();
+    await speak(ex.name, session);
+
+    if(ex.subtitle){
+        await speak(ex.subtitle, session);
+    }
+
+    await sleep(500, session);
+
+    await speak("Bereit machen", session);
+    await countdown(3, session);
+
+    run(ex, session);
 }
 
 // =============================
@@ -384,6 +347,19 @@ function pause(){
 
 function resume(){
     App.paused = false;
+}
+
+// =============================
+function skip(){
+    App.session++;
+    speechSynthesis.cancel();
+    clearInterval(timer);
+
+    App.running = false;
+
+    setTimeout(()=>{
+        next(App.session);
+    },120);
 }
 
 // =============================
