@@ -120,24 +120,6 @@ function speak(text, session){
 }
 
 // =============================
-// 🔥 MEHR TEXT + NATÜRLICHERE BESCHREIBUNG
-async function speakGuide(ex, session){
-
-    if(!ex.guide) return;
-
-    await speak("Achte auf folgende Punkte:", session);
-
-    for(let g of ex.guide){
-
-        if(session !== App.session) return;
-
-        // 🔥 kleine Pause zwischen Punkten
-        await speak(g + ".", session);
-        await sleep(400, session);
-    }
-}
-
-// =============================
 async function countdown(sec, session){
     for(let i=sec;i>0;i--){
 
@@ -151,26 +133,22 @@ async function countdown(sec, session){
 }
 
 // =============================
-// 🔥 START FIX (mit Guide Fix)
+// 🔥 START (STABIL FÜR ALLE TRAININGS)
 async function start(){
 
     if(running) return;
 
     running = true;
     App.state = "running";
-    App.session++;
 
+    App.session++;
     const session = App.session;
 
     let ex = phases[phaseIndex][current];
 
     await speak(ex.name, session);
 
-    // 🔥 FIX: längere & bessere Erklärung
-    await speakGuide(ex, session);
-
     await speak("Bereit machen", session);
-
     await countdown(3, session);
 
     run(ex, session);
@@ -182,37 +160,10 @@ function run(ex, session){
     if(ex.type === "time") runTime(ex, session);
     if(ex.type === "reps") runReps(ex, session);
     if(ex.type === "side") runSide(ex, session);
-    if(ex.type === "holdReps") runHoldReps(ex, session); // 🔥 FIX HINZUGEFÜGT
 }
 
 // =============================
-// 🔥 GLUTE BRIDGE FIX (holdReps)
-async function runHoldReps(ex, session){
-
-    let reps = ex.reps;
-
-    while(reps > 0){
-
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(200, session);
-
-        if(reps === ex.reps){
-            update("HALTEN");
-            await speak("Spannung halten für fünf Sekunden", session);
-        } else {
-            update(reps);
-            await speak(reps.toString(), session);
-        }
-
-        reps--;
-        await sleep(5000, session);
-    }
-
-    next(session);
-}
-
-// =============================
+// 🔥 TIMER FIX
 function runTime(ex, session){
 
     let t = ex.time;
@@ -263,7 +214,7 @@ async function runReps(ex, session){
 }
 
 // =============================
-// 🔥 SIDE FIX + LÄNGERE PAUSE BEI WECHSEL
+// 🔥 SIDE FIX (mehr Stabilität + Reset)
 async function runSide(ex, session){
 
     let sides = ["rechts","links"];
@@ -277,7 +228,7 @@ async function runSide(ex, session){
         showSide(s);
         await speak("Seite " + s, session);
 
-        await sleep(1200, session); // 🔥 FIX: längere Pause
+        await sleep(1500, session); // 🔥 längere Pause zwischen Seiten
 
         let t = ex.time;
 
@@ -292,13 +243,14 @@ async function runSide(ex, session){
             t--;
         }
 
-        await sleep(800, session); // 🔥 zusätzlicher Übergang
+        await sleep(1000, session);
     }
 
     next(session);
 }
 
 // =============================
+// 🔥 SKIP FIX (kein Doppel-Trigger)
 function skip(){
 
     App.session++;
@@ -313,6 +265,7 @@ function skip(){
 }
 
 // =============================
+// 🔥 NEXT FIX (STABIL FÜR ALLE PHASEN)
 async function next(session){
 
     if(session !== App.session) return;
@@ -322,17 +275,18 @@ async function next(session){
 
     updateProgress();
 
-    await sleep(500, session);
+    await sleep(600, session); // 🔥 kleine Trainer-Pause
 
     if(current >= phases[phaseIndex].length){
         update("FERTIG 💪");
+        showSide("");
         await speak("Training beendet", session);
         return;
     }
 
     load();
 
-    await sleep(300, session);
+    await sleep(400, session);
 
     start();
 }
@@ -365,9 +319,16 @@ function setPhase(p){
 }
 
 // =============================
+// 🔥 LOAD FIX (reset aller UI States!)
 function load(){
 
     let ex = phases[phaseIndex][current];
+
+    showSide(""); // 🔥 wichtig: verhindert „links bleibt stehen“
+
+    speechSynthesis.cancel();
+    clearInterval(timer);
+    running = false;
 
     phaseTitle.innerText = "Training " + (phaseIndex + 1);
     exerciseTitle.innerText = ex.name;
@@ -399,6 +360,7 @@ function updateProgress(){
     let total = phases[phaseIndex].length;
     progress.style.width = ((current / total) * 100) + "%";
 }
+
 
 
 // =============================
