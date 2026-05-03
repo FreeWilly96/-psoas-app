@@ -227,17 +227,14 @@ function animateRing(){
 
     ctx.clearRect(0,0,size,size);
 
-    // BACK RING
     ctx.beginPath();
     ctx.arc(center,center,radius,0,Math.PI*2);
     ctx.strokeStyle="#1e293b";
     ctx.lineWidth=12;
     ctx.stroke();
 
-    // GRADIENT RING
     const gradient = ctx.createLinearGradient(0,0,160,160);
     gradient.addColorStop(0,"#a855f7");
-    gradient.addColorStop(0.5,"#ec4899");
     gradient.addColorStop(1,"#22d3ee");
 
     ctx.shadowColor = "#a855f7";
@@ -520,10 +517,8 @@ function updateProgress(){
 drawRing(1);
 animateRing();
 
-// 🔥 FIX: GARANTIERT BUTTON + UI START
+// 🔥 FIXED CRITICAL ERROR (WICHTIG!)
 document.addEventListener("DOMContentLoaded", initDOM);
-
-
 
 
 // =============================
