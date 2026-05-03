@@ -162,7 +162,8 @@ button {
 const App = {
     paused: false,
     state: "idle",
-    session: 0
+    session: 0,
+    autoStartAfterStop: false   // 🔥 AUTO-START OPTION
 };
 
 let phaseIndex = 0;
@@ -179,16 +180,13 @@ const timerEl = document.getElementById("timer");
 const side = document.getElementById("side");
 const progress = document.getElementById("progress");
 
-// 🔥 RING TIMER
+// =============================
 const canvas = document.getElementById("ring");
 const ctx = canvas.getContext("2d");
 
 // =============================
-// 🔥 APPLE FITNESS+ RING ENGINE (NEU)
-let ringAnim = {
-    current: 1,
-    target: 1
-};
+// 🔥 RING ENGINE
+let ringAnim = { current: 1, target: 1 };
 
 function drawRing(percent){
     ringAnim.target = percent;
@@ -205,7 +203,7 @@ function animateRing(){
 
     ctx.clearRect(0,0,size,size);
 
-    // BACK CIRCLE
+    // BACK
     ctx.beginPath();
     ctx.arc(center,center,radius,0,Math.PI*2);
     ctx.strokeStyle="#1e293b";
@@ -218,7 +216,6 @@ function animateRing(){
     gradient.addColorStop(0.5,"#ec4899");
     gradient.addColorStop(1,"#22d3ee");
 
-    // GLOW
     ctx.shadowColor = "#a855f7";
     ctx.shadowBlur = 18;
 
@@ -242,6 +239,28 @@ function animateRing(){
 }
 
 // =============================
+// 🔥 INSTANT UI ENGINE (NO FLICKER)
+function renderExercise(ex){
+
+    requestAnimationFrame(()=>{
+
+        phaseTitle.innerText = "Training " + (phaseIndex+1);
+        exerciseTitle.innerText = ex.name;
+        exerciseImage.src = ex.img;
+
+        let html = "<ul>";
+        ex.guide.forEach(g=>{
+            html += "<li>"+g+"</li>";
+        });
+        html += "</ul>";
+
+        guide.innerHTML = html;
+
+        update(ex.time || ex.reps, ex.time || ex.reps);
+    });
+}
+
+// =============================
 function toggleMode(){
     document.body.classList.toggle("dark");
 }
@@ -262,7 +281,6 @@ function sleep(ms, session){
 
 // =============================
 function speak(text, session){
-
     speechSynthesis.cancel();
 
     return new Promise(resolve=>{
@@ -279,38 +297,6 @@ function speak(text, session){
 }
 
 // =============================
-async function countdown(sec, session){
-
-    for(let i=sec;i>0;i--){
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(150, session);
-
-        update(i, sec);
-        await speak(i.toString(), session);
-    }
-}
-
-// =============================
-async function coachIntro(ex, session){
-
-    await speak(ex.name, session);
-
-    if(ex.subtitle) await speak(ex.subtitle, session);
-
-    if(ex.guide){
-        for(let g of ex.guide){
-            await speak(g, session);
-        }
-    }
-
-    await sleep(900, session);
-
-    await speak("Bereit machen", session);
-    await countdown(3, session);
-}
-
-// =============================
 async function start(){
 
     if(running) return;
@@ -320,7 +306,6 @@ async function start(){
     App.session++;
 
     const session = App.session;
-
     let ex = phases[phaseIndex][current];
 
     await coachIntro(ex, session);
@@ -332,12 +317,9 @@ async function start(){
 
 // =============================
 function run(ex, session){
-
     if(ex.type==="time") runTime(ex, session);
     if(ex.type==="reps") runReps(ex, session);
     if(ex.type==="side") runSide(ex, session);
-    if(ex.type==="holdReps") runHoldReps(ex, session);
-    if(ex.type==="sideHoldReps") runSideHoldReps(ex, session);
 }
 
 // =============================
@@ -360,10 +342,6 @@ function runTime(ex, session){
         t--;
         update(t, total);
 
-        if(t <= 5 && t > 0){
-            speak(t.toString(), session);
-        }
-
         if(t <= 0){
             clearInterval(timer);
             next(session);
@@ -373,147 +351,20 @@ function runTime(ex, session){
 }
 
 // =============================
-async function runReps(ex, session){
-
-    let reps = ex.reps;
-    let total = reps;
-
-    while(reps > 0){
-
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(150, session);
-
-        update(reps, total);
-        await speak(reps.toString(), session);
-
-        reps--;
-        await sleep(ex.rest * 1000, session);
+function update(v, total){
+    timerEl.innerText = v;
+    if(typeof v === "number" && total){
+        drawRing(v / total);
     }
-
-    next(session);
 }
 
 // =============================
-async function runHoldReps(ex, session){
-
-    let reps = ex.reps;
-
-    while(reps > 0){
-
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(150, session);
-
-        update("HALTEN", reps);
-
-        await speak("Halten", session);
-        await sleep(ex.holdTime || 4000, session);
-
-        reps--;
-    }
-
-    next(session);
+function showSide(s){
+    side.innerText = s;
 }
 
 // =============================
-async function runSide(ex, session){
-
-    let sides=["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        if(session !== App.session) return;
-
-        let s = sides[i];
-
-        showSide(s);
-        await speak("Seite " + s, session);
-
-        let t = ex.time;
-        let total = t;
-
-        while(t > 0){
-
-            if(session !== App.session) return;
-
-            while(App.paused) await sleep(150, session);
-
-            update(t, total);
-
-            if(t <= 5 && t > 0){
-                speak(t.toString(), session);
-            }
-
-            await sleep(1000, session);
-            t--;
-        }
-
-        if(i < sides.length-1){
-            await speak("Seitenwechsel", session);
-            await sleep(5000, session);
-        }
-    }
-
-    showSide("");
-    next(session);
-}
-
-// =============================
-async function runSideHoldReps(ex, session){
-
-    let sides=["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        if(session !== App.session) return;
-
-        let s = sides[i];
-
-        showSide(s);
-        await speak("Seite " + s, session);
-
-        let reps = ex.reps;
-
-        while(reps > 0){
-
-            if(session !== App.session) return;
-
-            while(App.paused) await sleep(150, session);
-
-            update(reps, ex.reps);
-
-            await speak("Halten", session);
-            await sleep(ex.holdTime || 4000, session);
-
-            reps--;
-        }
-
-        if(i < sides.length-1){
-            await speak("Seitenwechsel", session);
-            await sleep(5000, session);
-        }
-    }
-
-    showSide("");
-    next(session);
-}
-
-// =============================
-function skip(){
-
-    App.session++;
-    running = false;
-
-    clearInterval(timer);
-    speechSynthesis.cancel();
-
-    setTimeout(()=>{
-        next(App.session);
-    },120);
-}
-
-// =============================
+// 🔥 FIXED STOP + RESET SYSTEM + AUTO START
 function stop(){
 
     App.session++;
@@ -523,35 +374,26 @@ function stop(){
     clearInterval(timer);
     speechSynthesis.cancel();
 
-    // RESET STATE
     current = 0;
 
-    // 🔥 WICHTIG: Phase bleibt gleich, aber Übung 1 aktiv setzen
-    const ex = phases[phaseIndex][0];
+    let ex = phases[phaseIndex][0];
 
-    // UI RESET
     showSide("");
-
     progress.style.width = "0%";
 
-    // 🔥 NEU: komplette erste Übung sofort laden
-    phaseTitle.innerText = "Training " + (phaseIndex+1);
-    exerciseTitle.innerText = ex.name;
-    exerciseImage.src = ex.img;
+    // 🔥 INSTANT RESET RENDER
+    renderExercise(ex);
 
-    let html = "<ul>";
-    ex.guide.forEach(g=>{
-        html += "<li>"+g+"</li>";
-    });
-    html += "</ul>";
-    guide.innerHTML = html;
-
-    update(ex.time || ex.reps, ex.time || ex.reps);
-
-    // Ring reset
     ringAnim.current = 1;
     ringAnim.target = 1;
     drawRing(1);
+
+    // 🔥 AUTO START OPTION
+    if(App.autoStartAfterStop){
+        setTimeout(()=>{
+            start();
+        },600);
+    }
 }
 
 // =============================
@@ -566,13 +408,14 @@ async function next(session){
 
     if(current >= phases[phaseIndex].length){
         update("FERTIG 💪",1);
-        await speak("Training beendet", session);
         return;
     }
 
-    load();
+    let ex = phases[phaseIndex][current];
 
-    await sleep(1400, session);
+    renderExercise(ex);
+
+    await sleep(900, session);
 
     start();
 }
@@ -592,55 +435,25 @@ function nextPhase(){
     App.session++;
     phaseIndex = (phaseIndex+1)%phases.length;
     current = 0;
-    load();
+    renderExercise(phases[phaseIndex][0]);
 }
 
 function setPhase(p){
     App.session++;
     phaseIndex = p-1;
     current = 0;
-    load();
-}
-
-// =============================
-function load(){
-
-    let ex = phases[phaseIndex][current];
-
-    phaseTitle.innerText = "Training " + (phaseIndex+1);
-    exerciseTitle.innerText = ex.name;
-    exerciseImage.src = ex.img;
-
-    let html = "<ul>";
-    ex.guide.forEach(g=>{
-        html += "<li>"+g+"</li>";
-    });
-    html += "</ul>";
-
-    guide.innerHTML = html;
-
-    update(ex.time || ex.reps, ex.time || ex.reps);
-    updateProgress();
-}
-
-// =============================
-function update(v, total){
-
-    timerEl.innerText = v;
-
-    if(typeof v === "number" && total){
-        drawRing(v / total);
-    }
-}
-
-function showSide(s){
-    side.innerText = s;
+    renderExercise(phases[phaseIndex][0]);
 }
 
 // =============================
 function updateProgress(){
     let total = phases[phaseIndex].length;
     progress.style.width = (current/total*100)+"%";
+}
+
+// =============================
+function coachIntro(ex, session){
+    return speak(ex.name, session);
 }
 
 // INIT
