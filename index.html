@@ -158,6 +158,7 @@ button {
 
 <script>
 
+// =============================
 const App = {
     paused: false,
     state: "idle",
@@ -169,6 +170,7 @@ let current = 0;
 let timer = null;
 let running = false;
 
+// =============================
 const phaseTitle = document.getElementById("phaseTitle");
 const exerciseTitle = document.getElementById("exerciseTitle");
 const exerciseImage = document.getElementById("exerciseImage");
@@ -177,20 +179,48 @@ const timerEl = document.getElementById("timer");
 const side = document.getElementById("side");
 const progress = document.getElementById("progress");
 
+// 🔥 RING TIMER
 const canvas = document.getElementById("ring");
 const ctx = canvas.getContext("2d");
 
+// =============================
+// 🔥 APPLE FITNESS+ RING ENGINE (NEU)
+let ringAnim = {
+    current: 1,
+    target: 1
+};
+
 function drawRing(percent){
-    ctx.clearRect(0,0,160,160);
+    ringAnim.target = percent;
+}
 
-    const center = 80;
-    const radius = 70;
+// =============================
+function animateRing(){
 
+    ringAnim.current += (ringAnim.target - ringAnim.current) * 0.12;
+
+    const size = 160;
+    const center = size / 2;
+    const radius = 68;
+
+    ctx.clearRect(0,0,size,size);
+
+    // BACK CIRCLE
     ctx.beginPath();
     ctx.arc(center,center,radius,0,Math.PI*2);
     ctx.strokeStyle="#1e293b";
-    ctx.lineWidth=10;
+    ctx.lineWidth=12;
     ctx.stroke();
+
+    // GRADIENT
+    const gradient = ctx.createLinearGradient(0,0,160,160);
+    gradient.addColorStop(0,"#a855f7");
+    gradient.addColorStop(0.5,"#ec4899");
+    gradient.addColorStop(1,"#22d3ee");
+
+    // GLOW
+    ctx.shadowColor = "#a855f7";
+    ctx.shadowBlur = 18;
 
     ctx.beginPath();
     ctx.arc(
@@ -198,13 +228,25 @@ function drawRing(percent){
         center,
         radius,
         -Math.PI/2,
-        (Math.PI*2*percent)-Math.PI/2
+        (Math.PI*2*ringAnim.current)-Math.PI/2
     );
-    ctx.strokeStyle="#a855f7";
-    ctx.lineWidth=10;
+
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 12;
+    ctx.lineCap = "round";
     ctx.stroke();
+
+    ctx.shadowBlur = 0;
+
+    requestAnimationFrame(animateRing);
 }
 
+// =============================
+function toggleMode(){
+    document.body.classList.toggle("dark");
+}
+
+// =============================
 function sleep(ms, session){
     return new Promise(resolve=>{
         const start = Date.now();
@@ -218,6 +260,7 @@ function sleep(ms, session){
     });
 }
 
+// =============================
 function speak(text, session){
 
     speechSynthesis.cancel();
@@ -235,19 +278,242 @@ function speak(text, session){
     });
 }
 
-function update(v, total){
-    timerEl.innerText = v;
-    if(typeof v === "number" && total){
-        drawRing(v / total);
+// =============================
+async function countdown(sec, session){
+
+    for(let i=sec;i>0;i--){
+        if(session !== App.session) return;
+
+        while(App.paused) await sleep(150, session);
+
+        update(i, sec);
+        await speak(i.toString(), session);
     }
 }
 
-function showSide(s){
-    side.innerText = s;
+// =============================
+async function coachIntro(ex, session){
+
+    await speak(ex.name, session);
+
+    if(ex.subtitle) await speak(ex.subtitle, session);
+
+    if(ex.guide){
+        for(let g of ex.guide){
+            await speak(g, session);
+        }
+    }
+
+    await sleep(900, session);
+
+    await speak("Bereit machen", session);
+    await countdown(3, session);
 }
 
 // =============================
-// 🔥 FIXED STOP (RESET + ÜBUNG 1 NEU LADEN)
+async function start(){
+
+    if(running) return;
+
+    running = true;
+    App.state = "running";
+    App.session++;
+
+    const session = App.session;
+
+    let ex = phases[phaseIndex][current];
+
+    await coachIntro(ex, session);
+
+    if(session !== App.session) return;
+
+    run(ex, session);
+}
+
+// =============================
+function run(ex, session){
+
+    if(ex.type==="time") runTime(ex, session);
+    if(ex.type==="reps") runReps(ex, session);
+    if(ex.type==="side") runSide(ex, session);
+    if(ex.type==="holdReps") runHoldReps(ex, session);
+    if(ex.type==="sideHoldReps") runSideHoldReps(ex, session);
+}
+
+// =============================
+function runTime(ex, session){
+
+    let t = ex.time;
+    let total = t;
+
+    update(t, total);
+
+    timer = setInterval(()=>{
+
+        if(session !== App.session){
+            clearInterval(timer);
+            return;
+        }
+
+        if(App.paused) return;
+
+        t--;
+        update(t, total);
+
+        if(t <= 5 && t > 0){
+            speak(t.toString(), session);
+        }
+
+        if(t <= 0){
+            clearInterval(timer);
+            next(session);
+        }
+
+    },1000);
+}
+
+// =============================
+async function runReps(ex, session){
+
+    let reps = ex.reps;
+    let total = reps;
+
+    while(reps > 0){
+
+        if(session !== App.session) return;
+
+        while(App.paused) await sleep(150, session);
+
+        update(reps, total);
+        await speak(reps.toString(), session);
+
+        reps--;
+        await sleep(ex.rest * 1000, session);
+    }
+
+    next(session);
+}
+
+// =============================
+async function runHoldReps(ex, session){
+
+    let reps = ex.reps;
+
+    while(reps > 0){
+
+        if(session !== App.session) return;
+
+        while(App.paused) await sleep(150, session);
+
+        update("HALTEN", reps);
+
+        await speak("Halten", session);
+        await sleep(ex.holdTime || 4000, session);
+
+        reps--;
+    }
+
+    next(session);
+}
+
+// =============================
+async function runSide(ex, session){
+
+    let sides=["rechts","links"];
+
+    for(let i=0;i<sides.length;i++){
+
+        if(session !== App.session) return;
+
+        let s = sides[i];
+
+        showSide(s);
+        await speak("Seite " + s, session);
+
+        let t = ex.time;
+        let total = t;
+
+        while(t > 0){
+
+            if(session !== App.session) return;
+
+            while(App.paused) await sleep(150, session);
+
+            update(t, total);
+
+            if(t <= 5 && t > 0){
+                speak(t.toString(), session);
+            }
+
+            await sleep(1000, session);
+            t--;
+        }
+
+        if(i < sides.length-1){
+            await speak("Seitenwechsel", session);
+            await sleep(5000, session);
+        }
+    }
+
+    showSide("");
+    next(session);
+}
+
+// =============================
+async function runSideHoldReps(ex, session){
+
+    let sides=["rechts","links"];
+
+    for(let i=0;i<sides.length;i++){
+
+        if(session !== App.session) return;
+
+        let s = sides[i];
+
+        showSide(s);
+        await speak("Seite " + s, session);
+
+        let reps = ex.reps;
+
+        while(reps > 0){
+
+            if(session !== App.session) return;
+
+            while(App.paused) await sleep(150, session);
+
+            update(reps, ex.reps);
+
+            await speak("Halten", session);
+            await sleep(ex.holdTime || 4000, session);
+
+            reps--;
+        }
+
+        if(i < sides.length-1){
+            await speak("Seitenwechsel", session);
+            await sleep(5000, session);
+        }
+    }
+
+    showSide("");
+    next(session);
+}
+
+// =============================
+function skip(){
+
+    App.session++;
+    running = false;
+
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    setTimeout(()=>{
+        next(App.session);
+    },120);
+}
+
+// =============================
 function stop(){
 
     App.session++;
@@ -257,22 +523,74 @@ function stop(){
     clearInterval(timer);
     speechSynthesis.cancel();
 
-    // RESET
     current = 0;
 
-    progress.style.width = "0%";
+    update("0",1);
     showSide("");
 
-    // 🔥 WICHTIG: erste Übung neu laden
-    load();
+    exerciseTitle.innerText = "";
+    guide.innerHTML = "";
+    exerciseImage.src = "";
 
-    // optional sauberer Reset
-    update(0,1);
+    phaseTitle.innerText = "Training " + (phaseIndex+1);
+
+    progress.style.width = "0%";
+
+    ringAnim.current = 1;
+    ringAnim.target = 1;
+
     drawRing(1);
 }
 
 // =============================
+async function next(session){
 
+    if(session !== App.session) return;
+
+    running = false;
+    current++;
+
+    updateProgress();
+
+    if(current >= phases[phaseIndex].length){
+        update("FERTIG 💪",1);
+        await speak("Training beendet", session);
+        return;
+    }
+
+    load();
+
+    await sleep(1400, session);
+
+    start();
+}
+
+// =============================
+function pause(){
+    App.paused = true;
+    speechSynthesis.cancel();
+}
+
+function weiter(){
+    App.paused = false;
+}
+
+// =============================
+function nextPhase(){
+    App.session++;
+    phaseIndex = (phaseIndex+1)%phases.length;
+    current = 0;
+    load();
+}
+
+function setPhase(p){
+    App.session++;
+    phaseIndex = p-1;
+    current = 0;
+    load();
+}
+
+// =============================
 function load(){
 
     let ex = phases[phaseIndex][current];
@@ -290,10 +608,33 @@ function load(){
     guide.innerHTML = html;
 
     update(ex.time || ex.reps, ex.time || ex.reps);
+    updateProgress();
+}
+
+// =============================
+function update(v, total){
+
+    timerEl.innerText = v;
+
+    if(typeof v === "number" && total){
+        drawRing(v / total);
+    }
+}
+
+function showSide(s){
+    side.innerText = s;
+}
+
+// =============================
+function updateProgress(){
+    let total = phases[phaseIndex].length;
+    progress.style.width = (current/total*100)+"%";
 }
 
 // INIT
 drawRing(1);
+animateRing();
+
 
 
 
