@@ -156,6 +156,7 @@ button {
 <button style="background:#555" onclick="stop()">Stop</button>
 </div>
 
+
 <script>
 
 // =============================
@@ -163,7 +164,7 @@ const App = {
     paused: false,
     state: "idle",
     session: 0,
-    autoStartAfterStop: false   // 🔥 AUTO-START OPTION
+    autoStartAfterStop: false
 };
 
 let phaseIndex = 0;
@@ -203,14 +204,12 @@ function animateRing(){
 
     ctx.clearRect(0,0,size,size);
 
-    // BACK
     ctx.beginPath();
     ctx.arc(center,center,radius,0,Math.PI*2);
     ctx.strokeStyle="#1e293b";
     ctx.lineWidth=12;
     ctx.stroke();
 
-    // GRADIENT
     const gradient = ctx.createLinearGradient(0,0,160,160);
     gradient.addColorStop(0,"#a855f7");
     gradient.addColorStop(0.5,"#ec4899");
@@ -236,28 +235,6 @@ function animateRing(){
     ctx.shadowBlur = 0;
 
     requestAnimationFrame(animateRing);
-}
-
-// =============================
-// 🔥 INSTANT UI ENGINE (NO FLICKER)
-function renderExercise(ex){
-
-    requestAnimationFrame(()=>{
-
-        phaseTitle.innerText = "Training " + (phaseIndex+1);
-        exerciseTitle.innerText = ex.name;
-        exerciseImage.src = ex.img;
-
-        let html = "<ul>";
-        ex.guide.forEach(g=>{
-            html += "<li>"+g+"</li>";
-        });
-        html += "</ul>";
-
-        guide.innerHTML = html;
-
-        update(ex.time || ex.reps, ex.time || ex.reps);
-    });
 }
 
 // =============================
@@ -294,6 +271,11 @@ function speak(text, session){
 
         speechSynthesis.speak(msg);
     });
+}
+
+// =============================
+async function coachIntro(ex, session){
+    await speak(ex.name, session);
 }
 
 // =============================
@@ -351,20 +333,85 @@ function runTime(ex, session){
 }
 
 // =============================
-function update(v, total){
-    timerEl.innerText = v;
-    if(typeof v === "number" && total){
-        drawRing(v / total);
-    }
+function runReps(ex, session){
+
+    let reps = ex.reps;
+    let total = reps;
+
+    (async ()=>{
+        while(reps > 0){
+
+            if(session !== App.session) return;
+
+            while(App.paused) await sleep(150, session);
+
+            update(reps, total);
+            await speak(reps.toString(), session);
+
+            reps--;
+            await sleep(ex.rest * 1000, session);
+        }
+
+        next(session);
+    })();
 }
 
 // =============================
-function showSide(s){
-    side.innerText = s;
+function runSide(ex, session){
+
+    let sides=["rechts","links"];
+
+    (async ()=>{
+        for(let i=0;i<sides.length;i++){
+
+            if(session !== App.session) return;
+
+            let s = sides[i];
+
+            showSide(s);
+            await speak("Seite " + s, session);
+
+            let t = ex.time;
+            let total = t;
+
+            while(t > 0){
+
+                if(session !== App.session) return;
+
+                while(App.paused) await sleep(150, session);
+
+                update(t, total);
+
+                await sleep(1000, session);
+                t--;
+            }
+
+            if(i < sides.length-1){
+                await speak("Seitenwechsel", session);
+                await sleep(5000, session);
+            }
+        }
+
+        showSide("");
+        next(session);
+    })();
 }
 
 // =============================
-// 🔥 FIXED STOP + RESET SYSTEM + AUTO START
+function skip(){
+
+    App.session++;
+    running = false;
+
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    setTimeout(()=>{
+        next(App.session);
+    },120);
+}
+
+// =============================
 function stop(){
 
     App.session++;
@@ -376,22 +423,22 @@ function stop(){
 
     current = 0;
 
-    let ex = phases[phaseIndex][0];
-
     showSide("");
     progress.style.width = "0%";
 
-    // 🔥 INSTANT RESET RENDER
+    let ex = phases[phaseIndex][0];
     renderExercise(ex);
 
     ringAnim.current = 1;
     ringAnim.target = 1;
     drawRing(1);
 
-    // 🔥 AUTO START OPTION
     if(App.autoStartAfterStop){
+        const s = App.session;
         setTimeout(()=>{
-            start();
+            if(s === App.session){
+                start();
+            }
         },600);
     }
 }
@@ -446,17 +493,45 @@ function setPhase(p){
 }
 
 // =============================
+function renderExercise(ex){
+
+    requestAnimationFrame(()=>{
+
+        phaseTitle.innerText = "Training " + (phaseIndex+1);
+        exerciseTitle.innerText = ex.name;
+        exerciseImage.src = ex.img;
+
+        let html = "<ul>";
+        ex.guide.forEach(g=>{
+            html += "<li>"+g+"</li>";
+        });
+        html += "</ul>";
+
+        guide.innerHTML = html;
+
+        update(ex.time || ex.reps, ex.time || ex.reps);
+    });
+}
+
+// =============================
+function update(v, total){
+    timerEl.innerText = v;
+    if(typeof v === "number" && total){
+        drawRing(v / total);
+    }
+}
+
+function showSide(s){
+    side.innerText = s;
+}
+
+// =============================
 function updateProgress(){
     let total = phases[phaseIndex].length;
     progress.style.width = (current/total*100)+"%";
 }
 
 // =============================
-function coachIntro(ex, session){
-    return speak(ex.name, session);
-}
-
-// INIT
 drawRing(1);
 animateRing();
 
