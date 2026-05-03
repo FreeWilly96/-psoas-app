@@ -37,7 +37,6 @@ img {
     object-fit:contain;
 }
 
-/* 🔥 RING TIMER */
 .ringWrap{
     position:relative;
     width:160px;
@@ -62,8 +61,6 @@ canvas{
     font-weight:bold;
 }
 
-/* ============================= */
-
 .side {
     font-size:26px;
     height:40px;
@@ -78,7 +75,6 @@ canvas{
     background:#1e2a3a;
 }
 
-/* 🔥 BUTTONS */
 button {
     padding:12px;
     margin:5px;
@@ -111,7 +107,6 @@ button {
     background:linear-gradient(90deg,#a855f7,#ec4899);
 }
 
-/* 🔥 BOTTOM BAR */
 .bottomBar{
     position:fixed;
     bottom:0;
@@ -139,7 +134,6 @@ button {
 <img id="exerciseImage">
 <div id="guide" class="guide"></div>
 
-<!-- 🔥 RING TIMER -->
 <div class="ringWrap">
 <canvas id="ring" width="160" height="160"></canvas>
 <div id="timer" class="timer">0</div>
@@ -154,7 +148,6 @@ button {
 <button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
 <button class="mode" onclick="nextPhase()">Nächstes Training</button>
 
-<!-- 🔥 BOTTOM BAR -->
 <div class="bottomBar">
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
@@ -165,7 +158,6 @@ button {
 
 <script>
 
-// =============================
 const App = {
     paused: false,
     state: "idle",
@@ -177,7 +169,6 @@ let current = 0;
 let timer = null;
 let running = false;
 
-// =============================
 const phaseTitle = document.getElementById("phaseTitle");
 const exerciseTitle = document.getElementById("exerciseTitle");
 const exerciseImage = document.getElementById("exerciseImage");
@@ -186,7 +177,6 @@ const timerEl = document.getElementById("timer");
 const side = document.getElementById("side");
 const progress = document.getElementById("progress");
 
-// 🔥 RING TIMER
 const canvas = document.getElementById("ring");
 const ctx = canvas.getContext("2d");
 
@@ -206,12 +196,6 @@ function drawRing(percent){
     ctx.stroke();
 }
 
-// =============================
-function toggleMode(){
-    document.body.classList.toggle("dark");
-}
-
-// =============================
 function sleep(ms, session){
     return new Promise(resolve=>{
         const start = Date.now();
@@ -225,7 +209,6 @@ function sleep(ms, session){
     });
 }
 
-// =============================
 function speak(text, session){
 
     speechSynthesis.cancel();
@@ -243,243 +226,19 @@ function speak(text, session){
     });
 }
 
-// =============================
-async function countdown(sec, session){
-
-    for(let i=sec;i>0;i--){
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(150, session);
-
-        update(i, sec);
-        await speak(i.toString(), session);
+function update(v, total){
+    timerEl.innerText = v;
+    if(typeof v === "number" && total){
+        drawRing(v / total);
     }
 }
 
-// =============================
-async function coachIntro(ex, session){
-
-    await speak(ex.name, session);
-
-    if(ex.subtitle) await speak(ex.subtitle, session);
-
-    if(ex.guide){
-        for(let g of ex.guide){
-            await speak(g, session);
-        }
-    }
-
-    await sleep(900, session);
-
-    await speak("Bereit machen", session);
-    await countdown(3, session);
+function showSide(s){
+    side.innerText = s;
 }
 
 // =============================
-async function start(){
-
-    if(running) return;
-
-    running = true;
-    App.state = "running";
-    App.session++;
-
-    const session = App.session;
-
-    let ex = phases[phaseIndex][current];
-
-    await coachIntro(ex, session);
-
-    if(session !== App.session) return;
-
-    run(ex, session);
-}
-
-// =============================
-function run(ex, session){
-
-    if(ex.type==="time") runTime(ex, session);
-    if(ex.type==="reps") runReps(ex, session);
-    if(ex.type==="side") runSide(ex, session);
-    if(ex.type==="holdReps") runHoldReps(ex, session);
-    if(ex.type==="sideHoldReps") runSideHoldReps(ex, session);
-}
-
-// =============================
-function runTime(ex, session){
-
-    let t = ex.time;
-    let total = t;
-
-    update(t, total);
-
-    timer = setInterval(()=>{
-
-        if(session !== App.session){
-            clearInterval(timer);
-            return;
-        }
-
-        if(App.paused) return;
-
-        t--;
-        update(t, total);
-
-        if(t <= 5 && t > 0){
-            speak(t.toString(), session);
-        }
-
-        if(t <= 0){
-            clearInterval(timer);
-            next(session);
-        }
-
-    },1000);
-}
-
-// =============================
-async function runReps(ex, session){
-
-    let reps = ex.reps;
-    let total = reps;
-
-    while(reps > 0){
-
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(150, session);
-
-        update(reps, total);
-        await speak(reps.toString(), session);
-
-        reps--;
-        await sleep(ex.rest * 1000, session);
-    }
-
-    next(session);
-}
-
-// =============================
-async function runHoldReps(ex, session){
-
-    let reps = ex.reps;
-
-    while(reps > 0){
-
-        if(session !== App.session) return;
-
-        while(App.paused) await sleep(150, session);
-
-        update("HALTEN", reps);
-
-        await speak("Halten", session);
-        await sleep(ex.holdTime || 4000, session);
-
-        reps--;
-    }
-
-    next(session);
-}
-
-// =============================
-async function runSide(ex, session){
-
-    let sides=["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        if(session !== App.session) return;
-
-        let s = sides[i];
-
-        showSide(s);
-        await speak("Seite " + s, session);
-
-        let t = ex.time;
-        let total = t;
-
-        while(t > 0){
-
-            if(session !== App.session) return;
-
-            while(App.paused) await sleep(150, session);
-
-            update(t, total);
-
-            if(t <= 5 && t > 0){
-                speak(t.toString(), session);
-            }
-
-            await sleep(1000, session);
-            t--;
-        }
-
-        if(i < sides.length-1){
-            await speak("Seitenwechsel", session);
-            await sleep(5000, session);
-        }
-    }
-
-    showSide("");
-    next(session);
-}
-
-// =============================
-async function runSideHoldReps(ex, session){
-
-    let sides=["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        if(session !== App.session) return;
-
-        let s = sides[i];
-
-        showSide(s);
-        await speak("Seite " + s, session);
-
-        let reps = ex.reps;
-
-        while(reps > 0){
-
-            if(session !== App.session) return;
-
-            while(App.paused) await sleep(150, session);
-
-            update(reps, ex.reps);
-
-            await speak("Halten", session);
-            await sleep(ex.holdTime || 4000, session);
-
-            reps--;
-        }
-
-        if(i < sides.length-1){
-            await speak("Seitenwechsel", session);
-            await sleep(5000, session);
-        }
-    }
-
-    showSide("");
-    next(session);
-}
-
-// =============================
-function skip(){
-
-    App.session++;
-    running = false;
-
-    clearInterval(timer);
-    speechSynthesis.cancel();
-
-    setTimeout(()=>{
-        next(App.session);
-    },120);
-}
-
-// =============================
-// 🔥 FIXED STOP (UI RESET + STATE RESET)
+// 🔥 FIXED STOP (RESET + ÜBUNG 1 NEU LADEN)
 function stop(){
 
     App.session++;
@@ -489,72 +248,22 @@ function stop(){
     clearInterval(timer);
     speechSynthesis.cancel();
 
-    // 🔥 UI sauber zurücksetzen
+    // RESET
     current = 0;
 
-    update("0",1);
+    progress.style.width = "0%";
     showSide("");
 
-    exerciseTitle.innerText = "";
-    guide.innerHTML = "";
-    exerciseImage.src = "";
+    // 🔥 WICHTIG: erste Übung neu laden
+    load();
 
-    phaseTitle.innerText = "Training " + (phaseIndex+1);
-
-    progress.style.width = "0%";
-
+    // optional sauberer Reset
+    update(0,1);
     drawRing(1);
 }
 
 // =============================
-async function next(session){
 
-    if(session !== App.session) return;
-
-    running = false;
-    current++;
-
-    updateProgress();
-
-    if(current >= phases[phaseIndex].length){
-        update("FERTIG 💪",1);
-        await speak("Training beendet", session);
-        return;
-    }
-
-    load();
-
-    await sleep(1400, session);
-
-    start();
-}
-
-// =============================
-function pause(){
-    App.paused = true;
-    speechSynthesis.cancel();
-}
-
-function weiter(){
-    App.paused = false;
-}
-
-// =============================
-function nextPhase(){
-    App.session++;
-    phaseIndex = (phaseIndex+1)%phases.length;
-    current = 0;
-    load();
-}
-
-function setPhase(p){
-    App.session++;
-    phaseIndex = p-1;
-    current = 0;
-    load();
-}
-
-// =============================
 function load(){
 
     let ex = phases[phaseIndex][current];
@@ -572,27 +281,6 @@ function load(){
     guide.innerHTML = html;
 
     update(ex.time || ex.reps, ex.time || ex.reps);
-    updateProgress();
-}
-
-// =============================
-function update(v, total){
-
-    timerEl.innerText = v;
-
-    if(typeof v === "number" && total){
-        drawRing(v / total);
-    }
-}
-
-function showSide(s){
-    side.innerText = s;
-}
-
-// =============================
-function updateProgress(){
-    let total = phases[phaseIndex].length;
-    progress.style.width = (current/total*100)+"%";
 }
 
 // INIT
