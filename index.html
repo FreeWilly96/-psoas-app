@@ -12,7 +12,7 @@
 <style>
 
 /* =============================
-🔥 BASE + DARK MODE FIX
+BASE
 ============================= */
 body {
     margin:0;
@@ -28,22 +28,14 @@ body.dark{
 }
 
 /* =============================
-🔥 TOP APP AREA (wie Bild links)
+TOP
 ============================= */
 .top {
     padding:20px 15px 10px;
 }
 
-h2 {
-    margin:5px 0;
-    font-size:18px;
-    opacity:0.7;
-}
-
-h3 {
-    margin:0;
-    font-size:22px;
-}
+h2 {margin:5px 0;font-size:18px;opacity:0.7;}
+h3 {margin:0;font-size:22px;}
 
 .side {
     font-size:18px;
@@ -52,24 +44,23 @@ h3 {
 }
 
 /* =============================
-🔥 IMAGE
+IMAGE
 ============================= */
 img {
     width:100%;
-    height:28vh;
+    height:25vh;
     object-fit:contain;
 }
 
 /* =============================
-🔥 GUIDE CARD
+GUIDE
 ============================= */
 .guide {
     margin:10px;
     padding:12px;
     border-radius:14px;
-    background:#ffffff;
+    background:#fff;
     color:#111;
-    box-shadow:0 4px 14px rgba(0,0,0,0.1);
 }
 
 body.dark .guide{
@@ -78,22 +69,48 @@ body.dark .guide{
 }
 
 /* =============================
-🔥 TIMER
+🔥 RING TIMER
 ============================= */
+.ringWrap{
+    position:relative;
+    width:200px;
+    height:200px;
+    margin:10px auto;
+}
+
+svg{
+    transform:rotate(-90deg);
+}
+
+.ringBg{
+    stroke:#ddd;
+}
+
+body.dark .ringBg{
+    stroke:#1e293b;
+}
+
+.ring{
+    stroke:url(#grad);
+    stroke-linecap:round;
+    transition:stroke-dashoffset 0.5s linear;
+}
+
 .timer {
-    font-size:70px;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:48px;
     font-weight:bold;
-    background:linear-gradient(90deg,#a855f7,#ec4899);
-    -webkit-background-clip:text;
-    color:transparent;
 }
 
 /* =============================
-🔥 PROGRESS
+PROGRESS BAR (Backup)
 ============================= */
 #progressBar {
     width:90%;
-    height:10px;
+    height:8px;
     background:#ddd;
     margin:10px auto;
     border-radius:10px;
@@ -111,24 +128,21 @@ body.dark #progressBar{
 }
 
 /* =============================
-🔥 BUTTON AREA (wie Bild rechts)
+BOTTOM
 ============================= */
 .bottom {
     position:fixed;
     bottom:0;
-    left:0;
     width:100%;
     padding:10px;
     padding-bottom:calc(10px + env(safe-area-inset-bottom));
     background:rgba(255,255,255,0.95);
-    backdrop-filter:blur(10px);
 }
 
 body.dark .bottom{
     background:rgba(10,20,40,0.95);
 }
 
-/* GRID */
 .controls {
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -144,15 +158,13 @@ body.dark .bottom{
     color:white;
 }
 
-/* Farben */
 .start{background:#22c55e;}
 .pause{background:#ef4444;}
 .resume{background:#3b82f6;}
 .skip{background:#f59e0b;}
 .mode{background:#374151;}
-.stop{background:#111;} /* 🔥 NEU */
+.stop{background:#111;}
 
-/* PHASE BUTTONS */
 .phases{
     display:flex;
     gap:6px;
@@ -168,14 +180,7 @@ body.dark .bottom{
     color:white;
 }
 
-.phase.active{
-    background:#a855f7;
-}
-
-/* Abstand unten damit nichts überdeckt */
-.spacer{
-    height:180px;
-}
+.spacer{height:200px;}
 
 </style>
 </head>
@@ -192,14 +197,29 @@ body.dark .bottom{
 
 <div id="guide" class="guide"></div>
 
-<div id="timer" class="timer">0</div>
+<!-- 🔥 RING TIMER -->
+<div class="ringWrap">
+    <svg width="200" height="200">
+        <defs>
+            <linearGradient id="grad">
+                <stop offset="0%" stop-color="#a855f7"/>
+                <stop offset="100%" stop-color="#ec4899"/>
+            </linearGradient>
+        </defs>
+
+        <circle class="ringBg" cx="100" cy="100" r="90" stroke-width="10" fill="none"/>
+        <circle id="ring" class="ring" cx="100" cy="100" r="90" stroke-width="10" fill="none"
+            stroke-dasharray="565"
+            stroke-dashoffset="0"/>
+    </svg>
+
+    <div id="timer" class="timer">0</div>
+</div>
+
 <div id="progressBar"><div id="progress"></div></div>
 
 <div class="spacer"></div>
 
-<!-- =============================
-🔥 BUTTON AREA
-============================= -->
 <div class="bottom">
 
     <div class="controls">
@@ -213,9 +233,9 @@ body.dark .bottom{
     </div>
 
     <div class="phases">
-        <button id="btnP1" class="phase" onclick="setPhase(1)">T1</button>
-        <button id="btnP2" class="phase" onclick="setPhase(2)">T2</button>
-        <button id="btnP3" class="phase" onclick="setPhase(3)">T3</button>
+        <button class="phase" onclick="setPhase(1)">T1</button>
+        <button class="phase" onclick="setPhase(2)">T2</button>
+        <button class="phase" onclick="setPhase(3)">T3</button>
         <button class="phase" onclick="nextPhase()">Next</button>
     </div>
 
@@ -224,29 +244,24 @@ body.dark .bottom{
 <script>
 
 // =============================
-// 🔥 CORE STATE
 const App = {
     paused: false,
     state: "idle",
-    session: 0
+    session: 0,
+    lastSpoken: ""
 };
 
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
 let running = false;
+let totalTime = 0;
 
 // =============================
-const phaseTitle = document.getElementById("phaseTitle");
-const exerciseTitle = document.getElementById("exerciseTitle");
-const exerciseImage = document.getElementById("exerciseImage");
-const guide = document.getElementById("guide");
 const timerEl = document.getElementById("timer");
-const side = document.getElementById("side");
-const progress = document.getElementById("progress");
+const ring = document.getElementById("ring");
 
 // =============================
-// 🔥 DARK MODE FIX (jetzt sichtbar)
 function toggleMode(){
     document.body.classList.toggle("dark");
 }
@@ -258,70 +273,38 @@ function sleep(ms){
 
 // =============================
 function speak(text){
+
+    if(App.paused) return;
+    if(App.lastSpoken === text) return;
+
+    App.lastSpoken = text;
+
     speechSynthesis.cancel();
 
-    return new Promise(resolve=>{
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = "de-DE";
-        msg.rate = 0.95;
-        msg.onend = () => setTimeout(resolve, 80);
-        speechSynthesis.speak(msg);
-    });
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = "de-DE";
+    msg.rate = 0.95;
+
+    speechSynthesis.speak(msg);
 }
 
 // =============================
-async function countdown(sec){
-    for(let i=sec;i>0;i--){
-        if(!running) return;
-        while(App.paused) await sleep(150);
+function update(v){
+    timerEl.innerText = v;
 
-        update(i);
-        await speak(i.toString());
+    if(totalTime){
+        let percent = v / totalTime;
+        let offset = 565 * (1 - percent);
+        ring.style.strokeDashoffset = offset;
     }
-}
-
-// =============================
-async function start(){
-
-    if(running) return;
-
-    running = true;
-    App.state = "running";
-    App.session++;
-
-    let ex = phases[phaseIndex][current];
-
-    await speak(ex.name);
-
-    if(ex.subtitle) await speak(ex.subtitle);
-
-    if(ex.guide){
-        for(let g of ex.guide){
-            await speak(g);
-        }
-    }
-
-    await sleep(1000);
-
-    await speak("Bereit machen");
-    await countdown(3);
-
-    run(ex);
-}
-
-// =============================
-function run(ex){
-    if(ex.type==="time") runTime(ex);
-    if(ex.type==="reps") runReps(ex);
-    if(ex.type==="side") runSide(ex);
-    if(ex.type==="holdReps") runHoldReps(ex);
-    if(ex.type==="sideHoldReps") runSideHoldReps(ex);
 }
 
 // =============================
 function runTime(ex){
 
     let t = ex.time;
+    totalTime = ex.time;
+
     update(t);
 
     timer = setInterval(()=>{
@@ -349,119 +332,25 @@ function runTime(ex){
 }
 
 // =============================
-async function runReps(ex){
+function start(){
+    if(running) return;
 
-    let reps = ex.reps;
-
-    while(reps > 0 && running){
-
-        if(App.paused){
-            await sleep(150);
-            continue;
-        }
-
-        update(reps);
-        await speak(reps.toString());
-
-        reps--;
-        await sleep(ex.rest * 1000);
-    }
-
-    next();
-}
-
-// =============================
-async function runSide(ex){
-
-    let sides = ["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        if(!running) return;
-
-        let s = sides[i];
-
-        showSide(s);
-        await speak("Seite " + s);
-
-        let t = ex.time;
-
-        while(t > 0 && running){
-
-            if(App.paused){
-                await sleep(150);
-                continue;
-            }
-
-            update(t);
-
-            if(t <= 5 && t > 0){
-                speak(t.toString());
-            }
-
-            await sleep(1000);
-            t--;
-        }
-
-        if(i < sides.length - 1){
-            await speak("Seitenwechsel");
-            await sleep(5000);
-        }
-    }
-
-    showSide("");
-    next();
-}
-
-// =============================
-function stop(){
-
-    running = false;
+    running = true;
     App.paused = false;
-    App.session++;
+    App.lastSpoken = "";
 
-    clearInterval(timer);
-    speechSynthesis.cancel();
+    let ex = phases[phaseIndex][current];
 
-    update("0");
-    showSide("");
-
-    current = 0;
-    updateProgress();
-}
-
-// =============================
-function skip(){
-
-    running = false;
-    App.session++;
-
-    clearInterval(timer);
-    speechSynthesis.cancel();
+    speak(ex.name);
 
     setTimeout(()=>{
-        next();
-    },120);
+        run(ex);
+    },800);
 }
 
 // =============================
-async function next(){
-
-    running = false;
-
-    current++;
-    updateProgress();
-
-    if(current >= phases[phaseIndex].length){
-        update("FERTIG 💪");
-        await speak("Training beendet");
-        return;
-    }
-
-    load();
-
-    await sleep(1500);
-    start();
+function run(ex){
+    if(ex.type==="time") runTime(ex);
 }
 
 // =============================
@@ -470,15 +359,56 @@ function pause(){
     speechSynthesis.cancel();
 }
 
+// 🔥 SMART RESUME
 function resume(){
+    if(!running) return;
+
     App.paused = false;
+    App.lastSpoken = ""; // verhindert doppelte blockierung
 }
 
 // =============================
-function nextPhase(){
-    phaseIndex = (phaseIndex + 1) % phases.length;
+function stop(){
+
+    running = false;
+    App.paused = false;
+
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    update("0");
+    ring.style.strokeDashoffset = 0;
+
     current = 0;
+}
+
+// =============================
+function skip(){
+
+    running = false;
+
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    setTimeout(()=> next(),100);
+}
+
+// =============================
+function next(){
+
+    running = false;
+
+    current++;
+
+    if(current >= phases[phaseIndex].length){
+        update("FERTIG");
+        speak("Training beendet");
+        return;
+    }
+
     load();
+
+    setTimeout(()=> start(),800);
 }
 
 // =============================
@@ -489,39 +419,28 @@ function setPhase(p){
 }
 
 // =============================
+function nextPhase(){
+    phaseIndex = (phaseIndex + 1) % phases.length;
+    current = 0;
+    load();
+}
+
+// =============================
 function load(){
 
     let ex = phases[phaseIndex][current];
 
-    phaseTitle.innerText = "Training " + (phaseIndex + 1);
-    exerciseTitle.innerText = ex.name;
-    exerciseImage.src = ex.img;
+    document.getElementById("phaseTitle").innerText = "Training " + (phaseIndex + 1);
+    document.getElementById("exerciseTitle").innerText = ex.name;
+    document.getElementById("exerciseImage").src = ex.img;
 
     let html = "<ul>";
-    ex.guide.forEach(g=>{
-        html += "<li>" + g + "</li>";
-    });
+    ex.guide.forEach(g=> html += "<li>"+g+"</li>");
     html += "</ul>";
 
-    guide.innerHTML = html;
+    document.getElementById("guide").innerHTML = html;
 
-    update(ex.time || ex.reps);
-    updateProgress();
-}
-
-// =============================
-function update(v){
-    timerEl.innerText = v;
-}
-
-function showSide(s){
-    side.innerText = s;
-}
-
-// =============================
-function updateProgress(){
-    let total = phases[phaseIndex].length;
-    progress.style.width = ((current / total) * 100) + "%";
+    update(ex.time || 0);
 }
 
 
