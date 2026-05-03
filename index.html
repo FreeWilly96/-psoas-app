@@ -176,6 +176,9 @@ let phaseTitle, exerciseTitle, exerciseImage, guide, timerEl, side, progress;
 let canvas, ctx;
 
 // =============================
+let ringAnim = { current: 1, target: 1 };
+
+// =============================
 function initDOM(){
 
     phaseTitle = document.getElementById("phaseTitle");
@@ -189,7 +192,7 @@ function initDOM(){
     canvas = document.getElementById("ring");
 
     if(!canvas){
-        console.error("Ring Canvas fehlt!");
+        console.error("Canvas fehlt!");
         return;
     }
 
@@ -204,8 +207,6 @@ if(!window.phases){
 }
 
 // =============================
-let ringAnim = { current: 1, target: 1 };
-
 function drawRing(percent){
     ringAnim.target = percent;
 }
@@ -213,7 +214,10 @@ function drawRing(percent){
 // =============================
 function animateRing(){
 
-    if(!ctx) return;
+    if(!ctx) {
+        requestAnimationFrame(animateRing);
+        return;
+    }
 
     ringAnim.current += (ringAnim.target - ringAnim.current) * 0.12;
 
@@ -223,18 +227,21 @@ function animateRing(){
 
     ctx.clearRect(0,0,size,size);
 
+    // BACK RING
     ctx.beginPath();
     ctx.arc(center,center,radius,0,Math.PI*2);
     ctx.strokeStyle="#1e293b";
     ctx.lineWidth=12;
     ctx.stroke();
 
+    // GRADIENT RING
     const gradient = ctx.createLinearGradient(0,0,160,160);
     gradient.addColorStop(0,"#a855f7");
+    gradient.addColorStop(0.5,"#ec4899");
     gradient.addColorStop(1,"#22d3ee");
 
     ctx.shadowColor = "#a855f7";
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = 20;
 
     ctx.beginPath();
     ctx.arc(
@@ -257,9 +264,7 @@ function animateRing(){
 
 // =============================
 function safeGetExercise(){
-    if(!window.phases) return null;
-    if(!phases[phaseIndex]) return null;
-    return phases[phaseIndex][current] || null;
+    return phases?.[phaseIndex]?.[current] || null;
 }
 
 // =============================
@@ -270,10 +275,10 @@ function initApp(){
         return;
     }
 
-    let ex = phases[phaseIndex][0];
+    let ex = phases?.[phaseIndex]?.[0];
 
     if(!ex){
-        console.error("Keine Startübung");
+        console.error("keine Startübung");
         return;
     }
 
@@ -290,12 +295,12 @@ function renderExercise(ex){
         phaseTitle.innerText = "Fehler";
         exerciseTitle.innerText = "Keine Daten";
         exerciseImage.src = "";
-        guide.innerHTML = "<li>Keine Übung geladen</li>";
+        guide.innerHTML = "<li>Keine Übung</li>";
         return;
     }
 
     phaseTitle.innerText = "Training " + (phaseIndex+1);
-    exerciseTitle.innerText = ex.name || "Unnamed";
+    exerciseTitle.innerText = ex.name || "unnamed";
     exerciseImage.src = ex.img || "";
 
     let html = "<ul>";
@@ -333,18 +338,21 @@ function toggleMode(){
 function sleep(ms, session){
     return new Promise(resolve=>{
         const start = Date.now();
+
         function loop(){
             if(session !== App.session) return resolve();
             if(App.paused) return requestAnimationFrame(loop);
             if(Date.now() - start >= ms) return resolve();
             requestAnimationFrame(loop);
         }
+
         loop();
     });
 }
 
 // =============================
 function speak(text, session){
+
     speechSynthesis.cancel();
 
     return new Promise(resolve=>{
@@ -354,6 +362,7 @@ function speak(text, session){
         msg.lang = "de-DE";
         msg.rate = 0.92;
         msg.onend = () => setTimeout(resolve,120);
+
         speechSynthesis.speak(msg);
     });
 }
@@ -364,10 +373,7 @@ async function start(){
     if(running) return;
 
     let ex = safeGetExercise();
-    if(!ex){
-        console.error("Start blockiert: keine Übung");
-        return;
-    }
+    if(!ex) return;
 
     running = true;
     App.session++;
@@ -514,7 +520,7 @@ function updateProgress(){
 drawRing(1);
 animateRing();
 
-// 🔥 CRITICAL FIX: DOM SAFE START
+// 🔥 FIX: GARANTIERT BUTTON + UI START
 document.addEventListener("DOMContentLoaded", initDOM);
 
 
