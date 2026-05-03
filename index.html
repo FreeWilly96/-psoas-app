@@ -152,16 +152,18 @@ button {
 <button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
 <button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
 <button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
-<button class="mode" onclick="nextPhase()">Next</button>
+<button class="mode" onclick="nextPhase()">Nächstes Training</button>
 
 <!-- 🔥 BOTTOM BAR -->
 <div class="bottomBar">
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
-<button style="background:#3498db" onclick="resume()">Resume</button>
+<button style="background:#3498db" onclick="weiter()">Weiter</button>
 <button class="skip" onclick="skip()">Skip</button>
 <button style="background:#555" onclick="stop()">Stop</button>
 </div>
+
+
 
 <script>
 
@@ -177,7 +179,6 @@ let current = 0;
 let timer = null;
 let running = false;
 
-// 🔥 NEU: Schutz gegen Doppelstart
 let startLock = false;
 
 // =============================
@@ -190,8 +191,33 @@ const side = document.getElementById("side");
 const progress = document.getElementById("progress");
 
 // =============================
-function update(v){
+// 🔥 RING TIMER
+const canvas = document.getElementById("ring");
+const ctx = canvas.getContext("2d");
+
+function drawRing(percent){
+    ctx.clearRect(0,0,160,160);
+
+    ctx.beginPath();
+    ctx.arc(80,80,70,0,Math.PI*2);
+    ctx.strokeStyle="#1e293b";
+    ctx.lineWidth=8;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(80,80,70,-Math.PI/2,(Math.PI*2*percent)-Math.PI/2);
+    ctx.strokeStyle="#a855f7";
+    ctx.lineWidth=8;
+    ctx.stroke();
+}
+
+// =============================
+function update(v, total=60){
     timerEl.innerText = v;
+
+    if(typeof v === "number"){
+        drawRing(v/total);
+    }
 }
 
 // =============================
@@ -226,13 +252,12 @@ async function countdown(sec,session){
     for(let i=sec;i>0;i--){
         if(session!==App.session) return;
         while(App.paused) await sleep(150,session);
-        update(i);
+        update(i,sec);
         await speak(i.toString(),session);
     }
 }
 
 // =============================
-// 🔥 START (FIXED)
 async function start(){
 
     if(running || startLock) return;
@@ -248,7 +273,6 @@ async function start(){
 
     let ex = phases[phaseIndex][current];
 
-    // Coach Flow
     await speak(ex.name,session);
 
     if(ex.subtitle) await speak(ex.subtitle,session);
@@ -285,7 +309,9 @@ function run(ex,session){
 function runTime(ex,session){
 
     let t=ex.time;
-    update(t);
+    let total = ex.time;
+
+    update(t,total);
 
     clearInterval(timer);
 
@@ -299,7 +325,7 @@ function runTime(ex,session){
         if(App.paused) return;
 
         t--;
-        update(t);
+        update(t,total);
 
         if(t<=5 && t>0) speak(t.toString(),session);
 
@@ -322,7 +348,7 @@ async function runReps(ex,session){
 
         while(App.paused) await sleep(150,session);
 
-        update(reps);
+        update(reps,ex.reps);
         await speak(reps.toString(),session);
 
         reps--;
@@ -343,7 +369,7 @@ async function runHoldReps(ex,session){
 
         while(App.paused) await sleep(150,session);
 
-        update("HALTEN");
+        update(reps,ex.reps);
         await speak("Halten",session);
 
         await sleep(ex.holdTime||4000,session);
@@ -369,6 +395,7 @@ async function runSide(ex,session){
         await speak("Seite "+s,session);
 
         let t=ex.time;
+        let total=ex.time;
 
         while(t>0){
 
@@ -376,7 +403,7 @@ async function runSide(ex,session){
 
             while(App.paused) await sleep(150,session);
 
-            update(t);
+            update(t,total);
 
             if(t<=5 && t>0) speak(t.toString(),session);
 
@@ -416,7 +443,7 @@ async function runSideHoldReps(ex,session){
 
             while(App.paused) await sleep(150,session);
 
-            update(reps);
+            update(reps,ex.reps);
 
             await speak("Halten",session);
             await sleep(ex.holdTime||4000,session);
@@ -435,7 +462,6 @@ async function runSideHoldReps(ex,session){
 }
 
 // =============================
-// 🔥 SKIP (FIXED)
 function skip(){
 
     App.session++;
@@ -451,7 +477,6 @@ function skip(){
 }
 
 // =============================
-// 🔥 STOP (HARD RESET)
 function stop(){
 
     App.session++;
@@ -498,8 +523,8 @@ function pause(){
     speechSynthesis.cancel();
 }
 
-// =============================
-function resume(){
+// 🔥 NEU: WEITER (statt resume)
+function weiter(){
 
     if(!App.paused) return;
 
@@ -515,7 +540,6 @@ function nextPhase(){
     load();
 }
 
-// =============================
 function setPhase(p){
     App.session++;
     phaseIndex=p-1;
@@ -538,7 +562,7 @@ function load(){
 
     guide.innerHTML=html;
 
-    update(ex.time||ex.reps);
+    update(ex.time||ex.reps, ex.time||ex.reps);
     updateProgress();
 }
 
@@ -552,7 +576,6 @@ function updateProgress(){
     let total=phases[phaseIndex].length;
     progress.style.width=(current/total*100)+"%";
 }
-
 
 
 
