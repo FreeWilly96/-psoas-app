@@ -90,9 +90,6 @@ button {
 .skip{background:#f59e0b;}
 .mode{background:#374151;}
 
-.phase {background:#475569;}
-.phase.active {background:#a855f7;}
-
 #progressBar {
     width:90%;
     height:10px;
@@ -143,276 +140,177 @@ button {
 
 <br>
 
-<button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
-<button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
-<button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
-<button class="mode" onclick="nextPhase()">Nächstes Training</button>
+<button onclick="setPhase(1)">Training 1</button>
+<button onclick="setPhase(2)">Training 2</button>
+<button onclick="setPhase(3)">Training 3</button>
 
 <div class="bottomBar">
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
-<button style="background:#3498db" onclick="weiter()">Weiter</button>
+<button onclick="resume()">Resume</button>
 <button class="skip" onclick="skip()">Skip</button>
-<button style="background:#555" onclick="stop()">Stop</button>
+<button onclick="stop()">Stop</button>
 </div>
 
 <script>
 
 // =============================
 const App = {
-    paused: false,
-    state: "idle",
-    session: 0,
-    autoStartAfterStop: false
+    paused:false,
+    session:0
 };
 
-let phaseIndex = 0;
-let current = 0;
-let timer = null;
-let running = false;
+let phaseIndex=0;
+let current=0;
+let timer=null;
+let running=false;
 
 // =============================
-let phaseTitle, exerciseTitle, exerciseImage, guide, timerEl, side, progress;
-let canvas, ctx;
+const phaseTitle=document.getElementById("phaseTitle");
+const exerciseTitle=document.getElementById("exerciseTitle");
+const exerciseImage=document.getElementById("exerciseImage");
+const guide=document.getElementById("guide");
+const timerEl=document.getElementById("timer");
+const side=document.getElementById("side");
+const progress=document.getElementById("progress");
 
-// =============================
-let ringAnim = { current: 1, target: 1 };
-
-// =============================
-function initDOM(){
-
-    phaseTitle = document.getElementById("phaseTitle");
-    exerciseTitle = document.getElementById("exerciseTitle");
-    exerciseImage = document.getElementById("exerciseImage");
-    guide = document.getElementById("guide");
-    timerEl = document.getElementById("timer");
-    side = document.getElementById("side");
-    progress = document.getElementById("progress");
-
-    canvas = document.getElementById("ring");
-
-    if(!canvas){
-        console.error("Canvas fehlt!");
-        return;
-    }
-
-    ctx = canvas.getContext("2d");
-
-    initApp();
-}
-
-// =============================
-if(!window.phases){
-    console.error("phases fehlt!");
-}
+const ctx=document.getElementById("ring").getContext("2d");
 
 // =============================
 function drawRing(percent){
-    ringAnim.target = percent;
-}
-
-// =============================
-function animateRing(){
-
-    if(!ctx) {
-        requestAnimationFrame(animateRing);
-        return;
-    }
-
-    ringAnim.current += (ringAnim.target - ringAnim.current) * 0.12;
-
-    const size = 160;
-    const center = size / 2;
-    const radius = 68;
-
-    ctx.clearRect(0,0,size,size);
+    ctx.clearRect(0,0,160,160);
 
     ctx.beginPath();
-    ctx.arc(center,center,radius,0,Math.PI*2);
+    ctx.arc(80,80,70,0,Math.PI*2);
     ctx.strokeStyle="#1e293b";
-    ctx.lineWidth=12;
+    ctx.lineWidth=8;
     ctx.stroke();
-
-    const gradient = ctx.createLinearGradient(0,0,160,160);
-    gradient.addColorStop(0,"#a855f7");
-    gradient.addColorStop(1,"#22d3ee");
-
-    ctx.shadowColor = "#a855f7";
-    ctx.shadowBlur = 20;
 
     ctx.beginPath();
-    ctx.arc(
-        center,
-        center,
-        radius,
-        -Math.PI/2,
-        (Math.PI*2*ringAnim.current)-Math.PI/2
-    );
-
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = 12;
-    ctx.lineCap = "round";
+    ctx.arc(80,80,70,-Math.PI/2,(Math.PI*2*percent)-Math.PI/2);
+    ctx.strokeStyle="#a855f7";
+    ctx.lineWidth=8;
     ctx.stroke();
-
-    ctx.shadowBlur = 0;
-
-    requestAnimationFrame(animateRing);
 }
 
 // =============================
-function safeGetExercise(){
-    return phases?.[phaseIndex]?.[current] || null;
-}
-
-// =============================
-function initApp(){
-
-    if(!phases || !phases.length){
-        console.error("phases leer!");
-        return;
-    }
-
-    let ex = phases?.[phaseIndex]?.[0];
-
-    if(!ex){
-        console.error("keine Startübung");
-        return;
-    }
-
-    renderExercise(ex);
-
-    drawRing(1);
-    updateProgress();
-}
-
-// =============================
-function renderExercise(ex){
-
-    if(!ex){
-        phaseTitle.innerText = "Fehler";
-        exerciseTitle.innerText = "Keine Daten";
-        exerciseImage.src = "";
-        guide.innerHTML = "<li>Keine Übung</li>";
-        return;
-    }
-
-    phaseTitle.innerText = "Training " + (phaseIndex+1);
-    exerciseTitle.innerText = ex.name || "unnamed";
-    exerciseImage.src = ex.img || "";
-
-    let html = "<ul>";
-
-    (ex.guide || []).forEach(g=>{
-        html += "<li>"+g+"</li>";
-    });
-
-    html += "</ul>";
-
-    guide.innerHTML = html;
-
-    update(ex.time || ex.reps || 1, ex.time || ex.reps || 1);
-}
-
-// =============================
-function update(v, total){
-    if(timerEl) timerEl.innerText = v;
-    if(typeof v === "number" && total){
-        drawRing(v / total);
+function update(v,total){
+    timerEl.innerText=v;
+    if(typeof v==="number"&&total){
+        drawRing(v/total);
     }
 }
 
 // =============================
-function showSide(s){
-    if(side) side.innerText = s;
-}
-
-// =============================
-function toggleMode(){
-    document.body.classList.toggle("dark");
-}
-
-// =============================
-function sleep(ms, session){
-    return new Promise(resolve=>{
-        const start = Date.now();
-
+function sleep(ms,session){
+    return new Promise(r=>{
+        const s=Date.now();
         function loop(){
-            if(session !== App.session) return resolve();
-            if(App.paused) return requestAnimationFrame(loop);
-            if(Date.now() - start >= ms) return resolve();
+            if(session!==App.session)return r();
+            if(App.paused)return requestAnimationFrame(loop);
+            if(Date.now()-s>=ms)return r();
             requestAnimationFrame(loop);
         }
-
         loop();
     });
 }
 
 // =============================
-function speak(text, session){
-
+function speak(text,session){
     speechSynthesis.cancel();
-
-    return new Promise(resolve=>{
-        if(session !== App.session) return resolve();
-
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = "de-DE";
-        msg.rate = 0.92;
-        msg.onend = () => setTimeout(resolve,120);
-
+    return new Promise(r=>{
+        if(session!==App.session)return r();
+        let msg=new SpeechSynthesisUtterance(text);
+        msg.lang="de-DE";
+        msg.rate=0.92;
+        msg.onend=()=>setTimeout(r,100);
         speechSynthesis.speak(msg);
     });
 }
 
 // =============================
+async function coachFlow(ex,session){
+
+    await speak(ex.name,session);
+    if(session!==App.session)return;
+
+    if(ex.subtitle) await speak(ex.subtitle,session);
+
+    if(ex.guide){
+        for(let g of ex.guide){
+            if(session!==App.session)return;
+            await speak(g,session);
+        }
+    }
+
+    await sleep(600,session);
+    await speak("Bereit machen",session);
+    await countdown(3,session);
+}
+
+// =============================
+async function countdown(sec,session){
+    for(let i=sec;i>0;i--){
+        if(session!==App.session)return;
+        while(App.paused) await sleep(100,session);
+        update(i,sec);
+        await speak(i.toString(),session);
+    }
+}
+
+// =============================
 async function start(){
 
-    if(running) return;
+    if(running)return;
 
-    let ex = safeGetExercise();
-    if(!ex) return;
+    let ex=phases[phaseIndex][current];
+    if(!ex)return;
 
-    running = true;
+    running=true;
     App.session++;
 
-    const session = App.session;
+    let session=App.session;
 
-    await speak(ex.name, session);
+    await coachFlow(ex,session);
+    if(session!==App.session)return;
 
-    if(session !== App.session) return;
-
-    run(ex, session);
+    run(ex,session);
 }
 
 // =============================
-function run(ex, session){
+function run(ex,session){
 
-    if(ex.type==="time") runTime(ex, session);
-    if(ex.type==="reps") runReps(ex, session);
-    if(ex.type==="side") runSide(ex, session);
+    if(!ex)return;
+
+    if(ex.type==="time")runTime(ex,session);
+    if(ex.type==="reps")runReps(ex,session);
+    if(ex.type==="side")runSide(ex,session);
+    if(ex.type==="holdReps")runHoldReps(ex,session);
+    if(ex.type==="sideHoldReps")runSideHoldReps(ex,session);
 }
 
 // =============================
-function runTime(ex, session){
+function runTime(ex,session){
 
-    let t = ex.time || 10;
-    let total = t;
+    let t=ex.time||10;
 
-    update(t, total);
+    update(t,t);
 
-    timer = setInterval(()=>{
+    clearInterval(timer);
 
-        if(session !== App.session){
+    timer=setInterval(()=>{
+
+        if(session!==App.session){
             clearInterval(timer);
             return;
         }
 
-        if(App.paused) return;
+        if(App.paused)return;
 
         t--;
-        update(t, total);
+        update(t,ex.time||10);
 
-        if(t <= 0){
+        if(t<=0){
             clearInterval(timer);
             next(session);
         }
@@ -422,103 +320,98 @@ function runTime(ex, session){
 
 // =============================
 function skip(){
-
     App.session++;
-    running = false;
-
+    running=false;
     clearInterval(timer);
     speechSynthesis.cancel();
-
-    setTimeout(()=> next(App.session),120);
+    setTimeout(()=>next(App.session),100);
 }
 
 // =============================
 function stop(){
 
     App.session++;
-    running = false;
-    App.paused = false;
+    running=false;
+    App.paused=false;
 
     clearInterval(timer);
     speechSynthesis.cancel();
 
-    current = 0;
+    current=0;
 
-    let ex = phases?.[phaseIndex]?.[0];
+    let ex=phases[phaseIndex][0];
+    load(ex);
 
-    renderExercise(ex);
-
-    ringAnim.current = 1;
-    ringAnim.target = 1;
-
-    drawRing(1);
-
-    showSide("");
-    updateProgress();
-
-    if(App.autoStartAfterStop){
-        const s = App.session;
-        setTimeout(()=>{
-            if(s === App.session){
-                start();
-            }
-        },600);
-    }
+    update("0");
+    side.innerText="";
 }
 
 // =============================
-function next(session){
+async function next(session){
 
-    if(session !== App.session) return;
+    if(session!==App.session)return;
 
-    running = false;
+    running=false;
     current++;
 
-    if(!phases?.[phaseIndex]) return;
-
-    if(current >= phases[phaseIndex].length){
-        update("FERTIG 💪",1);
+    if(current>=phases[phaseIndex].length){
+        update("FERTIG 💪");
         return;
     }
 
-    let ex = safeGetExercise();
+    load(phases[phaseIndex][current]);
 
-    renderExercise(ex);
+    await sleep(800,session);
 
-    setTimeout(()=>start(),900);
+    start();
 }
 
 // =============================
-function pause(){ App.paused = true; speechSynthesis.cancel(); }
-function weiter(){ App.paused = false; }
+function pause(){App.paused=true;speechSynthesis.cancel();}
+function resume(){App.paused=false;}
+
+// =============================
+function setPhase(p){
+    App.session++;
+    phaseIndex=p-1;
+    current=0;
+    load(phases[phaseIndex][0]);
+}
 
 function nextPhase(){
     App.session++;
-    phaseIndex = (phaseIndex+1)%phases.length;
-    current = 0;
-    renderExercise(phases?.[phaseIndex]?.[0]);
-}
-
-function setPhase(p){
-    App.session++;
-    phaseIndex = p-1;
-    current = 0;
-    renderExercise(phases?.[phaseIndex]?.[0]);
+    phaseIndex=(phaseIndex+1)%phases.length;
+    current=0;
+    load(phases[phaseIndex][0]);
 }
 
 // =============================
-function updateProgress(){
-    if(!phases?.[phaseIndex]) return;
-    let total = phases[phaseIndex].length;
-    progress.style.width = (current/total*100)+"%";
+function load(ex){
+
+    if(!ex)return;
+
+    phaseTitle.innerText="Training "+(phaseIndex+1);
+    exerciseTitle.innerText=ex.name;
+    exerciseImage.src=ex.img||"";
+
+    guide.innerHTML="";
+    (ex.guide||[]).forEach(g=>{
+        guide.innerHTML+="<li>"+g+"</li>";
+    });
+
+    update(ex.time||ex.reps||1);
+    progress.style.width=(current/phases[phaseIndex].length*100)+"%";
 }
 
 // =============================
-drawRing(1);
-animateRing();
+function showSide(s){
+    side.innerText=s;
+}
 
-// 🔥 FIXED CRITICAL ERROR (WICHTIG!)
-document.addEventListener("DOMContentLoaded", initDOM);
+</script>
+
+</body>
+</html>
 
 
 // =============================
