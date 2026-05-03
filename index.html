@@ -190,177 +190,374 @@ stroke-dasharray="502" stroke-dashoffset="0"/>
 
 <script>
 
-// STATE
-const App={paused:false,session:0};
-let phaseIndex=0,current=0,timer=null,running=false,totalTime=0;
+// =============================
+const App = {
+    paused: false,
+    state: "idle",
+    session: 0
+};
 
-// DOM
-const phaseTitle=document.getElementById("phaseTitle");
-const exerciseTitle=document.getElementById("exerciseTitle");
-const exerciseImage=document.getElementById("exerciseImage");
-const guide=document.getElementById("guide");
-const timerEl=document.getElementById("timer");
-const side=document.getElementById("side");
-const progress=document.getElementById("progress");
-const ring=document.getElementById("ring");
+let phaseIndex = 0;
+let current = 0;
+let timer = null;
+let running = false;
 
 // =============================
-function toggleMode(){document.body.classList.toggle("dark");}
+const phaseTitle = document.getElementById("phaseTitle");
+const exerciseTitle = document.getElementById("exerciseTitle");
+const exerciseImage = document.getElementById("exerciseImage");
+const guide = document.getElementById("guide");
+const timerEl = document.getElementById("timer");
+const side = document.getElementById("side");
+const progress = document.getElementById("progress");
 
 // =============================
-function update(v){
-timerEl.innerText=v;
-updateRing(v);
-}
-
-function updateRing(v){
-if(!totalTime)return;
-let percent=v/totalTime;
-let offset=502-(502*percent);
-ring.style.strokeDashoffset=offset;
+function toggleMode(){
+    document.body.classList.toggle("dark");
 }
 
 // =============================
-function sleep(ms,s){
-return new Promise(r=>{
-const st=Date.now();
-function loop(){
-if(s!==App.session)return r();
-if(App.paused)return requestAnimationFrame(loop);
-if(Date.now()-st>=ms)return r();
-requestAnimationFrame(loop);
-}
-loop();
-});
+function sleep(ms, session){
+    return new Promise(resolve=>{
+        const start = Date.now();
+        function loop(){
+            if(session !== App.session) return resolve();
+            if(App.paused) return requestAnimationFrame(loop);
+            if(Date.now() - start >= ms) return resolve();
+            requestAnimationFrame(loop);
+        }
+        loop();
+    });
 }
 
 // =============================
-function speak(text,s){
-speechSynthesis.cancel();
-return new Promise(r=>{
-if(s!==App.session)return r();
-let m=new SpeechSynthesisUtterance(text);
-m.lang="de-DE";
-m.rate=.9;
-m.pitch=1;
-m.onend=()=>setTimeout(r,150);
-speechSynthesis.speak(m);
-});
+function speak(text, session){
+
+    speechSynthesis.cancel();
+
+    return new Promise(resolve=>{
+        if(session !== App.session) return resolve();
+
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = "de-DE";
+        msg.rate = 0.92;
+        msg.onend = () => setTimeout(resolve, 120);
+
+        speechSynthesis.speak(msg);
+    });
+}
+
+// =============================
+async function countdown(sec, session){
+    for(let i=sec;i>0;i--){
+        if(session !== App.session) return;
+        while(App.paused) await sleep(150, session);
+        update(i);
+        await speak(i.toString(), session);
+    }
+}
+
+// =============================
+// 🔥 COACH FLOW (UNVERÄNDERT RICHTIG)
+async function coachIntro(ex, session){
+
+    if(session !== App.session) return;
+
+    await speak(ex.name, session);
+
+    if(ex.subtitle) await speak(ex.subtitle, session);
+
+    if(ex.guide){
+        for(let g of ex.guide){
+            if(session !== App.session) return;
+            await speak(g, session);
+        }
+    }
+
+    await sleep(900, session);
+
+    await speak("Bereit machen", session);
+
+    await countdown(3, session);
 }
 
 // =============================
 async function start(){
-if(running)return;
-running=true;
-App.session++;
-setButtons("run");
 
-let s=App.session;
-let ex=phases[phaseIndex][current];
+    if(running) return;
 
-await speak(ex.name,s);
-await sleep(500,s);
-await speak("Bereit",s);
+    running = true;
+    App.state = "running";
+    App.session++;
 
-run(ex,s);
+    const session = App.session;
+
+    let ex = phases[phaseIndex][current];
+
+    await coachIntro(ex, session);
+
+    if(session !== App.session) return;
+
+    run(ex, session);
 }
 
 // =============================
-function run(ex,s){
-totalTime=ex.time||ex.reps;
-if(ex.type==="time")runTime(ex,s);
+function run(ex, session){
+
+    if(ex.type==="time") runTime(ex, session);
+    if(ex.type==="reps") runReps(ex, session);
+    if(ex.type==="side") runSide(ex, session);
+    if(ex.type==="holdReps") runHoldReps(ex, session);
+    if(ex.type==="sideHoldReps") runSideHoldReps(ex, session);
 }
 
 // =============================
-function runTime(ex,s){
-let t=ex.time;
-update(t);
+function runTime(ex, session){
 
-timer=setInterval(()=>{
-if(s!==App.session)return clearInterval(timer);
-if(App.paused)return;
+    let t = ex.time;
+    update(t);
 
-t--;
-update(t);
+    timer = setInterval(()=>{
 
-if(t<=0){
-clearInterval(timer);
-next(s);
-}
-},1000);
+        if(session !== App.session){
+            clearInterval(timer);
+            return;
+        }
+
+        if(App.paused) return;
+
+        t--;
+        update(t);
+
+        if(t<=0){
+            clearInterval(timer);
+            next(session);
+        }
+
+    },1000);
 }
 
 // =============================
-function pause(){
-App.paused=true;
-setButtons("pause");
-speechSynthesis.cancel();
+async function runReps(ex, session){
+
+    let reps = ex.reps;
+
+    while(reps>0){
+
+        if(session !== App.session) return;
+
+        while(App.paused) await sleep(150, session);
+
+        update(reps);
+        await speak(reps.toString(), session);
+
+        reps--;
+        await sleep(ex.rest*1000, session);
+    }
+
+    next(session);
 }
-function resume(){
-App.paused=false;
-setButtons("run");
+
+// =============================
+async function runHoldReps(ex, session){
+
+    let reps = ex.reps;
+
+    while(reps>0){
+
+        if(session !== App.session) return;
+
+        while(App.paused) await sleep(150, session);
+
+        update("HALTEN");
+        await speak("Halten", session);
+
+        await sleep(ex.holdTime || 4000, session);
+
+        reps--;
+    }
+
+    next(session);
 }
-function setButtons(state){
-btnStart.disabled=state==="run";
-btnPause.disabled=state!=="run";
-btnResume.disabled=state!=="pause";
+
+// =============================
+// 🔥 SIDE (FIXED – KEIN FLOW-BRuch)
+async function runSide(ex, session){
+
+    let sides=["rechts","links"];
+
+    for(let i=0;i<sides.length;i++){
+
+        if(session !== App.session) return;
+
+        let s = sides[i];
+
+        showSide(s);
+        await speak("Seite " + s, session);
+
+        let t = ex.time;
+
+        while(t>0){
+
+            if(session !== App.session) return;
+
+            while(App.paused) await sleep(150, session);
+
+            update(t);
+            await sleep(1000, session);
+            t--;
+        }
+
+        // 🔥 NUR interner Seitenwechsel
+        if(i < sides.length-1){
+            await sleep(5000, session);
+            await speak("Seitenwechsel", session);
+        }
+    }
+
+    showSide("");
+    next(session);
+}
+
+// =============================
+// 🔥 SIDE HOLD REPS (FIXED – KEIN COACH FLOW KONFLIKT)
+async function runSideHoldReps(ex, session){
+
+    let sides=["rechts","links"];
+
+    for(let i=0;i<sides.length;i++){
+
+        if(session !== App.session) return;
+
+        let s = sides[i];
+
+        showSide(s);
+        await speak("Seite " + s, session);
+
+        let reps = ex.reps;
+
+        while(reps>0){
+
+            if(session !== App.session) return;
+
+            while(App.paused) await sleep(150, session);
+
+            update(reps);
+
+            await speak("Halten", session);
+            await sleep(ex.holdTime || 4000, session);
+
+            reps--;
+        }
+
+        if(i < sides.length-1){
+            await sleep(5000, session);
+            await speak("Seitenwechsel", session);
+        }
+    }
+
+    showSide("");
+    next(session);
 }
 
 // =============================
 function skip(){
-App.session++;
-clearInterval(timer);
-next(App.session);
+
+    App.session++;
+    running = false;
+
+    clearInterval(timer);
+    speechSynthesis.cancel();
+
+    setTimeout(()=>{
+        next(App.session);
+    },120);
 }
 
 // =============================
-async function next(s){
-running=false;
-current++;
-updateProgress();
+async function next(session){
 
-if(current>=phases[phaseIndex].length){
-update("FERTIG");
-await speak("Training beendet",s);
-return;
-}
+    if(session !== App.session) return;
 
-load();
-await sleep(1000,s);
-start();
-}
+    running = false;
+    current++;
 
-// =============================
-function load(){
-let ex=phases[phaseIndex][current];
-phaseTitle.innerText="Training "+(phaseIndex+1);
-exerciseTitle.innerText=ex.name;
-exerciseImage.src=ex.img;
-guide.innerHTML="<ul>"+ex.guide.map(g=>"<li>"+g+"</li>").join("")+"</ul>";
-update(ex.time||ex.reps);
-updateProgress();
+    updateProgress();
+
+    if(current >= phases[phaseIndex].length){
+        update("FERTIG 💪");
+        await speak("Training beendet", session);
+        return;
+    }
+
+    load();
+
+    await sleep(1400, session);
+
+    start();
 }
 
 // =============================
-function updateProgress(){
-let t=phases[phaseIndex].length;
-progress.style.width=(current/t*100)+"%";
+function pause(){
+    App.paused = true;
+    speechSynthesis.cancel();
+}
+
+function resume(){
+    App.paused = false;
 }
 
 // =============================
 function nextPhase(){
-App.session++;
-phaseIndex=(phaseIndex+1)%phases.length;
-current=0;
-load();
+    App.session++;
+    phaseIndex = (phaseIndex+1)%phases.length;
+    current = 0;
+    load();
 }
 
 function setPhase(p){
-App.session++;
-phaseIndex=p-1;
-current=0;
-load();
+    App.session++;
+    phaseIndex = p-1;
+    current = 0;
+    load();
 }
+
+// =============================
+function load(){
+
+    let ex = phases[phaseIndex][current];
+
+    phaseTitle.innerText = "Training " + (phaseIndex+1);
+    exerciseTitle.innerText = ex.name;
+    exerciseImage.src = ex.img;
+
+    let html = "<ul>";
+    ex.guide.forEach(g=>{
+        html += "<li>"+g+"</li>";
+    });
+    html += "</ul>";
+
+    guide.innerHTML = html;
+
+    update(ex.time || ex.reps);
+    updateProgress();
+}
+
+// =============================
+function update(v){
+    timerEl.innerText = v;
+}
+
+function showSide(s){
+    side.innerText = s;
+}
+
+// =============================
+function updateProgress(){
+    let total = phases[phaseIndex].length;
+    progress.style.width = (current/total*100)+"%";
+}
+
 
 
 // =============================
