@@ -177,6 +177,9 @@ let current = 0;
 let timer = null;
 let running = false;
 
+// 🔥 NEU: Schutz gegen Doppelstart
+let startLock = false;
+
 // =============================
 const phaseTitle = document.getElementById("phaseTitle");
 const exerciseTitle = document.getElementById("exerciseTitle");
@@ -187,32 +190,8 @@ const side = document.getElementById("side");
 const progress = document.getElementById("progress");
 
 // =============================
-// 🔥 RING
-const ctx = document.getElementById("ring").getContext("2d");
-
-function drawRing(percent){
-    ctx.clearRect(0,0,160,160);
-
-    ctx.beginPath();
-    ctx.arc(80,80,70,0,Math.PI*2);
-    ctx.strokeStyle="#1e293b";
-    ctx.lineWidth=8;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(80,80,70,-Math.PI/2,(Math.PI*2*percent)-Math.PI/2);
-    ctx.strokeStyle="#a855f7";
-    ctx.lineWidth=8;
-    ctx.stroke();
-}
-
-// =============================
 function update(v){
     timerEl.innerText = v;
-
-    if(typeof v === "number"){
-        drawRing(v/120);
-    }
 }
 
 // =============================
@@ -253,40 +232,41 @@ async function countdown(sec,session){
 }
 
 // =============================
-// 🔥 COACH FLOW (FIX)
-async function coachIntro(ex,session){
+// 🔥 START (FIXED)
+async function start(){
 
+    if(running || startLock) return;
+
+    startLock = true;
+    running = true;
+    App.state = "running";
+
+    clearInterval(timer);
+
+    App.session++;
+    const session = App.session;
+
+    let ex = phases[phaseIndex][current];
+
+    // Coach Flow
     await speak(ex.name,session);
 
     if(ex.subtitle) await speak(ex.subtitle,session);
 
     if(ex.guide){
         for(let g of ex.guide){
+            if(session!==App.session) return;
             await speak(g,session);
         }
     }
 
     await sleep(800,session);
-
     await speak("Bereit machen",session);
-
     await countdown(3,session);
-}
-
-// =============================
-async function start(){
-
-    if(running) return;
-
-    running=true;
-    App.session++;
-    const session=App.session;
-
-    let ex=phases[phaseIndex][current];
-
-    await coachIntro(ex,session);
 
     if(session!==App.session) return;
+
+    startLock = false;
 
     run(ex,session);
 }
@@ -381,6 +361,8 @@ async function runSide(ex,session){
 
     for(let i=0;i<sides.length;i++){
 
+        if(session!==App.session) return;
+
         let s=sides[i];
 
         showSide(s);
@@ -419,6 +401,8 @@ async function runSideHoldReps(ex,session){
 
     for(let i=0;i<sides.length;i++){
 
+        if(session!==App.session) return;
+
         let s=sides[i];
 
         showSide(s);
@@ -451,22 +435,28 @@ async function runSideHoldReps(ex,session){
 }
 
 // =============================
+// 🔥 SKIP (FIXED)
 function skip(){
 
     App.session++;
     running=false;
+    startLock=false;
 
     clearInterval(timer);
     speechSynthesis.cancel();
 
-    setTimeout(()=>next(App.session),100);
+    setTimeout(()=>{
+        next(App.session);
+    },100);
 }
 
 // =============================
+// 🔥 STOP (HARD RESET)
 function stop(){
 
     App.session++;
     running=false;
+    startLock=false;
 
     clearInterval(timer);
     speechSynthesis.cancel();
@@ -482,6 +472,8 @@ async function next(session){
     if(session!==App.session) return;
 
     running=false;
+    startLock=false;
+
     current++;
 
     updateProgress();
@@ -502,11 +494,17 @@ async function next(session){
 // =============================
 function pause(){
     App.paused=true;
+    App.state="paused";
     speechSynthesis.cancel();
 }
 
+// =============================
 function resume(){
+
+    if(!App.paused) return;
+
     App.paused=false;
+    App.state="running";
 }
 
 // =============================
@@ -517,6 +515,7 @@ function nextPhase(){
     load();
 }
 
+// =============================
 function setPhase(p){
     App.session++;
     phaseIndex=p-1;
@@ -553,6 +552,7 @@ function updateProgress(){
     let total=phases[phaseIndex].length;
     progress.style.width=(current/total*100)+"%";
 }
+
 
 
 
