@@ -181,16 +181,25 @@ const canvas = document.getElementById("ring");
 const ctx = canvas.getContext("2d");
 
 function drawRing(percent){
-    ctx.clearRect(0,0,180,180);
+    ctx.clearRect(0,0,160,160);
+
+    const center = 80;
+    const radius = 70;
 
     ctx.beginPath();
-    ctx.arc(90,90,80,0,Math.PI*2);
+    ctx.arc(center,center,radius,0,Math.PI*2);
     ctx.strokeStyle="#1e293b";
     ctx.lineWidth=10;
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.arc(90,90,80,-Math.PI/2,(Math.PI*2*percent)-Math.PI/2);
+    ctx.arc(
+        center,
+        center,
+        radius,
+        -Math.PI/2,
+        (Math.PI*2*percent)-Math.PI/2
+    );
     ctx.strokeStyle="#a855f7";
     ctx.lineWidth=10;
     ctx.stroke();
