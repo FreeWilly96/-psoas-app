@@ -3,92 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Psoas Ultra PRO</title>
-
-<link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
-<link rel="manifest" href="manifest.json">
 
 <style>
 :root{
     --primary:#7b2ff7;
     --accent:#ff2d75;
     --bg:#eef1f7;
-    --card:rgba(255,255,255,0.82);
-    --card-solid:#ffffff;
-    --text:#111827;
-    --muted:#6b7280;
+    --card:rgba(255,255,255,0.85);
+    --text:#111;
 }
-
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 
 body{
     margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-    background:var(--bg);
-    color:var(--text);
+    font-family:-apple-system,Segoe UI,Roboto;
+    background:radial-gradient(circle at top,#1a2a4f,#020617);
+    color:white;
     padding-bottom:100px;
 }
 
 body.dark{
-    --bg:#08111f;
-    --card:rgba(20,31,49,0.8);
-    --card-solid:#132236;
-    --text:#fff;
+    background:#020617;
 }
 
-/* CONTAINER */
-.container{
-    max-width:700px;
-    margin:auto;
-    padding:10px 14px;
-}
-
-/* TOP CARD */
+/* HEADER */
 .topCard{
     position:sticky;
     top:0;
-    z-index:10;
+    padding:10px;
 }
-
 .topCardInner{
-    background:var(--card);
+    background:rgba(255,255,255,0.05);
     border-radius:20px;
-    padding:12px;
-    backdrop-filter:blur(12px);
+    padding:15px;
+    backdrop-filter:blur(20px);
 }
-
-/* TITLES */
-h2{font-size:14px;opacity:.6;margin:0;}
-h3{font-size:24px;margin:4px 0;font-weight:800;}
-
-.side{font-size:14px;opacity:.6;height:20px;}
+h2{opacity:.6;margin:0;font-size:14px;}
+h3{margin:5px 0;font-size:26px;font-weight:800;}
+.side{opacity:.6;height:20px;}
 
 /* IMAGE */
 img{
     width:100%;
     max-height:30vh;
     object-fit:contain;
-    border-radius:16px;
+    border-radius:20px;
     margin-top:10px;
-    background:#fff;
 }
 
 /* GUIDE */
 .guide{
     margin-top:10px;
-    padding:12px;
-    border-radius:16px;
-    background:var(--card);
-    font-size:14px;
+    padding:15px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.06);
 }
 
-/* TIMER */
-.timer{
-    font-size:clamp(60px,15vw,110px);
+/* RING TIMER */
+.timerWrap{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-top:15px;
+}
+svg{
+    transform:rotate(-90deg);
+}
+.circle-bg{
+    stroke:#333;
+}
+.circle{
+    stroke:url(#grad);
+    stroke-linecap:round;
+    transition:stroke-dashoffset .4s linear;
+}
+.timerText{
+    position:absolute;
+    font-size:60px;
     font-weight:900;
-    text-align:center;
-    margin:10px 0;
     background:linear-gradient(90deg,var(--primary),var(--accent));
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
@@ -96,10 +88,10 @@ img{
 
 /* PROGRESS */
 #progressBar{
-    width:100%;
     height:10px;
-    background:#ddd;
+    background:#333;
     border-radius:20px;
+    margin-top:10px;
 }
 #progress{
     height:100%;
@@ -110,31 +102,33 @@ img{
 /* BUTTONS */
 button{
     border:none;
-    border-radius:14px;
-    padding:12px;
+    border-radius:16px;
+    padding:14px;
     font-weight:700;
     color:white;
     flex:1;
+    transition:.2s;
 }
+button:disabled{opacity:.3;}
 
 .start{background:#22c55e;}
 .pause{background:#ef4444;}
 .skip{background:#f59e0b;}
-.mode{background:#222;}
-.phase{background:#999;}
+.mode{background:#333;}
+.phase{background:#555;}
 .phase.active{background:var(--primary);}
 
 /* CONTROLS */
 .controls{
     position:fixed;
     bottom:0;
-    left:0;
     width:100%;
     display:grid;
     grid-template-columns:repeat(4,1fr);
-    gap:6px;
+    gap:8px;
     padding:10px;
-    background:var(--card);
+    background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(20px);
 }
 
 /* TRAINING BAR */
@@ -144,18 +138,10 @@ button{
     gap:6px;
     margin-top:10px;
 }
-
-/* MOBILE */
-@media(max-width:430px){
-    .trainingBar{grid-template-columns:repeat(3,1fr);}
-    .controls{grid-template-columns:repeat(2,1fr);}
-}
 </style>
 </head>
 
 <body>
-
-<div class="container">
 
 <div class="topCard">
 <div class="topCardInner">
@@ -169,33 +155,46 @@ button{
 
 <div id="guide" class="guide"></div>
 
-<div id="timer" class="timer">0</div>
+<!-- RING TIMER -->
+<div class="timerWrap">
+<svg width="180" height="180">
+<defs>
+<linearGradient id="grad">
+<stop offset="0%" stop-color="#7b2ff7"/>
+<stop offset="100%" stop-color="#ff2d75"/>
+</linearGradient>
+</defs>
+<circle class="circle-bg" cx="90" cy="90" r="80" stroke-width="10" fill="none"/>
+<circle id="ring" class="circle" cx="90" cy="90" r="80" stroke-width="10" fill="none"
+stroke-dasharray="502" stroke-dashoffset="0"/>
+</svg>
+<div id="timer" class="timerText">0</div>
+</div>
 
 <div id="progressBar"><div id="progress"></div></div>
 
 <div class="trainingBar">
-<button class="phase" onclick="setPhase(1)">T1</button>
-<button class="phase" onclick="setPhase(2)">T2</button>
-<button class="phase" onclick="setPhase(3)">T3</button>
-<button class="mode" onclick="nextPhase()">Next</button>
-<button class="mode" onclick="toggleMode()">Mode</button>
-</div>
-
+<button onclick="setPhase(1)">T1</button>
+<button onclick="setPhase(2)">T2</button>
+<button onclick="setPhase(3)">T3</button>
+<button onclick="nextPhase()">Next</button>
+<button onclick="toggleMode()">Mode</button>
 </div>
 
 <div class="controls">
-<button class="start" onclick="start()">Start</button>
-<button class="pause" onclick="pause()">Pause</button>
-<button onclick="resume()">Resume</button>
+<button id="btnStart" class="start" onclick="start()">Start</button>
+<button id="btnPause" class="pause" onclick="pause()">Pause</button>
+<button id="btnResume" onclick="resume()">Resume</button>
 <button class="skip" onclick="skip()">Skip</button>
 </div>
 
 <script>
 
-// =============================
-const App = {paused:false,state:"idle",session:0};
-let phaseIndex=0,current=0,timer=null,running=false;
+// STATE
+const App={paused:false,session:0};
+let phaseIndex=0,current=0,timer=null,running=false,totalTime=0;
 
+// DOM
 const phaseTitle=document.getElementById("phaseTitle");
 const exerciseTitle=document.getElementById("exerciseTitle");
 const exerciseImage=document.getElementById("exerciseImage");
@@ -203,184 +202,135 @@ const guide=document.getElementById("guide");
 const timerEl=document.getElementById("timer");
 const side=document.getElementById("side");
 const progress=document.getElementById("progress");
+const ring=document.getElementById("ring");
 
 // =============================
 function toggleMode(){document.body.classList.toggle("dark");}
 
-function sleep(ms,session){
+// =============================
+function update(v){
+timerEl.innerText=v;
+updateRing(v);
+}
+
+function updateRing(v){
+if(!totalTime)return;
+let percent=v/totalTime;
+let offset=502-(502*percent);
+ring.style.strokeDashoffset=offset;
+}
+
+// =============================
+function sleep(ms,s){
 return new Promise(r=>{
-const s=Date.now();
+const st=Date.now();
 function loop(){
-if(session!==App.session)return r();
+if(s!==App.session)return r();
 if(App.paused)return requestAnimationFrame(loop);
-if(Date.now()-s>=ms)return r();
+if(Date.now()-st>=ms)return r();
 requestAnimationFrame(loop);
 }
 loop();
 });
 }
 
-function speak(text,session){
+// =============================
+function speak(text,s){
 speechSynthesis.cancel();
 return new Promise(r=>{
-if(session!==App.session)return r();
+if(s!==App.session)return r();
 let m=new SpeechSynthesisUtterance(text);
-m.lang="de-DE";m.rate=.92;
-m.onend=()=>setTimeout(r,120);
+m.lang="de-DE";
+m.rate=.9;
+m.pitch=1;
+m.onend=()=>setTimeout(r,150);
 speechSynthesis.speak(m);
 });
 }
 
-async function countdown(sec,session){
-for(let i=sec;i>0;i--){
-if(session!==App.session)return;
-while(App.paused)await sleep(150,session);
-update(i);
-await speak(i.toString(),session);
-}
-}
-
-async function coachIntro(ex,session){
-if(session!==App.session)return;
-await speak(ex.name,session);
-if(ex.subtitle)await speak(ex.subtitle,session);
-if(ex.guide){
-for(let g of ex.guide){
-if(session!==App.session)return;
-await speak(g,session);
-}}
-await sleep(900,session);
-await speak("Bereit machen",session);
-await countdown(3,session);
-}
-
+// =============================
 async function start(){
 if(running)return;
 running=true;
 App.session++;
+setButtons("run");
+
 let s=App.session;
 let ex=phases[phaseIndex][current];
-await coachIntro(ex,s);
-if(s!==App.session)return;
+
+await speak(ex.name,s);
+await sleep(500,s);
+await speak("Bereit",s);
+
 run(ex,s);
 }
 
+// =============================
 function run(ex,s){
+totalTime=ex.time||ex.reps;
 if(ex.type==="time")runTime(ex,s);
-if(ex.type==="reps")runReps(ex,s);
-if(ex.type==="side")runSide(ex,s);
-if(ex.type==="holdReps")runHoldReps(ex,s);
-if(ex.type==="sideHoldReps")runSideHoldReps(ex,s);
 }
 
+// =============================
 function runTime(ex,s){
-let t=ex.time;update(t);
+let t=ex.time;
+update(t);
+
 timer=setInterval(()=>{
 if(s!==App.session)return clearInterval(timer);
 if(App.paused)return;
-t--;update(t);
-if(t<=0){clearInterval(timer);next(s);}
+
+t--;
+update(t);
+
+if(t<=0){
+clearInterval(timer);
+next(s);
+}
 },1000);
 }
 
-async function runReps(ex,s){
-let r=ex.reps;
-while(r>0){
-if(s!==App.session)return;
-while(App.paused)await sleep(150,s);
-update(r);
-await speak(r.toString(),s);
-r--;
-await sleep(ex.rest*1000,s);
-}
-next(s);
-}
-
-async function runHoldReps(ex,s){
-let r=ex.reps;
-while(r>0){
-if(s!==App.session)return;
-while(App.paused)await sleep(150,s);
-update("HALTEN");
-await speak("Halten",s);
-await sleep(ex.holdTime||4000,s);
-r--;
-}
-next(s);
-}
-
-async function runSide(ex,s){
-let sides=["rechts","links"];
-for(let i=0;i<sides.length;i++){
-if(s!==App.session)return;
-showSide(sides[i]);
-await speak("Seite "+sides[i],s);
-let t=ex.time;
-while(t>0){
-if(s!==App.session)return;
-while(App.paused)await sleep(150,s);
-update(t);
-await sleep(1000,s);
-t--;
-}
-if(i<1){
-await sleep(5000,s);
-await speak("Seitenwechsel",s);
-}}
-showSide("");
-next(s);
-}
-
-async function runSideHoldReps(ex,s){
-let sides=["rechts","links"];
-for(let i=0;i<sides.length;i++){
-if(s!==App.session)return;
-showSide(sides[i]);
-await speak("Seite "+sides[i],s);
-let r=ex.reps;
-while(r>0){
-if(s!==App.session)return;
-while(App.paused)await sleep(150,s);
-update(r);
-await speak("Halten",s);
-await sleep(ex.holdTime||4000,s);
-r--;
-}
-if(i<1){
-await sleep(5000,s);
-await speak("Seitenwechsel",s);
-}}
-showSide("");
-next(s);
-}
-
-function skip(){
-App.session++;running=false;
-clearInterval(timer);
+// =============================
+function pause(){
+App.paused=true;
+setButtons("pause");
 speechSynthesis.cancel();
-setTimeout(()=>next(App.session),120);
+}
+function resume(){
+App.paused=false;
+setButtons("run");
+}
+function setButtons(state){
+btnStart.disabled=state==="run";
+btnPause.disabled=state!=="run";
+btnResume.disabled=state!=="pause";
 }
 
+// =============================
+function skip(){
+App.session++;
+clearInterval(timer);
+next(App.session);
+}
+
+// =============================
 async function next(s){
-if(s!==App.session)return;
 running=false;
 current++;
 updateProgress();
+
 if(current>=phases[phaseIndex].length){
 update("FERTIG");
+await speak("Training beendet",s);
 return;
 }
+
 load();
-await sleep(1200,s);
+await sleep(1000,s);
 start();
 }
 
-function pause(){App.paused=true;speechSynthesis.cancel();}
-function resume(){App.paused=false;}
-
-function nextPhase(){App.session++;phaseIndex=(phaseIndex+1)%phases.length;current=0;load();}
-function setPhase(p){App.session++;phaseIndex=p-1;current=0;load();}
-
+// =============================
 function load(){
 let ex=phases[phaseIndex][current];
 phaseTitle.innerText="Training "+(phaseIndex+1);
@@ -391,11 +341,25 @@ update(ex.time||ex.reps);
 updateProgress();
 }
 
-function update(v){timerEl.innerText=v;}
-function showSide(s){side.innerText=s;}
+// =============================
 function updateProgress(){
 let t=phases[phaseIndex].length;
 progress.style.width=(current/t*100)+"%";
+}
+
+// =============================
+function nextPhase(){
+App.session++;
+phaseIndex=(phaseIndex+1)%phases.length;
+current=0;
+load();
+}
+
+function setPhase(p){
+App.session++;
+phaseIndex=p-1;
+current=0;
+load();
 }
 
 
