@@ -156,8 +156,6 @@ button {
 <button style="background:#555" onclick="stop()">Stop</button>
 </div>
 
-
-
 <script>
 
 // =============================
@@ -174,17 +172,31 @@ let timer = null;
 let running = false;
 
 // =============================
-const phaseTitle = document.getElementById("phaseTitle");
-const exerciseTitle = document.getElementById("exerciseTitle");
-const exerciseImage = document.getElementById("exerciseImage");
-const guide = document.getElementById("guide");
-const timerEl = document.getElementById("timer");
-const side = document.getElementById("side");
-const progress = document.getElementById("progress");
+let phaseTitle, exerciseTitle, exerciseImage, guide, timerEl, side, progress;
+let canvas, ctx;
 
 // =============================
-const canvas = document.getElementById("ring");
-const ctx = canvas.getContext("2d");
+function initDOM(){
+
+    phaseTitle = document.getElementById("phaseTitle");
+    exerciseTitle = document.getElementById("exerciseTitle");
+    exerciseImage = document.getElementById("exerciseImage");
+    guide = document.getElementById("guide");
+    timerEl = document.getElementById("timer");
+    side = document.getElementById("side");
+    progress = document.getElementById("progress");
+
+    canvas = document.getElementById("ring");
+
+    if(!canvas){
+        console.error("Ring Canvas fehlt!");
+        return;
+    }
+
+    ctx = canvas.getContext("2d");
+
+    initApp();
+}
 
 // =============================
 if(!window.phases){
@@ -200,6 +212,8 @@ function drawRing(percent){
 
 // =============================
 function animateRing(){
+
+    if(!ctx) return;
 
     ringAnim.current += (ringAnim.target - ringAnim.current) * 0.12;
 
@@ -243,21 +257,28 @@ function animateRing(){
 
 // =============================
 function safeGetExercise(){
-    return phases?.[phaseIndex]?.[current] || null;
+    if(!window.phases) return null;
+    if(!phases[phaseIndex]) return null;
+    return phases[phaseIndex][current] || null;
 }
 
 // =============================
-// 🔥 FIX 1: AUTO START SCREEN RENDER (WICHTIG!)
 function initApp(){
 
-    let ex = phases?.[phaseIndex]?.[0];
+    if(!phases || !phases.length){
+        console.error("phases leer!");
+        return;
+    }
+
+    let ex = phases[phaseIndex][0];
 
     if(!ex){
-        console.error("Keine Startübung vorhanden");
+        console.error("Keine Startübung");
         return;
     }
 
     renderExercise(ex);
+
     drawRing(1);
     updateProgress();
 }
@@ -269,13 +290,13 @@ function renderExercise(ex){
         phaseTitle.innerText = "Fehler";
         exerciseTitle.innerText = "Keine Daten";
         exerciseImage.src = "";
-        guide.innerHTML = "<li>phases nicht geladen</li>";
+        guide.innerHTML = "<li>Keine Übung geladen</li>";
         return;
     }
 
     phaseTitle.innerText = "Training " + (phaseIndex+1);
-    exerciseTitle.innerText = ex.name;
-    exerciseImage.src = ex.img;
+    exerciseTitle.innerText = ex.name || "Unnamed";
+    exerciseImage.src = ex.img || "";
 
     let html = "<ul>";
 
@@ -292,7 +313,7 @@ function renderExercise(ex){
 
 // =============================
 function update(v, total){
-    timerEl.innerText = v;
+    if(timerEl) timerEl.innerText = v;
     if(typeof v === "number" && total){
         drawRing(v / total);
     }
@@ -300,7 +321,7 @@ function update(v, total){
 
 // =============================
 function showSide(s){
-    side.innerText = s;
+    if(side) side.innerText = s;
 }
 
 // =============================
@@ -343,7 +364,10 @@ async function start(){
     if(running) return;
 
     let ex = safeGetExercise();
-    if(!ex) return;
+    if(!ex){
+        console.error("Start blockiert: keine Übung");
+        return;
+    }
 
     running = true;
     App.session++;
@@ -487,12 +511,11 @@ function updateProgress(){
 }
 
 // =============================
-// 🔥 INIT FIX (WICHTIG!)
 drawRing(1);
 animateRing();
-initApp();
 
-
+// 🔥 CRITICAL FIX: DOM SAFE START
+document.addEventListener("DOMContentLoaded", initDOM);
 
 
 
