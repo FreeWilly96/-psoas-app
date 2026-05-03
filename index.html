@@ -523,22 +523,34 @@ function stop(){
     clearInterval(timer);
     speechSynthesis.cancel();
 
+    // RESET STATE
     current = 0;
 
-    update("0",1);
+    // 🔥 WICHTIG: Phase bleibt gleich, aber Übung 1 aktiv setzen
+    const ex = phases[phaseIndex][0];
+
+    // UI RESET
     showSide("");
-
-    exerciseTitle.innerText = "";
-    guide.innerHTML = "";
-    exerciseImage.src = "";
-
-    phaseTitle.innerText = "Training " + (phaseIndex+1);
 
     progress.style.width = "0%";
 
+    // 🔥 NEU: komplette erste Übung sofort laden
+    phaseTitle.innerText = "Training " + (phaseIndex+1);
+    exerciseTitle.innerText = ex.name;
+    exerciseImage.src = ex.img;
+
+    let html = "<ul>";
+    ex.guide.forEach(g=>{
+        html += "<li>"+g+"</li>";
+    });
+    html += "</ul>";
+    guide.innerHTML = html;
+
+    update(ex.time || ex.reps, ex.time || ex.reps);
+
+    // Ring reset
     ringAnim.current = 1;
     ringAnim.target = 1;
-
     drawRing(1);
 }
 
