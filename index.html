@@ -13,127 +13,116 @@
 :root{
     --primary:#7b2ff7;
     --accent:#ff2d75;
-    --bg:#f2f2f2;
-    --card:#ffffff;
-    --text:#111;
+    --bg:#eef1f7;
+    --card:rgba(255,255,255,0.82);
+    --card-solid:#ffffff;
+    --text:#111827;
+    --muted:#6b7280;
 }
 
-/* BASE */
-body {
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+body{
     margin:0;
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
     background:var(--bg);
     color:var(--text);
+    padding-bottom:100px;
 }
 
-/* SAFE AREA */
-body{
-    padding-bottom:env(safe-area-inset-bottom);
+body.dark{
+    --bg:#08111f;
+    --card:rgba(20,31,49,0.8);
+    --card-solid:#132236;
+    --text:#fff;
 }
 
-/* DARK MODE */
-body.dark {
-    --bg:#0b1a2f;
-    --card:#16263a;
-    --text:#ffffff;
-}
-
-/* WRAPPER */
+/* CONTAINER */
 .container{
-    max-width:680px;
+    max-width:700px;
     margin:auto;
-    padding:10px 15px 130px;
-    text-align:center;
+    padding:10px 14px;
 }
 
-/* HEADER */
-h2{
-    font-size:14px;
-    opacity:0.5;
-    margin:5px 0;
+/* TOP CARD */
+.topCard{
+    position:sticky;
+    top:0;
+    z-index:10;
 }
-h3{
-    font-size:24px;
-    margin:5px 0 10px;
-    font-weight:700;
+
+.topCardInner{
+    background:var(--card);
+    border-radius:20px;
+    padding:12px;
+    backdrop-filter:blur(12px);
 }
+
+/* TITLES */
+h2{font-size:14px;opacity:.6;margin:0;}
+h3{font-size:24px;margin:4px 0;font-weight:800;}
+
+.side{font-size:14px;opacity:.6;height:20px;}
 
 /* IMAGE */
 img{
     width:100%;
-    max-height:26vh;
+    max-height:30vh;
     object-fit:contain;
-    border-radius:12px;
+    border-radius:16px;
+    margin-top:10px;
     background:#fff;
 }
 
 /* GUIDE */
 .guide{
-    margin:12px 0;
-    padding:14px;
+    margin-top:10px;
+    padding:12px;
     border-radius:16px;
     background:var(--card);
-    text-align:left;
-    font-size:15px;
-    line-height:1.4;
+    font-size:14px;
 }
 
 /* TIMER */
 .timer{
-    font-size:clamp(60px,14vw,110px);
-    font-weight:800;
-    margin:15px 0 10px;
+    font-size:clamp(60px,15vw,110px);
+    font-weight:900;
+    text-align:center;
+    margin:10px 0;
     background:linear-gradient(90deg,var(--primary),var(--accent));
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
 }
 
-/* SIDE */
-.side{
-    font-size:16px;
-    opacity:0.6;
-    height:20px;
-}
-
 /* PROGRESS */
 #progressBar{
     width:100%;
-    height:12px;
+    height:10px;
     background:#ddd;
     border-radius:20px;
-    margin-top:5px;
 }
 #progress{
     height:100%;
     width:0%;
     background:linear-gradient(90deg,var(--primary),var(--accent));
-    transition:0.3s;
 }
 
 /* BUTTONS */
 button{
-    padding:12px;
     border:none;
     border-radius:14px;
+    padding:12px;
+    font-weight:700;
     color:white;
-    font-weight:600;
     flex:1;
-    opacity:0.95;
-}
-button:active{
-    transform:scale(0.96);
 }
 
-/* COLORS */
-.start{background:#2ecc71;}
-.pause{background:#e74c3c;}
-.skip{background:#f39c12;}
+.start{background:#22c55e;}
+.pause{background:#ef4444;}
+.skip{background:#f59e0b;}
 .mode{background:#222;}
-.phase{background:#bbb;color:#333;}
-.phase.active{
-    background:var(--primary);
-    color:white;
-}
+.phase{background:#999;}
+.phase.active{background:var(--primary);}
 
 /* CONTROLS */
 .controls{
@@ -141,26 +130,25 @@ button:active{
     bottom:0;
     left:0;
     width:100%;
-    display:flex;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
     gap:6px;
     padding:10px;
     background:var(--card);
-    box-shadow:0 -5px 20px rgba(0,0,0,0.15);
 }
 
 /* TRAINING BAR */
 .trainingBar{
-    display:flex;
-    flex-wrap:wrap;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
     gap:6px;
     margin-top:10px;
 }
 
-/* TABLET */
-@media(min-width:768px){
-    .container{max-width:800px;}
-    img{max-height:30vh;}
-    .timer{font-size:90px;}
+/* MOBILE */
+@media(max-width:430px){
+    .trainingBar{grid-template-columns:repeat(3,1fr);}
+    .controls{grid-template-columns:repeat(2,1fr);}
 }
 </style>
 </head>
@@ -169,10 +157,13 @@ button:active{
 
 <div class="container">
 
+<div class="topCard">
+<div class="topCardInner">
 <h2 id="phaseTitle"></h2>
 <h3 id="exerciseTitle"></h3>
-
 <div id="side" class="side"></div>
+</div>
+</div>
 
 <img id="exerciseImage">
 
@@ -202,287 +193,210 @@ button:active{
 <script>
 
 // =============================
-// CORE STATE
-const App = {
-    paused: false,
-    state: "idle",
-    session: 0
-};
+const App = {paused:false,state:"idle",session:0};
+let phaseIndex=0,current=0,timer=null,running=false;
 
-let phaseIndex = 0;
-let current = 0;
-let timer = null;
-let running = false;
-
-// =============================
-const phaseTitle = document.getElementById("phaseTitle");
-const exerciseTitle = document.getElementById("exerciseTitle");
-const exerciseImage = document.getElementById("exerciseImage");
-const guide = document.getElementById("guide");
-const timerEl = document.getElementById("timer");
-const side = document.getElementById("side");
-const progress = document.getElementById("progress");
+const phaseTitle=document.getElementById("phaseTitle");
+const exerciseTitle=document.getElementById("exerciseTitle");
+const exerciseImage=document.getElementById("exerciseImage");
+const guide=document.getElementById("guide");
+const timerEl=document.getElementById("timer");
+const side=document.getElementById("side");
+const progress=document.getElementById("progress");
 
 // =============================
-function toggleMode(){
-    document.body.classList.toggle("dark");
+function toggleMode(){document.body.classList.toggle("dark");}
+
+function sleep(ms,session){
+return new Promise(r=>{
+const s=Date.now();
+function loop(){
+if(session!==App.session)return r();
+if(App.paused)return requestAnimationFrame(loop);
+if(Date.now()-s>=ms)return r();
+requestAnimationFrame(loop);
+}
+loop();
+});
 }
 
-// =============================
-function sleep(ms, session){
-    return new Promise(resolve=>{
-        const start = Date.now();
-        function loop(){
-            if(session !== App.session) return resolve();
-            if(App.paused) return requestAnimationFrame(loop);
-            if(Date.now() - start >= ms) return resolve();
-            requestAnimationFrame(loop);
-        }
-        loop();
-    });
+function speak(text,session){
+speechSynthesis.cancel();
+return new Promise(r=>{
+if(session!==App.session)return r();
+let m=new SpeechSynthesisUtterance(text);
+m.lang="de-DE";m.rate=.92;
+m.onend=()=>setTimeout(r,120);
+speechSynthesis.speak(m);
+});
 }
 
-// =============================
-function speak(text, session){
-    speechSynthesis.cancel();
-    return new Promise(resolve=>{
-        if(session !== App.session) return resolve();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = "de-DE";
-        msg.rate = 0.92;
-        msg.onend = () => setTimeout(resolve, 120);
-        speechSynthesis.speak(msg);
-    });
+async function countdown(sec,session){
+for(let i=sec;i>0;i--){
+if(session!==App.session)return;
+while(App.paused)await sleep(150,session);
+update(i);
+await speak(i.toString(),session);
+}
 }
 
-// =============================
-async function countdown(sec, session){
-    for(let i=sec;i>0;i--){
-        if(session !== App.session) return;
-        while(App.paused) await sleep(150, session);
-        update(i);
-        await speak(i.toString(), session);
-    }
+async function coachIntro(ex,session){
+if(session!==App.session)return;
+await speak(ex.name,session);
+if(ex.subtitle)await speak(ex.subtitle,session);
+if(ex.guide){
+for(let g of ex.guide){
+if(session!==App.session)return;
+await speak(g,session);
+}}
+await sleep(900,session);
+await speak("Bereit machen",session);
+await countdown(3,session);
 }
 
-// =============================
-async function coachIntro(ex, session){
-    if(session !== App.session) return;
-    await speak(ex.name, session);
-    if(ex.subtitle) await speak(ex.subtitle, session);
-    if(ex.guide){
-        for(let g of ex.guide){
-            if(session !== App.session) return;
-            await speak(g, session);
-        }
-    }
-    await sleep(900, session);
-    await speak("Bereit machen", session);
-    await countdown(3, session);
-}
-
-// =============================
 async function start(){
-    if(running) return;
-    running = true;
-    App.state = "running";
-    App.session++;
-    const session = App.session;
-    let ex = phases[phaseIndex][current];
-    await coachIntro(ex, session);
-    if(session !== App.session) return;
-    run(ex, session);
+if(running)return;
+running=true;
+App.session++;
+let s=App.session;
+let ex=phases[phaseIndex][current];
+await coachIntro(ex,s);
+if(s!==App.session)return;
+run(ex,s);
 }
 
-// =============================
-function run(ex, session){
-    if(ex.type==="time") runTime(ex, session);
-    if(ex.type==="reps") runReps(ex, session);
-    if(ex.type==="side") runSide(ex, session);
-    if(ex.type==="holdReps") runHoldReps(ex, session);
-    if(ex.type==="sideHoldReps") runSideHoldReps(ex, session);
+function run(ex,s){
+if(ex.type==="time")runTime(ex,s);
+if(ex.type==="reps")runReps(ex,s);
+if(ex.type==="side")runSide(ex,s);
+if(ex.type==="holdReps")runHoldReps(ex,s);
+if(ex.type==="sideHoldReps")runSideHoldReps(ex,s);
 }
 
-// =============================
-function runTime(ex, session){
-    let t = ex.time;
-    update(t);
-    timer = setInterval(()=>{
-        if(session !== App.session){
-            clearInterval(timer);
-            return;
-        }
-        if(App.paused) return;
-        t--;
-        update(t);
-        if(t<=0){
-            clearInterval(timer);
-            next(session);
-        }
-    },1000);
+function runTime(ex,s){
+let t=ex.time;update(t);
+timer=setInterval(()=>{
+if(s!==App.session)return clearInterval(timer);
+if(App.paused)return;
+t--;update(t);
+if(t<=0){clearInterval(timer);next(s);}
+},1000);
 }
 
-// =============================
-async function runReps(ex, session){
-    let reps = ex.reps;
-    while(reps>0){
-        if(session !== App.session) return;
-        while(App.paused) await sleep(150, session);
-        update(reps);
-        await speak(reps.toString(), session);
-        reps--;
-        await sleep(ex.rest*1000, session);
-    }
-    next(session);
+async function runReps(ex,s){
+let r=ex.reps;
+while(r>0){
+if(s!==App.session)return;
+while(App.paused)await sleep(150,s);
+update(r);
+await speak(r.toString(),s);
+r--;
+await sleep(ex.rest*1000,s);
+}
+next(s);
 }
 
-// =============================
-async function runHoldReps(ex, session){
-    let reps = ex.reps;
-    while(reps>0){
-        if(session !== App.session) return;
-        while(App.paused) await sleep(150, session);
-        update("HALTEN");
-        await speak("Halten", session);
-        await sleep(ex.holdTime || 4000, session);
-        reps--;
-    }
-    next(session);
+async function runHoldReps(ex,s){
+let r=ex.reps;
+while(r>0){
+if(s!==App.session)return;
+while(App.paused)await sleep(150,s);
+update("HALTEN");
+await speak("Halten",s);
+await sleep(ex.holdTime||4000,s);
+r--;
+}
+next(s);
 }
 
-// =============================
-async function runSide(ex, session){
-    let sides=["rechts","links"];
-    for(let i=0;i<sides.length;i++){
-        if(session !== App.session) return;
-        let s = sides[i];
-        showSide(s);
-        await speak("Seite " + s, session);
-        let t = ex.time;
-        while(t>0){
-            if(session !== App.session) return;
-            while(App.paused) await sleep(150, session);
-            update(t);
-            await sleep(1000, session);
-            t--;
-        }
-        if(i < sides.length-1){
-            await sleep(5000, session);
-            await speak("Seitenwechsel", session);
-        }
-    }
-    showSide("");
-    next(session);
+async function runSide(ex,s){
+let sides=["rechts","links"];
+for(let i=0;i<sides.length;i++){
+if(s!==App.session)return;
+showSide(sides[i]);
+await speak("Seite "+sides[i],s);
+let t=ex.time;
+while(t>0){
+if(s!==App.session)return;
+while(App.paused)await sleep(150,s);
+update(t);
+await sleep(1000,s);
+t--;
+}
+if(i<1){
+await sleep(5000,s);
+await speak("Seitenwechsel",s);
+}}
+showSide("");
+next(s);
 }
 
-// =============================
-async function runSideHoldReps(ex, session){
-    let sides=["rechts","links"];
-    for(let i=0;i<sides.length;i++){
-        if(session !== App.session) return;
-        let s = sides[i];
-        showSide(s);
-        await speak("Seite " + s, session);
-        let reps = ex.reps;
-        while(reps>0){
-            if(session !== App.session) return;
-            while(App.paused) await sleep(150, session);
-            update(reps);
-            await speak("Halten", session);
-            await sleep(ex.holdTime || 4000, session);
-            reps--;
-        }
-        if(i < sides.length-1){
-            await sleep(5000, session);
-            await speak("Seitenwechsel", session);
-        }
-    }
-    showSide("");
-    next(session);
+async function runSideHoldReps(ex,s){
+let sides=["rechts","links"];
+for(let i=0;i<sides.length;i++){
+if(s!==App.session)return;
+showSide(sides[i]);
+await speak("Seite "+sides[i],s);
+let r=ex.reps;
+while(r>0){
+if(s!==App.session)return;
+while(App.paused)await sleep(150,s);
+update(r);
+await speak("Halten",s);
+await sleep(ex.holdTime||4000,s);
+r--;
+}
+if(i<1){
+await sleep(5000,s);
+await speak("Seitenwechsel",s);
+}}
+showSide("");
+next(s);
 }
 
-// =============================
 function skip(){
-    App.session++;
-    running = false;
-    clearInterval(timer);
-    speechSynthesis.cancel();
-    setTimeout(()=>{
-        next(App.session);
-    },120);
+App.session++;running=false;
+clearInterval(timer);
+speechSynthesis.cancel();
+setTimeout(()=>next(App.session),120);
 }
 
-// =============================
-async function next(session){
-    if(session !== App.session) return;
-    running = false;
-    current++;
-    updateProgress();
-    if(current >= phases[phaseIndex].length){
-        update("FERTIG 💪");
-        await speak("Training beendet", session);
-        return;
-    }
-    load();
-    await sleep(1400, session);
-    start();
+async function next(s){
+if(s!==App.session)return;
+running=false;
+current++;
+updateProgress();
+if(current>=phases[phaseIndex].length){
+update("FERTIG");
+return;
+}
+load();
+await sleep(1200,s);
+start();
 }
 
-// =============================
-function pause(){
-    App.paused = true;
-    speechSynthesis.cancel();
-}
+function pause(){App.paused=true;speechSynthesis.cancel();}
+function resume(){App.paused=false;}
 
-function resume(){
-    App.paused = false;
-}
+function nextPhase(){App.session++;phaseIndex=(phaseIndex+1)%phases.length;current=0;load();}
+function setPhase(p){App.session++;phaseIndex=p-1;current=0;load();}
 
-// =============================
-function nextPhase(){
-    App.session++;
-    phaseIndex = (phaseIndex+1)%phases.length;
-    current = 0;
-    load();
-}
-
-function setPhase(p){
-    App.session++;
-    phaseIndex = p-1;
-    current = 0;
-    load();
-}
-
-// =============================
 function load(){
-    let ex = phases[phaseIndex][current];
-    phaseTitle.innerText = "Training " + (phaseIndex+1);
-    exerciseTitle.innerText = ex.name;
-    exerciseImage.src = ex.img;
-
-    let html = "<ul>";
-    ex.guide.forEach(g=>{
-        html += "<li>"+g+"</li>";
-    });
-    html += "</ul>";
-    guide.innerHTML = html;
-
-    update(ex.time || ex.reps);
-    updateProgress();
-
-    document.querySelectorAll(".phase").forEach((btn,i)=>{
-        btn.classList.toggle("active", i === phaseIndex);
-    });
+let ex=phases[phaseIndex][current];
+phaseTitle.innerText="Training "+(phaseIndex+1);
+exerciseTitle.innerText=ex.name;
+exerciseImage.src=ex.img;
+guide.innerHTML="<ul>"+ex.guide.map(g=>"<li>"+g+"</li>").join("")+"</ul>";
+update(ex.time||ex.reps);
+updateProgress();
 }
 
-// =============================
-function update(v){ timerEl.innerText = v; }
-function showSide(s){ side.innerText = s; }
+function update(v){timerEl.innerText=v;}
+function showSide(s){side.innerText=s;}
 function updateProgress(){
-    let total = phases[phaseIndex].length;
-    progress.style.width = (current/total*100)+"%";
+let t=phases[phaseIndex].length;
+progress.style.width=(current/t*100)+"%";
 }
-
 
 
 // =============================
