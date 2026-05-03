@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <title>Psoas Ultra PRO</title>
 
@@ -10,91 +10,216 @@
 <link rel="manifest" href="manifest.json">
 
 <style>
-body {margin:0;font-family:Arial;text-align:center;background:#0b1a2f;color:white;transition:0.3s;}
 
-img {width:95%;height:40vh;object-fit:contain;}
+/* =============================
+🔥 BASE + DARK MODE FIX
+============================= */
+body {
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,Arial;
+    background:#f2f2f2;
+    color:#111;
+    transition:0.3s;
+}
 
+body.dark{
+    background:#0b1a2f;
+    color:white;
+}
+
+/* =============================
+🔥 TOP APP AREA (wie Bild links)
+============================= */
+.top {
+    padding:20px 15px 10px;
+}
+
+h2 {
+    margin:5px 0;
+    font-size:18px;
+    opacity:0.7;
+}
+
+h3 {
+    margin:0;
+    font-size:22px;
+}
+
+.side {
+    font-size:18px;
+    color:#888;
+    height:22px;
+}
+
+/* =============================
+🔥 IMAGE
+============================= */
+img {
+    width:100%;
+    height:28vh;
+    object-fit:contain;
+}
+
+/* =============================
+🔥 GUIDE CARD
+============================= */
+.guide {
+    margin:10px;
+    padding:12px;
+    border-radius:14px;
+    background:#ffffff;
+    color:#111;
+    box-shadow:0 4px 14px rgba(0,0,0,0.1);
+}
+
+body.dark .guide{
+    background:#1e2a3a;
+    color:white;
+}
+
+/* =============================
+🔥 TIMER
+============================= */
 .timer {
-    font-size:90px;
+    font-size:70px;
     font-weight:bold;
     background:linear-gradient(90deg,#a855f7,#ec4899);
     -webkit-background-clip:text;
     color:transparent;
 }
 
-.side {font-size:28px;height:40px;color:#ccc;}
-
-.guide {
-    max-width:500px;
-    margin:10px auto;
-    padding:12px;
-    border-radius:15px;
-    background:#1e2a3a;
-    box-shadow:0 6px 20px rgba(0,0,0,0.3);
-}
-
-/* 🔥 BUTTON UPGRADE */
-button {
-    padding:14px;
-    margin:6px;
-    border:none;
-    border-radius:14px;
-    color:white;
-    font-weight:bold;
-    font-size:16px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.3);
-}
-
-.start{background:#22c55e;}
-.pause{background:#ef4444;}
-.skip{background:#f59e0b;}
-.mode{background:#374151;}
-
-.phase {background:#475569;}
-.phase.active {background:#a855f7;}
-
+/* =============================
+🔥 PROGRESS
+============================= */
 #progressBar {
     width:90%;
-    height:12px;
-    background:#1e293b;
+    height:10px;
+    background:#ddd;
     margin:10px auto;
     border-radius:10px;
+}
+
+body.dark #progressBar{
+    background:#1e293b;
 }
 
 #progress {
     height:100%;
     width:0%;
+    border-radius:10px;
     background:linear-gradient(90deg,#a855f7,#ec4899);
 }
+
+/* =============================
+🔥 BUTTON AREA (wie Bild rechts)
+============================= */
+.bottom {
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    padding:10px;
+    padding-bottom:calc(10px + env(safe-area-inset-bottom));
+    background:rgba(255,255,255,0.95);
+    backdrop-filter:blur(10px);
+}
+
+body.dark .bottom{
+    background:rgba(10,20,40,0.95);
+}
+
+/* GRID */
+.controls {
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:8px;
+}
+
+.controls button {
+    padding:16px;
+    border:none;
+    border-radius:14px;
+    font-weight:bold;
+    font-size:15px;
+    color:white;
+}
+
+/* Farben */
+.start{background:#22c55e;}
+.pause{background:#ef4444;}
+.resume{background:#3b82f6;}
+.skip{background:#f59e0b;}
+.mode{background:#374151;}
+.stop{background:#111;} /* 🔥 NEU */
+
+/* PHASE BUTTONS */
+.phases{
+    display:flex;
+    gap:6px;
+    margin-top:8px;
+}
+
+.phase{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:#64748b;
+    color:white;
+}
+
+.phase.active{
+    background:#a855f7;
+}
+
+/* Abstand unten damit nichts überdeckt */
+.spacer{
+    height:180px;
+}
+
 </style>
 </head>
 
 <body>
 
-<h2 id="phaseTitle"></h2>
-<h3 id="exerciseTitle"></h3>
-<div id="side" class="side"></div>
+<div class="top">
+    <h2 id="phaseTitle"></h2>
+    <h3 id="exerciseTitle"></h3>
+    <div id="side" class="side"></div>
 
-<img id="exerciseImage">
+    <img id="exerciseImage">
+</div>
+
 <div id="guide" class="guide"></div>
 
 <div id="timer" class="timer">0</div>
 <div id="progressBar"><div id="progress"></div></div>
 
-<button class="start" onclick="start()">Start</button>
-<button class="pause" onclick="pause()">Pause</button>
-<button onclick="resume()">Resume</button>
-<button class="skip" onclick="skip()">Skip</button>
-<button class="mode" onclick="toggleMode()">Mode</button>
+<div class="spacer"></div>
 
-<br>
+<!-- =============================
+🔥 BUTTON AREA
+============================= -->
+<div class="bottom">
 
-<button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
-<button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
-<button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
-<button class="mode" onclick="nextPhase()">Nächstes Training</button>
+    <div class="controls">
+        <button class="start" onclick="start()">Start</button>
+        <button class="pause" onclick="pause()">Pause</button>
+        <button class="resume" onclick="resume()">Resume</button>
 
+        <button class="skip" onclick="skip()">Skip</button>
+        <button class="mode" onclick="toggleMode()">Mode</button>
+        <button class="stop" onclick="stop()">Beenden</button>
+    </div>
 
+    <div class="phases">
+        <button id="btnP1" class="phase" onclick="setPhase(1)">T1</button>
+        <button id="btnP2" class="phase" onclick="setPhase(2)">T2</button>
+        <button id="btnP3" class="phase" onclick="setPhase(3)">T3</button>
+        <button class="phase" onclick="nextPhase()">Next</button>
+    </div>
+
+</div>
 
 <script>
 
@@ -121,6 +246,7 @@ const side = document.getElementById("side");
 const progress = document.getElementById("progress");
 
 // =============================
+// 🔥 DARK MODE FIX (jetzt sichtbar)
 function toggleMode(){
     document.body.classList.toggle("dark");
 }
@@ -132,7 +258,6 @@ function sleep(ms){
 
 // =============================
 function speak(text){
-
     speechSynthesis.cancel();
 
     return new Promise(resolve=>{
@@ -146,9 +271,7 @@ function speak(text){
 
 // =============================
 async function countdown(sec){
-
     for(let i=sec;i>0;i--){
-
         if(!running) return;
         while(App.paused) await sleep(150);
 
@@ -158,7 +281,6 @@ async function countdown(sec){
 }
 
 // =============================
-// 🔥 START
 async function start(){
 
     if(running) return;
@@ -169,8 +291,8 @@ async function start(){
 
     let ex = phases[phaseIndex][current];
 
-    // ✔ Ansage + Beschreibung
     await speak(ex.name);
+
     if(ex.subtitle) await speak(ex.subtitle);
 
     if(ex.guide){
@@ -189,7 +311,6 @@ async function start(){
 
 // =============================
 function run(ex){
-
     if(ex.type==="time") runTime(ex);
     if(ex.type==="reps") runReps(ex);
     if(ex.type==="side") runSide(ex);
@@ -198,7 +319,6 @@ function run(ex){
 }
 
 // =============================
-// 🔥 TIME + letzte Sekunden sprechen
 function runTime(ex){
 
     let t = ex.time;
@@ -251,7 +371,6 @@ async function runReps(ex){
 }
 
 // =============================
-// 🔥 SIDE (mit letzte Sekunden + besserer Wechsel)
 async function runSide(ex){
 
     let sides = ["rechts","links"];
@@ -286,7 +405,7 @@ async function runSide(ex){
 
         if(i < sides.length - 1){
             await speak("Seitenwechsel");
-            await sleep(5000); // 🔥 jetzt richtig: erst Ansage dann Pause
+            await sleep(5000);
         }
     }
 
@@ -295,71 +414,6 @@ async function runSide(ex){
 }
 
 // =============================
-async function runHoldReps(ex){
-
-    let reps = ex.reps;
-
-    while(reps > 0 && running){
-
-        if(App.paused){
-            await sleep(150);
-            continue;
-        }
-
-        update("HALTEN");
-        await speak("Halten");
-
-        await sleep(ex.holdTime || 4000);
-
-        reps--;
-    }
-
-    next();
-}
-
-// =============================
-async function runSideHoldReps(ex){
-
-    let sides = ["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        if(!running) return;
-
-        let s = sides[i];
-
-        showSide(s);
-        await speak("Seite " + s);
-
-        let reps = ex.reps;
-
-        while(reps > 0 && running){
-
-            if(App.paused){
-                await sleep(150);
-                continue;
-            }
-
-            update(reps);
-
-            await speak("Halten");
-            await sleep(ex.holdTime || 4000);
-
-            reps--;
-        }
-
-        if(i < sides.length - 1){
-            await speak("Seitenwechsel");
-            await sleep(5000); // 🔥 verbessert
-        }
-    }
-
-    showSide("");
-    next();
-}
-
-// =============================
-// 🔥 STOP (NEU – SAUBERER RESET)
 function stop(){
 
     running = false;
@@ -377,7 +431,6 @@ function stop(){
 }
 
 // =============================
-// 🔥 SKIP (fix gegen Parallel-Timer)
 function skip(){
 
     running = false;
@@ -407,8 +460,7 @@ async function next(){
 
     load();
 
-    await sleep(1500); // bessere Pause zwischen Übungen
-
+    await sleep(1500);
     start();
 }
 
