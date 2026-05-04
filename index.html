@@ -386,7 +386,7 @@ if(typeof window.phases === "undefined"){
     ]
   ];
 }
-const phases = window.phases;
+let phases = window.phases;
 
 /* =========================================================
    CORE STATE (kept)
@@ -1285,8 +1285,12 @@ guide:[
 ]   
 
 ];
-// =============================
+// ============================
+
+// 🔥 NEU
+phases = window.phases;
 load();
+updatePhaseButtons();
 
 </script>
 
