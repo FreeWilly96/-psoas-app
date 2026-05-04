@@ -10,44 +10,92 @@
 <link rel="manifest" href="manifest.json">
 
 <style>
-body {margin:0;font-family:Arial;text-align:center;background:#0b1a2f;color:white;transition:0.3s;}
-
-img {width:95%;height:40vh;object-fit:contain;}
-
-.timer {
-    font-size:90px;
-    font-weight:bold;
-    background:linear-gradient(90deg,#a855f7,#ec4899);
-    -webkit-background-clip:text;
-    color:transparent;
+body {
+    margin:0;
+    font-family:-apple-system,Arial;
+    text-align:center;
+    background:#0b1a2f;
+    color:white;
+    transition:0.3s;
 }
 
-.side {font-size:28px;height:40px;color:#ccc;}
+body.dark {
+    background:#020617;
+    color:#e5e7eb;
+}
+
+img {
+    width:95%;
+    height:32vh;
+    object-fit:contain;
+}
+
+/* 🔥 GLOW RING TIMER */
+.timerWrap {
+    position:relative;
+    width:180px;
+    height:180px;
+    margin:10px auto;
+}
+
+.timer {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:42px;
+    font-weight:bold;
+}
+
+svg {
+    transform:rotate(-90deg);
+}
+
+circle {
+    fill:none;
+    stroke-width:10;
+    stroke-linecap:round;
+}
+
+.bg {
+    stroke:#1e293b;
+}
+
+.progressRing {
+    stroke:url(#grad);
+    filter: drop-shadow(0 0 8px #a855f7);
+    transition: stroke-dashoffset 1s linear;
+}
+
+.side {font-size:22px;height:30px;color:#ccc;}
 
 .guide {
     max-width:500px;
     margin:10px auto;
-    padding:12px;
+    padding:10px;
     border-radius:15px;
     background:#1e2a3a;
-    box-shadow:0 6px 20px rgba(0,0,0,0.3);
 }
 
-/* 🔥 BUTTON UPGRADE */
+body.dark .guide {
+    background:#111827;
+}
+
+/* BUTTONS */
 button {
-    padding:14px;
-    margin:6px;
+    padding:12px;
+    margin:4px;
     border:none;
-    border-radius:14px;
+    border-radius:12px;
     color:white;
     font-weight:bold;
-    font-size:16px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+    font-size:15px;
 }
 
 .start{background:#22c55e;}
 .pause{background:#ef4444;}
 .skip{background:#f59e0b;}
+.stop{background:#6b7280;}
 .mode{background:#374151;}
 
 .phase {background:#475569;}
@@ -55,7 +103,7 @@ button {
 
 #progressBar {
     width:90%;
-    height:12px;
+    height:10px;
     background:#1e293b;
     margin:10px auto;
     border-radius:10px;
@@ -78,13 +126,29 @@ button {
 <img id="exerciseImage">
 <div id="guide" class="guide"></div>
 
+<!-- 🔥 GLOW TIMER -->
+<div class="timerWrap">
+<svg width="180" height="180">
+<defs>
+<linearGradient id="grad">
+<stop offset="0%" stop-color="#a855f7"/>
+<stop offset="100%" stop-color="#ec4899"/>
+</linearGradient>
+</defs>
+<circle class="bg" cx="90" cy="90" r="70"></circle>
+<circle id="ring" class="progressRing" cx="90" cy="90" r="70"
+stroke-dasharray="440" stroke-dashoffset="440"></circle>
+</svg>
 <div id="timer" class="timer">0</div>
+</div>
+
 <div id="progressBar"><div id="progress"></div></div>
 
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
-<button onclick="resume()">Resume</button>
+<button onclick="resume()">Weiter</button>
 <button class="skip" onclick="skip()">Skip</button>
+<button class="stop" onclick="stop()">Beenden</button>
 <button class="mode" onclick="toggleMode()">Mode</button>
 
 <br>
@@ -94,31 +158,18 @@ button {
 <button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>    
 <button class="mode" onclick="nextPhase()">Nächstes Training</button>
 
-
-
 <script>
 
-// =============================
-// 🔥 CORE STATE
-const App = {
-    paused: false,
-    state: "idle",
-    session: 0
-};
+// STATE
+const App = { paused:false, state:"idle", session:0 };
 
 let phaseIndex = 0;
 let current = 0;
 let timer = null;
 let running = false;
+let totalTime = 0;
 
-// =============================
-const phaseTitle = document.getElementById("phaseTitle");
-const exerciseTitle = document.getElementById("exerciseTitle");
-const exerciseImage = document.getElementById("exerciseImage");
-const guide = document.getElementById("guide");
-const timerEl = document.getElementById("timer");
-const side = document.getElementById("side");
-const progress = document.getElementById("progress");
+const ring = document.getElementById("ring");
 
 // =============================
 function toggleMode(){
@@ -132,44 +183,45 @@ function sleep(ms){
 
 // =============================
 function speak(text){
-
     speechSynthesis.cancel();
-
     return new Promise(resolve=>{
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = "de-DE";
         msg.rate = 0.95;
-        msg.onend = () => setTimeout(resolve, 80);
+        msg.onend = () => setTimeout(resolve,80);
         speechSynthesis.speak(msg);
     });
 }
 
 // =============================
+function updateRing(t){
+    if(!totalTime) return;
+    let percent = t / totalTime;
+    let offset = 440 - (440 * percent);
+    ring.style.strokeDashoffset = offset;
+}
+
+// =============================
 async function countdown(sec){
-
     for(let i=sec;i>0;i--){
-
         if(!running) return;
         while(App.paused) await sleep(150);
-
         update(i);
         await speak(i.toString());
     }
 }
 
 // =============================
-// 🔥 START
 async function start(){
 
     if(running) return;
 
     running = true;
-    App.state = "running";
+    App.paused = false;
     App.session++;
 
     let ex = phases[phaseIndex][current];
 
-    // ✔ Ansage + Beschreibung
     await speak(ex.name);
     if(ex.subtitle) await speak(ex.subtitle);
 
@@ -179,7 +231,7 @@ async function start(){
         }
     }
 
-    await sleep(1000);
+    await sleep(800);
 
     await speak("Bereit machen");
     await countdown(3);
@@ -190,6 +242,9 @@ async function start(){
 // =============================
 function run(ex){
 
+    totalTime = ex.time || 0;
+    updateRing(totalTime);
+
     if(ex.type==="time") runTime(ex);
     if(ex.type==="reps") runReps(ex);
     if(ex.type==="side") runSide(ex);
@@ -198,11 +253,10 @@ function run(ex){
 }
 
 // =============================
-// 🔥 TIME + letzte Sekunden sprechen
 function runTime(ex){
 
     let t = ex.time;
-    update(t);
+    totalTime = t;
 
     timer = setInterval(()=>{
 
@@ -215,6 +269,7 @@ function runTime(ex){
 
         t--;
         update(t);
+        updateRing(t);
 
         if(t <= 5 && t > 0){
             speak(t.toString());
@@ -229,137 +284,16 @@ function runTime(ex){
 }
 
 // =============================
-async function runReps(ex){
+function pause(){
+    App.paused = true;
+    speechSynthesis.cancel();
+}
 
-    let reps = ex.reps;
-
-    while(reps > 0 && running){
-
-        if(App.paused){
-            await sleep(150);
-            continue;
-        }
-
-        update(reps);
-        await speak(reps.toString());
-
-        reps--;
-        await sleep(ex.rest * 1000);
-    }
-
-    next();
+function resume(){
+    App.paused = false;
 }
 
 // =============================
-// 🔥 SIDE (mit letzte Sekunden + besserer Wechsel)
-async function runSide(ex){
-
-    let sides = ["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        if(!running) return;
-
-        let s = sides[i];
-
-        showSide(s);
-        await speak("Seite " + s);
-
-        let t = ex.time;
-
-        while(t > 0 && running){
-
-            if(App.paused){
-                await sleep(150);
-                continue;
-            }
-
-            update(t);
-
-            if(t <= 5 && t > 0){
-                speak(t.toString());
-            }
-
-            await sleep(1000);
-            t--;
-        }
-
-        if(i < sides.length - 1){
-            await speak("Seitenwechsel");
-            await sleep(5000); // 🔥 jetzt richtig: erst Ansage dann Pause
-        }
-    }
-
-    showSide("");
-    next();
-}
-
-// =============================
-async function runHoldReps(ex){
-
-    let reps = ex.reps;
-
-    while(reps > 0 && running){
-
-        if(App.paused){
-            await sleep(150);
-            continue;
-        }
-
-        update("HALTEN");
-        await speak("Halten");
-
-        await sleep(ex.holdTime || 4000);
-
-        reps--;
-    }
-
-    next();
-}
-
-// =============================
-async function runSideHoldReps(ex){
-
-    let sides = ["rechts","links"];
-
-    for(let i=0;i<sides.length;i++){
-
-        if(!running) return;
-
-        let s = sides[i];
-
-        showSide(s);
-        await speak("Seite " + s);
-
-        let reps = ex.reps;
-
-        while(reps > 0 && running){
-
-            if(App.paused){
-                await sleep(150);
-                continue;
-            }
-
-            update(reps);
-
-            await speak("Halten");
-            await sleep(ex.holdTime || 4000);
-
-            reps--;
-        }
-
-        if(i < sides.length - 1){
-            await speak("Seitenwechsel");
-            await sleep(5000); // 🔥 verbessert
-        }
-    }
-
-    showSide("");
-    next();
-}
-
-// =============================
-// 🔥 STOP (NEU – SAUBERER RESET)
 function stop(){
 
     running = false;
@@ -369,16 +303,18 @@ function stop(){
     clearInterval(timer);
     speechSynthesis.cancel();
 
-    update("0");
-    showSide("");
-
     current = 0;
-    updateProgress();
+
+    load(); // 🔥 setzt Übung 1 korrekt zurück
+    update("0");
+    updateRing(0);
+    showSide("");
 }
 
 // =============================
-// 🔥 SKIP (fix gegen Parallel-Timer)
 function skip(){
+
+    if(!running) return;
 
     running = false;
     App.session++;
@@ -386,9 +322,7 @@ function skip(){
     clearInterval(timer);
     speechSynthesis.cancel();
 
-    setTimeout(()=>{
-        next();
-    },120);
+    setTimeout(()=>next(),120);
 }
 
 // =============================
@@ -406,20 +340,8 @@ async function next(){
     }
 
     load();
-
-    await sleep(1500); // bessere Pause zwischen Übungen
-
+    await sleep(1200);
     start();
-}
-
-// =============================
-function pause(){
-    App.paused = true;
-    speechSynthesis.cancel();
-}
-
-function resume(){
-    App.paused = false;
 }
 
 // =============================
@@ -429,7 +351,6 @@ function nextPhase(){
     load();
 }
 
-// =============================
 function setPhase(p){
     phaseIndex = p - 1;
     current = 0;
@@ -446,9 +367,7 @@ function load(){
     exerciseImage.src = ex.img;
 
     let html = "<ul>";
-    ex.guide.forEach(g=>{
-        html += "<li>" + g + "</li>";
-    });
+    ex.guide.forEach(g=> html += "<li>"+g+"</li>");
     html += "</ul>";
 
     guide.innerHTML = html;
@@ -459,17 +378,17 @@ function load(){
 
 // =============================
 function update(v){
-    timerEl.innerText = v;
+    document.getElementById("timer").innerText = v;
 }
 
 function showSide(s){
-    side.innerText = s;
+    document.getElementById("side").innerText = s;
 }
 
 // =============================
 function updateProgress(){
     let total = phases[phaseIndex].length;
-    progress.style.width = ((current / total) * 100) + "%";
+    document.getElementById("progress").style.width = ((current/total)*100)+"%";
 }
 
 
