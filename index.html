@@ -601,7 +601,6 @@ function run(ex){
   if(ex.type==="side") runSide(ex);
   if(ex.type==="holdReps") runHoldReps(ex);
   if(ex.type==="sideHoldReps") runSideHoldReps(ex);
-  if(ex.type==="sideHoldReps") runSideHoldReps(ex);
 }
 
 /* =========================================================
@@ -1028,11 +1027,13 @@ updatePhaseButtons();
     
 // =============================
 // 🔥 STABILE PHASEN
-const phases = [
+window.phases = [
 
 /* ================= PHASE 1 ================= */
 [
-{
+...
+]
+];
 name:"Bauchatmung",
 subtitle:"Nervensystem beruhigen",
 img:"images/phase3.jpg",
