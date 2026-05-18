@@ -417,7 +417,30 @@ function load(){
    CONTROL FLOW
    ========================================================= */
 async function countdown(sec){setRingPulse('off');setRing(sec,sec);for(let i=sec;i>0;i--){if(!running)return;while(App.paused)await sleep(150);update(i);setRing(sec,i);await speak(i.toString(),{interrupt:false})}}
-function cancelRun(){App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}updateButtonStates()}
+function stopSpeechHard(){
+  try{speechSynthesis.cancel()}catch(e){}
+  try{
+    Speech.chain=Promise.resolve();
+    Speech.lastText="";
+    Speech.lastAt=0;
+  }catch(e){}
+}
+
+function clearRuntimeVisuals(){
+  showSide("");
+  setRingPulse('off');
+  if(pausedBadge) pausedBadge.classList.remove('show');
+  updateButtonStates();
+}
+
+function cancelRun(){
+  App.token++;
+  running=false;
+  App.paused=false;
+  stopSpeechHard();
+  clearRuntimeVisuals();
+}
+
 async function start(){
   haptic(12); if(running) return;
   if(!App.currentWorkout.length) App.currentWorkout=generateDailyWorkout();
@@ -429,17 +452,108 @@ async function start(){
   await sleep(500); if(myToken!==App.token)return; await speak("Bereit machen"); if(myToken!==App.token)return; await countdown(3); if(myToken!==App.token)return; run(ex,myToken);
 }
 function run(ex,myToken){switch(ex.type){case"time":runTime(ex,myToken);break;case"reps":runReps(ex,myToken);break;case"side":runSide(ex,myToken);break;case"holdReps":runHoldReps(ex,myToken);break;case"sideHoldReps":runSideHoldReps(ex,myToken);break;case"sideReps":runSideReps(ex,myToken);break;default:console.error("Unbekannter Typ:",ex.type);next()}}
-async function next(){
-  running=false; current++;
-  if(current>=App.currentWorkout.length){
-    updateProgress();update("FERTIG");resetRing();showSide("");App.state="idle";await speak("Training beendet",{interrupt:true});updateButtonStates();renderInfoPopup();return;
-  }
-  load();await sleep(900);if(!App.paused)start();
+
+async function finishTraining(){
+  running=false;
+  App.paused=false;
+  App.state="idle";
+  current=App.currentWorkout.length;
+  updateProgress();
+  update("FERTIG");
+  resetRing();
+  showSide("");
+  updateButtonStates();
+  renderInfoPopup();
+  await speak("Training beendet",{interrupt:true});
+  updateButtonStates();
 }
-async function skip(){haptic(14);if(!running)return;App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}current++;if(current>=App.currentWorkout.length){await next();return}load();await sleep(250);start()}
-function pause(){haptic(10);if(!running)return;App.paused=true;try{speechSynthesis.cancel()}catch(e){}updateButtonStates()}
-function weiter(){haptic(10);if(!running)return;App.paused=false;try{speechSynthesis.resume()}catch(e){}updateButtonStates()}
-async function beenden(){haptic(18);cancelRun();App.paused=false;App.state="idle";App.currentRound=1;current=0;showSide("");update("0");resetRing();progress.style.width="0%";load();if(App.speakOnBeenden)await speak("Training beendet",{interrupt:true});updateButtonStates()}
+
+async function next(){
+  const myToken=App.token;
+  running=false;
+  App.paused=false;
+  current++;
+
+  if(current>=App.currentWorkout.length){
+    await finishTraining();
+    return;
+  }
+
+  load();
+  updateButtonStates();
+  await sleep(900);
+
+  if(myToken!==App.token) return;
+  if(App.paused) return;
+  if(current>=App.currentWorkout.length) return;
+
+  start();
+}
+
+async function skip(){
+  haptic(14);
+  if(!running) return;
+
+  App.token++;
+  const myToken=App.token;
+  running=false;
+  App.paused=false;
+  stopSpeechHard();
+  showSide("");
+  setRingPulse('off');
+
+  current++;
+
+  if(current>=App.currentWorkout.length){
+    await finishTraining();
+    return;
+  }
+
+  load();
+  updateButtonStates();
+  await sleep(250);
+
+  if(myToken!==App.token) return;
+  if(App.paused) return;
+
+  start();
+}
+
+function pause(){
+  haptic(10);
+  if(!running) return;
+  App.paused=true;
+  stopSpeechHard();
+  updateButtonStates();
+}
+
+function weiter(){
+  haptic(10);
+  if(!running) return;
+  App.paused=false;
+  try{speechSynthesis.resume()}catch(e){}
+  updateButtonStates();
+}
+
+async function beenden(){
+  haptic(18);
+  cancelRun();
+  App.state="idle";
+  App.currentRound=1;
+  current=0;
+
+  showSide("");
+  update("0");
+  resetRing();
+  progress.style.width="0%";
+  load();
+  updateButtonStates();
+
+  if(App.speakOnBeenden){
+    await speak("Training beendet",{interrupt:true});
+  }
+  updateButtonStates();
+}
 
 /* =========================================================
    RUN TYPES
