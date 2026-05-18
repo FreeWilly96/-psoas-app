@@ -87,6 +87,7 @@
     .timerWrap{margin:14px auto 8px;display:flex;align-items:center;justify-content:center}.ring{width:clamp(170px,42vw,220px);height:clamp(170px,42vw,220px);position:relative;display:grid;place-items:center;filter:drop-shadow(0 0 22px rgba(168,85,247,.32)) drop-shadow(0 0 18px rgba(236,72,153,.22))}.ring svg{width:100%;height:100%;transform:rotate(-90deg)}.ring .bg{stroke:var(--strokeBg);stroke-width:12;fill:transparent}.ring .fg{stroke:url(#grad);stroke-width:12;stroke-linecap:round;fill:transparent;filter:url(#glow);transition:stroke-dashoffset .25s linear}.ringNumber{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:clamp(46px,11vw,64px);letter-spacing:.5px;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;user-select:none}
     .ring.pulse{animation:ringPulse 1.15s ease-in-out infinite}.ring.pulseStrong{animation:ringPulseStrong .95s ease-in-out infinite}@keyframes ringPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}@keyframes ringPulseStrong{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
     #progressBar{width:92%;height:10px;background:rgba(255,255,255,.10);margin:10px auto 4px;border-radius:10px;overflow:hidden}#progress{height:100%;width:0%;background:linear-gradient(90deg,var(--accent1),var(--accent2))}
+    .nextPreview{width:92%;margin:10px auto 0;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);color:var(--muted);font-weight:800;text-align:left;line-height:1.25}.nextPreview b{color:var(--text)}.nextPreview .small{display:block;margin-top:3px;font-size:12px;color:var(--muted2);font-weight:700}
     button{padding:14px 10px;margin:0;border:none;border-radius:18px;color:#fff;font-weight:900;font-size:16px;box-shadow:var(--shadow2);cursor:pointer;min-height:50px;transition:transform .06s,filter .2s,background .2s,color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent;user-select:none}button:active{transform:scale(.98)}button:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.15)}.btnActive{box-shadow:0 0 0 2px rgba(168,85,247,.55),var(--shadow2)}
     .start{background:var(--good)}.pause{background:var(--bad)}.continue{background:#e5e7eb;color:#0b1220}body.light .continue{background:#0b1220;color:#fff}.skip{background:var(--warn)}.mode{background:#374151}body.light .mode{background:#94a3b8;color:#0b1220}.stop{background:#0f172a}body.light .stop{background:#111827;color:#fff}.phase{background:var(--btn2);color:#fff}body.light .phase{background:var(--btn);color:#0b1220}.phase.active{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff}.roundDisplay{display:flex;align-items:center;justify-content:center;border-radius:18px;min-height:50px;background:rgba(255,255,255,.10);font-weight:900;color:var(--text)}
     .bottomBar{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--barBg);border-top:1px solid var(--barStroke);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:999}.bottomBar .inner{max-width:860px;margin:0 auto}.bottomBar .topRow{margin:0 0 8px}.bottomBar .topRow2{margin:0}.barSpacer{height:8px}
@@ -103,7 +104,8 @@
     .infoStatus{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:12px;margin:10px 0;color:var(--muted);font-weight:700}
     .infoList{margin:10px 0 0;padding-left:18px;color:var(--muted);line-height:1.45}.infoList li{margin:5px 0}
     .infoActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-    @media(max-width:520px){.infoOverlay{padding:0;align-items:flex-end}.infoSheet{border-radius:26px 26px 0 0;max-height:88dvh}.infoGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .finishOverlay{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:2100;display:none;align-items:flex-end;justify-content:center;padding:18px}.finishOverlay.show{display:flex}.finishSheet{width:min(860px,100%);max-height:86dvh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:26px 26px 18px 18px;box-shadow:0 22px 70px rgba(0,0,0,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:18px;text-align:left}.finishTitle{margin:0;font-size:24px;line-height:1.1}.finishText{margin:8px 0 0;color:var(--muted);font-weight:800}.finishGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.finishChip{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:12px;text-align:center}.finishChip b{display:block;font-size:22px;margin-bottom:3px}.finishChip span{font-size:12px;color:var(--muted);font-weight:800}.finishActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    @media(max-width:520px){.infoOverlay,.finishOverlay{padding:0;align-items:flex-end}.infoSheet,.finishSheet{border-radius:26px 26px 0 0;max-height:88dvh}.infoGrid,.finishGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
   </style>
 </head>
@@ -119,6 +121,7 @@
     <div class="card imageCard"><div class="mediaRow"><img id="exerciseImage" alt="Übung"><div id="guide" class="guide"></div></div></div>
     <div class="timerWrap"><div id="ring" class="ring" aria-label="Timer"><svg viewBox="0 0 120 120" role="img"><defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#a855f7"></stop><stop offset="100%" stop-color="#ec4899"></stop></linearGradient><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter></defs><circle class="bg" cx="60" cy="60" r="46"></circle><circle id="ringFg" class="fg" cx="60" cy="60" r="46"></circle></svg><div id="timer" class="ringNumber">0</div></div></div>
     <div id="progressBar"><div id="progress"></div></div>
+    <div id="nextPreview" class="nextPreview">Danach: <b>—</b><span class="small">Nächste Übung wird hier angezeigt</span></div>
   </div>
   <div class="bottomBar"><div class="inner">
     <div class="topRow"><button id="btnStart" class="start" onclick="start()">Start</button><button id="btnPause" class="pause" onclick="pause()">Pause</button><button id="btnWeiter" class="continue" onclick="weiter()">Weiter</button><button id="btnSkip" class="skip" onclick="skip()">Skip</button><button id="btnMode" class="mode" onclick="toggleMode()">Mode</button></div>
@@ -148,6 +151,24 @@
       <div class="infoActions">
         <button class="mode" onclick="speakWorkoutInfo()">Vorlesen</button>
         <button class="start" onclick="closeInfoPopup(); if(!running) start();">Start</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="finishOverlay" class="finishOverlay" onclick="closeFinishPopup(event)">
+    <div class="finishSheet" onclick="event.stopPropagation()">
+      <h3 class="finishTitle">Training abgeschlossen 🎉</h3>
+      <p id="finishText" class="finishText">Sehr gut gemacht.</p>
+      <div class="finishGrid">
+        <div class="finishChip"><b id="finishRounds">1</b><span>Runden</span></div>
+        <div class="finishChip"><b id="finishExercises">0</b><span>Übungen</span></div>
+        <div class="finishChip"><b id="finishDuration">0</b><span>Minuten</span></div>
+        <div class="finishChip"><b id="finishGoal">✓</b><span>Tagesziel</span></div>
+      </div>
+      <div id="finishSummary" class="infoStatus"></div>
+      <div class="finishActions">
+        <button class="mode" onclick="closeFinishPopup()">Schließen</button>
+        <button class="start" onclick="closeFinishPopup(); newDailyPreview();">Neues Training</button>
       </div>
     </div>
   </div>
@@ -251,6 +272,14 @@ const infoStretching = document.getElementById("infoStretching");
 const infoRecovery = document.getElementById("infoRecovery");
 const infoStatus = document.getElementById("infoStatus");
 const infoList = document.getElementById("infoList");
+const nextPreview = document.getElementById("nextPreview");
+const finishOverlay = document.getElementById("finishOverlay");
+const finishText = document.getElementById("finishText");
+const finishRounds = document.getElementById("finishRounds");
+const finishExercises = document.getElementById("finishExercises");
+const finishDuration = document.getElementById("finishDuration");
+const finishGoal = document.getElementById("finishGoal");
+const finishSummary = document.getElementById("finishSummary");
 
 function haptic(ms){try{if(App.haptics && navigator.vibrate) navigator.vibrate(ms||12)}catch(e){}}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
@@ -371,6 +400,11 @@ function setModule(m){haptic(12);if(running)return;App.module=m;App.currentRound
 function changeRounds(delta){haptic(10);if(running||App.module!=="multi")return;App.rounds=Math.max(2,Math.min(10,App.rounds+delta));resetWorkoutForToday();updateButtonStates()}
 function countByCategory(cat){return App.currentWorkout.filter(x=>x.category===cat).length}
 function getCurrentExercise(){return App.currentWorkout[current]||null}
+function getNextExercise(){return App.currentWorkout[current+1]||null}
+function getWorkoutGoalText(){return App.module==="stretch"?"Maximal 5 Dehnübungen":"1 Warm-up · max. 5 Training pro Runde · max. 5 Dehnen · 1 Recovery"}
+function estimateExerciseSeconds(ex){if(!ex)return 0;if(ex.type==="time")return (ex.time||0)*(ex.type==="side"?2:1);if(ex.type==="side")return ((ex.time||0)*2)+5;if(ex.type==="reps")return (ex.reps||0)*((ex.rest||1)+1)*getSets(ex);if(ex.type==="holdReps")return ((ex.holdTime||4000)/1000)*(ex.reps||0)*getSets(ex);if(ex.type==="sideHoldReps")return (((ex.holdTime||4000)/1000)*(ex.reps||0)*2*getSets(ex))+(5*getSets(ex));if(ex.type==="sideReps")return ((ex.reps||0)*((ex.rest||1)+1)*2*getSets(ex))+(5*getSets(ex));return 30}
+function estimateWorkoutMinutes(){const sec=App.currentWorkout.reduce((sum,ex)=>sum+estimateExerciseSeconds(ex),0);return Math.max(1,Math.round(sec/60))}
+function updateNextPreview(){if(!nextPreview)return;const nextEx=getNextExercise();if(nextEx){nextPreview.innerHTML=`Danach: <b>${nextEx.name}</b><span class="small">${nextEx.category||nextEx.subtitle||"Nächste Übung"}${App.module==='multi'&&nextEx.category==='Training'?` · Runde ${nextEx.round}/${getTotalRounds()}`:""}</span>`}else{nextPreview.innerHTML=`Danach: <b>Training beendet</b><span class="small">Letzte Übung</span>`}}
 function renderInfoPopup(){
   if(!App.currentWorkout.length) App.currentWorkout=generateDailyWorkout();
   const ex=getCurrentExercise();
@@ -380,8 +414,9 @@ function renderInfoPopup(){
   infoStretching.innerText=countByCategory("Dehnen");
   infoRecovery.innerText=countByCategory("Erholung");
   infoSubtitle.innerText=App.module==="stretch"?"Nur Dehnübungen":(App.module==="multi"?`Mehrere Runden · ${getTotalRounds()} Runden`:"Eine Runde");
-  infoStatus.innerHTML=`<b>Live:</b> ${running?"Training läuft":"Bereit"} · Übung ${Math.min(current+1,total)} von ${total}${ex?` · ${ex.name}`:""}`;
-  const rules=App.module==="stretch"?["Nur Dehnübungen aus dem Dehnen-Pool.","Timer, Pause, Weiter, Skip und Sprache bleiben aktiv."]:["1 Warm-up-Übung nur am Anfang.","Maximal 5 Trainingsübungen pro Runde.","Bei mehreren Runden wird nur der Trainingsblock wiederholt.","Nach dem Training folgen Dehnen und genau 1 Recovery-Übung."];
+  const nextEx=getNextExercise();
+  infoStatus.innerHTML=`<b>Live:</b> ${running?"Training läuft":"Bereit"} · Übung ${Math.min(current+1,total)} von ${total}${ex?` · Aktuell: ${ex.name}`:""}${nextEx?`<br><b>Danach:</b> ${nextEx.name}`:"<br><b>Danach:</b> Training beendet"}<br><b>Tagesziel:</b> ${getWorkoutGoalText()}<br><b>Generiert:</b> ${dateKey()}`;
+  const rules=App.module==="stretch"?["Nur Dehnübungen aus dem Dehnen-Pool.","Maximal 5 Dehnübungen.","Timer, Pause, Weiter, Skip und Sprache bleiben aktiv."]:["1 Warm-up-Übung nur am Anfang.","Maximal 5 Trainingsübungen pro Runde.","Bei mehreren Runden wird nur der Trainingsblock wiederholt.","Danach maximal 5 Dehnübungen und genau 1 Recovery-Übung."];
   infoList.innerHTML=rules.map(r=>`<li>${r}</li>`).join("");
 }
 function openInfoPopup(){haptic(10);renderInfoPopup();infoOverlay.classList.add("show")}
@@ -393,6 +428,20 @@ function speakWorkoutInfo(){
     : `Heutiges Training: eine Aufwärmübung, maximal fünf Trainingsübungen pro Runde, danach Dehnen und eine Recovery Übung. Insgesamt ${App.currentWorkout.length} Übungen.`;
   speak(txt,{interrupt:true});
 }
+function openFinishPopup(){
+  if(!finishOverlay)return;
+  const total=App.currentWorkout.length;
+  const warm=countByCategory("Erwärmen"), train=countByCategory("Training"), stretch=countByCategory("Dehnen"), rec=countByCategory("Erholung");
+  finishText.innerText=App.module==="stretch"?"Dehnprogramm abgeschlossen. Sehr gut gemacht.":"Tagestraining abgeschlossen. Sehr gut gemacht.";
+  finishRounds.innerText=getTotalRounds();
+  finishExercises.innerText=total;
+  finishDuration.innerText=estimateWorkoutMinutes();
+  finishGoal.innerText="✓";
+  finishSummary.innerHTML=`<b>Zusammenfassung:</b> ${warm} Warm-up · ${train} Training · ${stretch} Dehnen · ${rec} Recovery<br><b>Datum:</b> ${dateKey()}<br><b>Modus:</b> ${App.module==="stretch"?"Nur Dehnen":(App.module==="multi"?`Mehrere Runden (${getTotalRounds()})`:"Eine Runde")}`;
+  finishOverlay.classList.add("show");
+}
+function closeFinishPopup(ev){if(ev&&ev.target!==finishOverlay)return;if(finishOverlay)finishOverlay.classList.remove("show")}
+
 
 /* =========================================================
    LOAD
@@ -410,37 +459,14 @@ function load(){
   exerciseImage.onerror=function(){this.onerror=null;this.src="images/fallback.jpg"};
   exerciseImage.src=ex.img||"images/fallback.jpg";
   guide.innerHTML=Array.isArray(ex.guide)?"<ul>"+ex.guide.map(g=>`<li>${g}</li>`).join("")+"</ul>":"";
-  const base=ex.time||ex.reps||0;showSide("");update(base);setRingPulse('off');setRing(base,base);updateProgress();updateButtonStates();if(infoOverlay&&infoOverlay.classList.contains("show"))renderInfoPopup();
+  const base=ex.time||ex.reps||0;showSide("");update(base);setRingPulse('off');setRing(base,base);updateProgress();updateNextPreview();updateButtonStates();if(infoOverlay&&infoOverlay.classList.contains("show"))renderInfoPopup();
 }
 
 /* =========================================================
    CONTROL FLOW
    ========================================================= */
 async function countdown(sec){setRingPulse('off');setRing(sec,sec);for(let i=sec;i>0;i--){if(!running)return;while(App.paused)await sleep(150);update(i);setRing(sec,i);await speak(i.toString(),{interrupt:false})}}
-function stopSpeechHard(){
-  try{speechSynthesis.cancel()}catch(e){}
-  try{
-    Speech.chain=Promise.resolve();
-    Speech.lastText="";
-    Speech.lastAt=0;
-  }catch(e){}
-}
-
-function clearRuntimeVisuals(){
-  showSide("");
-  setRingPulse('off');
-  if(pausedBadge) pausedBadge.classList.remove('show');
-  updateButtonStates();
-}
-
-function cancelRun(){
-  App.token++;
-  running=false;
-  App.paused=false;
-  stopSpeechHard();
-  clearRuntimeVisuals();
-}
-
+function cancelRun(){App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}updateButtonStates()}
 async function start(){
   haptic(12); if(running) return;
   if(!App.currentWorkout.length) App.currentWorkout=generateDailyWorkout();
@@ -452,108 +478,17 @@ async function start(){
   await sleep(500); if(myToken!==App.token)return; await speak("Bereit machen"); if(myToken!==App.token)return; await countdown(3); if(myToken!==App.token)return; run(ex,myToken);
 }
 function run(ex,myToken){switch(ex.type){case"time":runTime(ex,myToken);break;case"reps":runReps(ex,myToken);break;case"side":runSide(ex,myToken);break;case"holdReps":runHoldReps(ex,myToken);break;case"sideHoldReps":runSideHoldReps(ex,myToken);break;case"sideReps":runSideReps(ex,myToken);break;default:console.error("Unbekannter Typ:",ex.type);next()}}
-
-async function finishTraining(){
-  running=false;
-  App.paused=false;
-  App.state="idle";
-  current=App.currentWorkout.length;
-  updateProgress();
-  update("FERTIG");
-  resetRing();
-  showSide("");
-  updateButtonStates();
-  renderInfoPopup();
-  await speak("Training beendet",{interrupt:true});
-  updateButtonStates();
-}
-
 async function next(){
-  const myToken=App.token;
-  running=false;
-  App.paused=false;
-  current++;
-
+  running=false; current++;
   if(current>=App.currentWorkout.length){
-    await finishTraining();
-    return;
+    updateProgress();update("FERTIG");resetRing();showSide("");updateNextPreview();App.state="idle";await speak("Training beendet",{interrupt:true});updateButtonStates();openFinishPopup();return;
   }
-
-  load();
-  updateButtonStates();
-  await sleep(900);
-
-  if(myToken!==App.token) return;
-  if(App.paused) return;
-  if(current>=App.currentWorkout.length) return;
-
-  start();
+  load();await sleep(900);if(!App.paused)start();
 }
-
-async function skip(){
-  haptic(14);
-  if(!running) return;
-
-  App.token++;
-  const myToken=App.token;
-  running=false;
-  App.paused=false;
-  stopSpeechHard();
-  showSide("");
-  setRingPulse('off');
-
-  current++;
-
-  if(current>=App.currentWorkout.length){
-    await finishTraining();
-    return;
-  }
-
-  load();
-  updateButtonStates();
-  await sleep(250);
-
-  if(myToken!==App.token) return;
-  if(App.paused) return;
-
-  start();
-}
-
-function pause(){
-  haptic(10);
-  if(!running) return;
-  App.paused=true;
-  stopSpeechHard();
-  updateButtonStates();
-}
-
-function weiter(){
-  haptic(10);
-  if(!running) return;
-  App.paused=false;
-  try{speechSynthesis.resume()}catch(e){}
-  updateButtonStates();
-}
-
-async function beenden(){
-  haptic(18);
-  cancelRun();
-  App.state="idle";
-  App.currentRound=1;
-  current=0;
-
-  showSide("");
-  update("0");
-  resetRing();
-  progress.style.width="0%";
-  load();
-  updateButtonStates();
-
-  if(App.speakOnBeenden){
-    await speak("Training beendet",{interrupt:true});
-  }
-  updateButtonStates();
-}
+async function skip(){haptic(14);if(!running)return;App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}current++;if(current>=App.currentWorkout.length){await next();return}load();await sleep(250);start()}
+function pause(){haptic(10);if(!running)return;App.paused=true;try{speechSynthesis.cancel()}catch(e){}updateButtonStates()}
+function weiter(){haptic(10);if(!running)return;App.paused=false;try{speechSynthesis.resume()}catch(e){}updateButtonStates()}
+async function beenden(){haptic(18);cancelRun();App.paused=false;App.state="idle";App.currentRound=1;current=0;showSide("");update("0");resetRing();progress.style.width="0%";load();updateNextPreview();if(App.speakOnBeenden)await speak("Training beendet",{interrupt:true});updateButtonStates()}
 
 /* =========================================================
    RUN TYPES
