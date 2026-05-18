@@ -449,8 +449,120 @@ async function runTime(ex,myToken){setRingPulse('off');const total=ex.time;let t
 async function runReps(ex,myToken){const sets=getSets(ex),setPause=getSetPause(ex);setRingPulse('pulse');for(let s=1;s<=sets;s++){let reps=ex.reps,total=ex.reps||0;showSide(`Satz ${s}/${sets}`);while(reps>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}update(reps);setRing(total,reps);await speak(reps.toString(),{interrupt:false});reps--;await sleep((ex.rest||0)*1000)}if(s<sets&&setPause>0)await setPauseCountdown(setPause,`Pause · Satz ${s+1}/${sets}`)}showSide("");setRingPulse('off');if(myToken===App.token)next()}
 async function runHoldReps(ex,myToken){const sets=getSets(ex),setPause=getSetPause(ex);setRingPulse('strong');for(let s=1;s<=sets;s++){let reps=ex.reps,total=ex.reps||0;showSide(`Satz ${s}/${sets}`);while(reps>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}update("HALTEN");setRing(total,reps);await speak("Halten",{interrupt:false});await sleep(ex.holdTime||4000);reps--}if(s<sets&&setPause>0)await setPauseCountdown(setPause,`Pause · Satz ${s+1}/${sets}`)}showSide("");setRingPulse('off');if(myToken===App.token)next()}
 async function runSide(ex,myToken){const sides=["rechts","links"],total=ex.time||0;setRingPulse('off');for(let i=0;i<sides.length;i++){showSide("Seite "+sides[i]);await speak("Seite "+sides[i],{interrupt:false});let t=ex.time;update(t);setRing(total,t);while(t>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}if(t<=5)await speak(t.toString(),{interrupt:false,dedupeMs:50});await sleep(1000);if(!running||myToken!==App.token)return;t--;update(t);setRing(total,t)}if(i<sides.length-1){if(App.speakSideSwitch)await speak("Seitenwechsel",{interrupt:false});showSide("Wechsel...");for(let k=5;k>0;k--){if(!running||myToken!==App.token)return;while(App.paused)await sleep(150);update(k);setRing(5,k);await sleep(1000)}}}showSide("");if(myToken===App.token)next()}
-async function runSideHoldReps(ex,myToken){const sets=getSets(ex),setPause=getSetPause(ex),sides=["rechts","links"];for(let i=0;i<sides.length;i++){const sideName=sides[i];showSide("Seite "+sideName);await speak("Seite "+sideName,{interrupt:false});for(let s=1;s<=sets;s++){let reps=ex.reps,total=ex.reps||0;setRingPulse('strong');showSide(`Seite ${sideName} · Satz ${s}/${sets}`);while(reps>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}update(reps);setRing(total,reps);await speak("Halten",{interrupt:false});await sleep(ex.holdTime||4000);reps--}if(s<sets&&setPause>0){setRingPulse('off');await setPauseCountdown(setPause,`Seite ${sideName} · Pause (Satz ${s+1}/${sets})`)}}setRingPulse('off');if(i<sides.length-1){if(App.speakSideSwitch)await speak("Seitenwechsel",{interrupt:false});showSide("Wechsel...");for(let k=5;k>0;k--){if(!running||myToken!==App.token)return;while(App.paused)await sleep(150);update(k);setRing(5,k);await sleep(1000)}}}showSide("");if(myToken===App.token)next()}
-async function runSideReps(ex,myToken){const sets=getSets(ex),setPause=getSetPause(ex),sides=["rechts","links"];for(let i=0;i<sides.length;i++){const sideName=sides[i];showSide("Seite "+sideName);await speak("Seite "+sideName,{interrupt:false});for(let s=1;s<=sets;s++){let reps=ex.reps,total=ex.reps||0;setRingPulse('pulse');showSide(`Seite ${sideName} · Satz ${s}/${sets}`);while(reps>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}update(reps);setRing(total,reps);await speak(reps.toString(),{interrupt:false});reps--;await sleep((ex.rest||0)*1000)}if(s<sets&&setPause>0){setRingPulse('off');await setPauseCountdown(setPause,`Seite ${sideName} · Pause (Satz ${s+1}/${sets})`)}}setRingPulse('off');if(i<sides.length-1){if(App.speakSideSwitch)await speak("Seitenwechsel",{interrupt:false});showSide("Wechsel...");for(let k=5;k>0;k--){if(!running||myToken!==App.token)return;while(App.paused)await sleep(150);update(k);setRing(5,k);await sleep(1000)}}}showSide("");if(myToken===App.token)next()}
+async function runSideHoldReps(ex,myToken){
+  const sets=getSets(ex);
+  const setPause=getSetPause(ex);
+  const sides=["rechts","links"];
+
+  for(let s=1;s<=sets;s++){
+    for(let i=0;i<sides.length;i++){
+      const sideName=sides[i];
+
+      if(!running||myToken!==App.token)return;
+
+      showSide(`Seite ${sideName} · Satz ${s}/${sets}`);
+      await speak("Seite "+sideName,{interrupt:false});
+
+      let reps=ex.reps;
+      const total=ex.reps||0;
+
+      setRingPulse('strong');
+
+      while(reps>0&&running){
+        if(myToken!==App.token)return;
+        if(App.paused){await sleep(150);continue;}
+
+        update(reps);
+        setRing(total,reps);
+        await speak("Halten",{interrupt:false});
+        await sleep(ex.holdTime||4000);
+        reps--;
+      }
+
+      setRingPulse('off');
+
+      if(i<sides.length-1){
+        if(App.speakSideSwitch){
+          await speak("Seitenwechsel",{interrupt:false});
+        }
+
+        showSide("Wechsel...");
+        for(let k=5;k>0;k--){
+          if(!running||myToken!==App.token)return;
+          while(App.paused)await sleep(150);
+          update(k);
+          setRing(5,k);
+          await sleep(1000);
+        }
+      }
+    }
+
+    if(s<sets&&setPause>0){
+      await setPauseCountdown(setPause,`Pause · Satz ${s+1}/${sets}`);
+    }
+  }
+
+  showSide("");
+  setRingPulse('off');
+  if(myToken===App.token)next();
+}
+async function runSideReps(ex,myToken){
+  const sets=getSets(ex);
+  const setPause=getSetPause(ex);
+  const sides=["rechts","links"];
+
+  for(let s=1;s<=sets;s++){
+    for(let i=0;i<sides.length;i++){
+      const sideName=sides[i];
+
+      if(!running||myToken!==App.token)return;
+
+      showSide(`Seite ${sideName} · Satz ${s}/${sets}`);
+      await speak("Seite "+sideName,{interrupt:false});
+
+      let reps=ex.reps;
+      const total=ex.reps||0;
+
+      setRingPulse('pulse');
+
+      while(reps>0&&running){
+        if(myToken!==App.token)return;
+        if(App.paused){await sleep(150);continue;}
+
+        update(reps);
+        setRing(total,reps);
+        await speak(reps.toString(),{interrupt:false});
+        reps--;
+        await sleep((ex.rest||0)*1000);
+      }
+
+      setRingPulse('off');
+
+      if(i<sides.length-1){
+        if(App.speakSideSwitch){
+          await speak("Seitenwechsel",{interrupt:false});
+        }
+
+        showSide("Wechsel...");
+        for(let k=5;k>0;k--){
+          if(!running||myToken!==App.token)return;
+          while(App.paused)await sleep(150);
+          update(k);
+          setRing(5,k);
+          await sleep(1000);
+        }
+      }
+    }
+
+    if(s<sets&&setPause>0){
+      await setPauseCountdown(setPause,`Pause · Satz ${s+1}/${sets}`);
+    }
+  }
+
+  showSide("");
+  setRingPulse('off');
+  if(myToken===App.token)next();
+}
 
 /* INIT */
 resetWorkoutForToday();
