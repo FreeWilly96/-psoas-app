@@ -14,7 +14,7 @@
       --strokeBg:rgba(255,255,255,.12); --shadow:0 14px 40px rgba(0,0,0,.35);
       --shadow2:0 8px 18px rgba(0,0,0,.25); --accent1:#a855f7; --accent2:#ec4899;
       --good:#22c55e; --bad:#ef4444; --warn:#f59e0b; --btn:#334155; --btn2:#475569;
-      --barBg:rgba(15,23,42,.66); --barStroke:rgba(255,255,255,.10); --bottomBarH:335px;
+      --barBg:rgba(15,23,42,.66); --barStroke:rgba(255,255,255,.10); --bottomBarH:385px;
     }
     body.light{
       --bg:#f5f7fb; --panel:rgba(255,255,255,.78); --text:#0b1220;
@@ -35,7 +35,7 @@
     .app::-webkit-scrollbar{width:0;height:0}
     .topRow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-items:center;justify-content:center;margin:6px 0 10px}
     .topRow2{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:8px 0 0}
-    .roundRow{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin:8px 0 0;align-items:center}
+    .roundRow{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin:8px 0 0;align-items:center}.settingsRow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:8px 0 0;align-items:center}
 /* iPhone Optimierung */
 @media (max-width:520px){
 
@@ -52,12 +52,13 @@
 
   .topRow,
   .topRow2,
-  .roundRow{
+  .roundRow,
+  .settingsRow{
     gap:6px !important;
   }
 
   :root{
-    --bottomBarH:235px;
+    --bottomBarH:285px;
   }
 
   .roundDisplay{
@@ -92,6 +93,7 @@
     .start{background:var(--good)}.pause{background:var(--bad)}.continue{background:#e5e7eb;color:#0b1220}body.light .continue{background:#0b1220;color:#fff}.skip{background:var(--warn)}.mode{background:#374151}body.light .mode{background:#94a3b8;color:#0b1220}.stop{background:#0f172a}body.light .stop{background:#111827;color:#fff}.phase{background:var(--btn2);color:#fff}body.light .phase{background:var(--btn);color:#0b1220}.phase.active{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff}.roundDisplay{display:flex;align-items:center;justify-content:center;border-radius:18px;min-height:50px;background:rgba(255,255,255,.10);font-weight:900;color:var(--text)}
     .bottomBar{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--barBg);border-top:1px solid var(--barStroke);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:999}.bottomBar .inner{max-width:860px;margin:0 auto}.bottomBar .topRow{margin:0 0 8px}.bottomBar .topRow2{margin:0}.barSpacer{height:8px}
     /* Info Popup */
+    .resumeOverlay{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:2200;display:none;align-items:flex-end;justify-content:center;padding:18px}.resumeOverlay.show{display:flex}.resumeSheet{width:min(860px,100%);max-height:86dvh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:26px 26px 18px 18px;box-shadow:0 22px 70px rgba(0,0,0,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:18px;text-align:left}.resumeActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
     .infoOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;display:none;align-items:flex-end;justify-content:center;padding:18px}
     .infoOverlay.show{display:flex}
     .infoSheet{width:min(860px,100%);max-height:86dvh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:26px 26px 18px 18px;box-shadow:0 22px 70px rgba(0,0,0,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:18px;text-align:left}
@@ -105,7 +107,9 @@
     .infoList{margin:10px 0 0;padding-left:18px;color:var(--muted);line-height:1.45}.infoList li{margin:5px 0}
     .infoActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
     .finishOverlay{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:2100;display:none;align-items:flex-end;justify-content:center;padding:18px}.finishOverlay.show{display:flex}.finishSheet{width:min(860px,100%);max-height:86dvh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:26px 26px 18px 18px;box-shadow:0 22px 70px rgba(0,0,0,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:18px;text-align:left}.finishTitle{margin:0;font-size:24px;line-height:1.1}.finishText{margin:8px 0 0;color:var(--muted);font-weight:800}.finishGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.finishChip{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:12px;text-align:center}.finishChip b{display:block;font-size:22px;margin-bottom:3px}.finishChip span{font-size:12px;color:var(--muted);font-weight:800}.finishActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-    @media(max-width:520px){.infoOverlay,.finishOverlay{padding:0;align-items:flex-end}.infoSheet,.finishSheet{border-radius:26px 26px 0 0;max-height:88dvh}.infoGrid,.finishGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+    .dayFormOverlay{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:2300;display:none;align-items:flex-end;justify-content:center;padding:18px}.dayFormOverlay.show{display:flex}.dayFormSheet{width:min(860px,100%);max-height:88dvh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:26px 26px 18px 18px;box-shadow:0 22px 70px rgba(0,0,0,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:18px;text-align:left}.dayFormOptions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.dayFormOptions button{min-height:72px}.dayFormHint{margin:10px 0 0;color:var(--muted);font-weight:700;line-height:1.4}.dayFormBadge{display:inline-block;margin-top:8px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.10);font-weight:900;color:var(--muted)}
+    @media(max-width:520px){.infoOverlay,.finishOverlay,.resumeOverlay,.dayFormOverlay{padding:0;align-items:flex-end}.infoSheet,.finishSheet,.resumeSheet,.dayFormSheet{border-radius:26px 26px 0 0;max-height:88dvh}.infoGrid,.finishGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.dayFormOptions{grid-template-columns:1fr}}
 
   </style>
 </head>
@@ -127,6 +131,7 @@
     <div class="topRow"><button id="btnStart" class="start" onclick="start()">Start</button><button id="btnPause" class="pause" onclick="pause()">Pause</button><button id="btnWeiter" class="continue" onclick="weiter()">Weiter</button><button id="btnSkip" class="skip" onclick="skip()">Skip</button><button id="btnMode" class="mode" onclick="toggleMode()">Mode</button></div>
     <div class="topRow2"><button id="btnSingle" class="phase active" onclick="setModule('single')">Eine Runde</button><button id="btnMulti" class="phase" onclick="setModule('multi')">Mehrere Runden</button><button id="btnStretch" class="phase" onclick="setModule('stretch')">Nur Dehnen</button><button id="btnEnd" class="stop" onclick="beenden()">Beenden</button><button id="btnNew" class="mode" onclick="newDailyPreview()">Heute neu</button></div>
     <div class="roundRow"><button id="btnMinus" class="mode" onclick="changeRounds(-1)">− Runde</button><div id="roundDisplay" class="roundDisplay">Runden: 2</div><button id="btnPlus" class="mode" onclick="changeRounds(1)">+ Runde</button><button id="btnInfo" class="mode" onclick="openInfoPopup()">Info</button></div>
+    <div class="settingsRow"><button id="btnGentle" class="mode" onclick="toggleGentleMode()">Schonend AUS</button><button id="btnAudio" class="mode" onclick="toggleAudio()">Audio AN</button><button id="btnDayForm" class="mode" onclick="openDayFormPopup(true)">Tagesform</button></div>
     <div class="barSpacer"></div>
   </div></div>
 
@@ -152,6 +157,32 @@
         <button class="mode" onclick="speakWorkoutInfo()">Vorlesen</button>
         <button class="start" onclick="closeInfoPopup(); if(!running) start();">Start</button>
       </div>
+    </div>
+  </div>
+
+  <div id="resumeOverlay" class="resumeOverlay" onclick="closeResumePopup(event)">
+    <div class="resumeSheet" onclick="event.stopPropagation()">
+      <h3 class="finishTitle">Training fortsetzen?</h3>
+      <p id="resumeText" class="finishText">Es wurde ein pausierter Trainingsstand gefunden.</p>
+      <div id="resumeSummary" class="infoStatus"></div>
+      <div class="resumeActions">
+        <button class="mode" onclick="discardSavedTraining()">Neu starten</button>
+        <button class="start" onclick="restoreSavedTraining()">Fortsetzen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="dayFormOverlay" class="dayFormOverlay" onclick="closeDayFormPopup(event)">
+    <div class="dayFormSheet" onclick="event.stopPropagation()">
+      <h3 class="finishTitle">Wie fühlst du dich heute?</h3>
+      <p class="finishText">Der Trainingsgenerator passt Auswahl, Belastung und Reihenfolge daran an.</p>
+      <div id="dayFormCurrent" class="dayFormBadge">Tagesform: Noch nicht gewählt</div>
+      <div class="dayFormOptions">
+        <button class="start" onclick="setDayForm('good')">😊 Gut<br><small>volles Training</small></button>
+        <button class="mode" onclick="setDayForm('medium')">😐 Mittel<br><small>etwas sanfter</small></button>
+        <button class="pause" onclick="setDayForm('pain')">😣 Schmerzen<br><small>schonend</small></button>
+      </div>
+      <p class="dayFormHint">Bei Schmerzen werden intensive Übungen vermieden, Zeiten/Sätze reduziert und mehr ruhige Übungen bevorzugt.</p>
     </div>
   </div>
 
@@ -236,7 +267,7 @@ const POOLS = {
 /* =========================================================
    APP STATE
    ========================================================= */
-const App = {paused:false,state:"idle",token:0,ringTotal:0,ringValue:0,speakSideSwitch:true,speakOnBeenden:true,haptics:true,setsDefault:3,setPauseSec:5,speakSetCountdown:true,setCountdownSeconds:3,announceNextSet:true,module:"single",rounds:2,currentRound:1,currentWorkout:[]};
+const App = {paused:false,state:"idle",token:0,ringTotal:0,ringValue:0,speakSideSwitch:true,speakOnBeenden:true,haptics:true,setsDefault:3,setPauseSec:5,speakSetCountdown:true,setCountdownSeconds:3,announceNextSet:true,module:"single",rounds:2,currentRound:1,currentWorkout:[],audio:true,gentle:false,dayForm:"unset",dayFormChecked:false,startedAt:null,lastSavedAt:null};
 let current = 0;
 let running = false;
 
@@ -280,13 +311,96 @@ const finishExercises = document.getElementById("finishExercises");
 const finishDuration = document.getElementById("finishDuration");
 const finishGoal = document.getElementById("finishGoal");
 const finishSummary = document.getElementById("finishSummary");
+const btnGentle = document.getElementById("btnGentle");
+const btnAudio = document.getElementById("btnAudio");
+const btnDayForm = document.getElementById("btnDayForm");
+const resumeOverlay = document.getElementById("resumeOverlay");
+const resumeText = document.getElementById("resumeText");
+const resumeSummary = document.getElementById("resumeSummary");
+const dayFormOverlay = document.getElementById("dayFormOverlay");
+const dayFormCurrent = document.getElementById("dayFormCurrent");
 
 function haptic(ms){try{if(App.haptics && navigator.vibrate) navigator.vibrate(ms||12)}catch(e){}}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function toggleMode(){haptic(10);document.body.classList.toggle("light");try{localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark")}catch(e){} updateButtonStates()}
 (function(){try{if(localStorage.getItem("theme")==="light")document.body.classList.add("light")}catch(e){}})();
-function getSets(ex){const s=Number(ex&&ex.sets);return(!isNaN(s)&&s>0)?Math.floor(s):App.setsDefault}
-function getSetPause(ex){const p=Number(ex&&ex.setPause);return(!isNaN(p)&&p>=0)?p:App.setPauseSec}
+function getSets(ex){const s=Number(ex&&ex.sets);const base=(!isNaN(s)&&s>0)?Math.floor(s):App.setsDefault;return App.gentle?Math.max(1,Math.min(base,2)):base}
+function getSetPause(ex){const p=Number(ex&&ex.setPause);const base=(!isNaN(p)&&p>=0)?p:App.setPauseSec;return App.gentle?Math.max(3,Math.min(base,4)):base}
+
+function getDayFormLabel(){return App.dayForm==="pain"?"Schmerzen":(App.dayForm==="medium"?"Mittel":(App.dayForm==="good"?"Gut":"Noch nicht gewählt"))}
+function getTrainingCountByForm(){if(App.module==="stretch")return 0;if(App.dayForm==="pain")return 3;if(App.dayForm==="medium")return 4;return 5}
+function getStretchCountByForm(){if(App.module==="stretch")return Math.min(5,POOLS.stretching.length);if(App.dayForm==="pain")return Math.min(5,POOLS.stretching.length);if(App.dayForm==="medium")return Math.min(4,POOLS.stretching.length);return Math.min(5,POOLS.stretching.length)}
+function getExerciseFamily(ex){const n=((ex&&ex.name)||""+" "+((ex&&ex.subtitle)||"")).toLowerCase();if(/plank|situp|dead bug|russian|bauch|mountain/.test(n))return "core";if(/glute|bridge|gesäß|bein|knie|waden|ausfallschritt|adduktor|hüft/.test(n))return "lower";if(/bizeps|trizeps|rudern|liegestütz|brust/.test(n))return "upper";if(/dehnung|stretch|frosch|fersensitz|rücken|bauchatmung/.test(n))return "mobility";return "general"}
+function isGentlePreferred(ex){return !isIntenseExercise(ex) && !/plank|situp|mountain|hampelmann|high knees|wandsitz/i.test((ex&&ex.name)||"")}
+function smartTake(pool,count,rnd,category,round,opts){
+  opts=opts||{};
+  let candidates=shuffled(pool,rnd);
+  if(opts.avoidIntense)candidates=candidates.filter(x=>!isIntenseExercise(x));
+  if(opts.gentleOnly){const g=candidates.filter(isGentlePreferred);if(g.length)candidates=g;}
+  if(!candidates.length)candidates=shuffled(pool,rnd);
+  const selected=[];
+  while(selected.length<Math.min(count,candidates.length)){
+    let pickIndex=candidates.findIndex(x=>{
+      const last=selected[selected.length-1];
+      if(!last)return true;
+      return getExerciseFamily(last)!==getExerciseFamily(x) && last.type!==x.type;
+    });
+    if(pickIndex<0)pickIndex=0;
+    const [picked]=candidates.splice(pickIndex,1);
+    selected.push(Object.assign({},picked,{category:category,round:round||1}));
+  }
+  return selected;
+}
+function adaptExerciseToDayForm(ex){
+  const out=Object.assign({},ex||{});
+  if(App.dayForm==="pain"){
+    if(out.time)out.time=Math.max(20,Math.round(out.time*0.65));
+    if(out.reps)out.reps=Math.max(5,Math.round(out.reps*0.55));
+    if(out.holdTime)out.holdTime=Math.max(1800,Math.round(out.holdTime*0.55));
+    out.sets=1;
+  }else if(App.dayForm==="medium"){
+    if(out.time)out.time=Math.max(25,Math.round(out.time*0.85));
+    if(out.reps)out.reps=Math.max(6,Math.round(out.reps*0.8));
+    if(out.holdTime)out.holdTime=Math.max(2200,Math.round(out.holdTime*0.8));
+    if(out.sets)out.sets=Math.max(1,Math.min(Number(out.sets)||1,2));
+  }
+  return out;
+}
+
+const STORAGE_KEY="psoasUltraProTrainingStateV1";
+function safeClone(obj){return JSON.parse(JSON.stringify(obj||{}))}
+function isIntenseExercise(ex){return /mountain|hampelmann|high knees|situps|wandsitz|liegestütz|russian/i.test((ex&&ex.name)||"")}
+function applyGentleWorkout(workout){
+  if(!App.gentle) return workout;
+  const gentlePool=POOLS.training.filter(x=>!isIntenseExercise(x));
+  let gi=0;
+  return workout.map(ex=>{
+    if(ex.category==="Training" && isIntenseExercise(ex) && gentlePool.length){
+      const repl=Object.assign({},gentlePool[gi++%gentlePool.length],{category:ex.category,round:ex.round||1});
+      return repl;
+    }
+    return ex;
+  });
+}
+function effectiveExercise(ex){
+  const out=Object.assign({},ex||{});
+  if(!App.gentle) return out;
+  if(out.time) out.time=Math.max(20,Math.round(out.time*0.75));
+  if(out.reps) out.reps=Math.max(6,Math.round(out.reps*0.65));
+  if(out.holdTime) out.holdTime=Math.max(2000,Math.round(out.holdTime*0.65));
+  if(out.sets) out.sets=Math.max(1,Math.min(Number(out.sets)||1,2));
+  return out;
+}
+function saveWorkoutState(){
+  try{
+    if(!App.currentWorkout || !App.currentWorkout.length) return;
+    const data={module:App.module,rounds:App.rounds,current:current,currentRound:App.currentRound,currentWorkout:App.currentWorkout,paused:App.paused,state:App.state,audio:App.audio,gentle:App.gentle,dayForm:App.dayForm,dayFormChecked:App.dayFormChecked,startedAt:App.startedAt||Date.now(),savedAt:Date.now()};
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+  }catch(e){}
+}
+function clearWorkoutState(){try{localStorage.removeItem(STORAGE_KEY)}catch(e){}}
+function getSavedWorkoutState(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"null")}catch(e){return null}}
+function formatSavedTime(ts){try{return new Date(ts).toLocaleString("de-DE")}catch(e){return ""}}
 
 /* =========================================================
    DAILY WORKOUT GENERATOR
@@ -299,64 +413,82 @@ function take(pool,count,rnd,category,round){const s=shuffled(pool,rnd);return s
 function generateDailyWorkout(){
   const rnd=seededRandom(
     seedFromString(
-      dateKey()+"-psoas-ultra-pro-"+App.module+"-"+App.rounds
+      dateKey()+"-psoas-ultra-pro-"+App.module+"-"+App.rounds+"-"+App.dayForm+"-smart"
     )
   );
 
   if(App.module==="stretch"){
-    return take(
+    return smartTake(
       POOLS.stretching,
       Math.min(5, POOLS.stretching.length),
       rnd,
       "Dehnen",
-      1
-    );
+      1,
+      {avoidIntense:App.dayForm==="pain",gentleOnly:App.dayForm==="pain"}
+    ).map(adaptExerciseToDayForm);
   }
 
   const rounds=getTotalRounds();
   const workout=[];
+  const profile={
+    avoidIntense: App.gentle || App.dayForm==="pain",
+    gentleOnly: App.dayForm==="pain"
+  };
+  const trainingCount=getTrainingCountByForm();
+  const stretchCount=getStretchCountByForm();
 
-  // Genau 1 Warm-up, immer nur ganz am Anfang.
-  workout.push(...take(
+  // Genau 1 Warm-up, immer nur ganz am Anfang. Bei Schmerzen ruhigere Warm-ups bevorzugen.
+  workout.push(...smartTake(
     POOLS.warmup,
     1,
     rnd,
     "Erwärmen",
-    1
+    1,
+    {avoidIntense:App.dayForm==="pain",gentleOnly:App.dayForm==="pain"}
   ));
 
-  // Pro Runde maximal 5 Trainingsübungen.
+  // Pro Runde intelligent gemischt: keine ähnlichen Übungen direkt hintereinander, intensive Übungen nicht geballt.
   for(let r=1;r<=rounds;r++){
-    workout.push(...take(
+    workout.push(...smartTake(
       POOLS.training,
-      5,
+      trainingCount,
       rnd,
       "Training",
-      r
+      r,
+      profile
     ));
   }
 
-  // Danach maximal 5 Dehnübungen.
-  workout.push(...take(
+  // Danach Dehnen, intelligent gemischt.
+  workout.push(...smartTake(
     POOLS.stretching,
-    Math.min(5, POOLS.stretching.length),
+    stretchCount,
     rnd,
     "Dehnen",
-    rounds
+    rounds,
+    {avoidIntense:App.dayForm==="pain",gentleOnly:false}
   ));
 
-  // Genau 1 Recovery-Übung.
-  workout.push(...take(
+  // Genau 1 Recovery-Übung, bei Schmerzen bevorzugt ruhig.
+  workout.push(...smartTake(
     POOLS.recovery,
     1,
     rnd,
     "Erholung",
-    rounds
+    rounds,
+    {gentleOnly:App.dayForm==="pain"}
   ));
 
-  return workout;
+  return workout.map(adaptExerciseToDayForm);
 }
-function resetWorkoutForToday(){App.currentWorkout=generateDailyWorkout();current=0;App.currentRound=1;load()}
+function resetWorkoutForToday(){
+  App.currentWorkout=applyGentleWorkout(generateDailyWorkout());
+  current=0;
+  App.currentRound=1;
+  App.startedAt=Date.now();
+  load();
+  saveWorkoutState();
+}
 function newDailyPreview(){haptic(12);if(running)return;resetWorkoutForToday();openInfoPopup()}
 function getTotalRounds(){return App.module==="multi"?App.rounds:1}
 
@@ -365,7 +497,7 @@ function getTotalRounds(){return App.module==="multi"?App.rounds:1}
    ========================================================= */
 let Speech={chain:Promise.resolve(),lastText:"",lastAt:0};
 function speak(text,opts){
-  if(!text) return Promise.resolve();
+  if(!text || !App.audio) return Promise.resolve();
   const o=Object.assign({interrupt:true,dedupeMs:250},opts||{});
   const now=Date.now();
   if(text===Speech.lastText && (now-Speech.lastAt)<o.dedupeMs) return Promise.resolve();
@@ -391,13 +523,15 @@ function update(v){timerEl.innerText=v;const n=Number(v);if(!isNaN(n)&&App.ringT
 function showSetLabel(text){if(!setLabelWrap||!setLabelBadge)return;if(text){setLabelBadge.innerText=text;setLabelWrap.style.display='block'}else{setLabelWrap.style.display='none';setLabelBadge.innerText=''}}
 function showSide(s){const text=(s||"").toString();if(!text){side.innerText="";showSetLabel("");return}const m=text.match(/Satz\s*(\d+)\s*\/\s*(\d+)/i);if(m){showSetLabel(`Satz ${m[1]}/${m[2]}`);let rest=text.replace(m[0],"").replace(/\(\s*\)/g,"").replace(/\s*·\s*/g," · ").replace(/\s{2,}/g," ").replace(/^\s*·\s*/g,"").replace(/\s*·\s*$/g,"").trim();side.innerText=rest}else{showSetLabel("");side.innerText=text}}
 function updateProgress(){const total=App.currentWorkout.length;progress.style.width=total?Math.min(100,(current/total)*100)+"%":"0%"}
-function updateButtonStates(){const isRunning=running,isPaused=App.paused;if(btnStart)btnStart.disabled=isRunning;if(btnPause)btnPause.disabled=!isRunning||isPaused;if(btnWeiter)btnWeiter.disabled=!isRunning||!isPaused;if(btnSkip)btnSkip.disabled=!isRunning;if(btnSingle)btnSingle.disabled=isRunning;if(btnMulti)btnMulti.disabled=isRunning;if(btnStretch)btnStretch.disabled=isRunning;if(btnMinus)btnMinus.disabled=isRunning||App.module!=="multi";if(btnPlus)btnPlus.disabled=isRunning||App.module!=="multi";if(btnMode)btnMode.disabled=false;if(btnEnd)btnEnd.disabled=false;if(btnPause)btnPause.classList.toggle('btnActive',isRunning&&isPaused);if(btnWeiter)btnWeiter.classList.toggle('btnActive',isRunning&&isPaused);if(btnStart)btnStart.classList.toggle('btnActive',!isRunning);if(btnSingle)btnSingle.classList.toggle('active',App.module==='single');if(btnMulti)btnMulti.classList.toggle('active',App.module==='multi');if(btnStretch)btnStretch.classList.toggle('active',App.module==='stretch');if(pausedBadge)pausedBadge.classList.toggle('show',isRunning&&isPaused);roundDisplay.innerText=App.module==='stretch'?"Nur Dehnen":`Runden: ${getTotalRounds()}`}
+function updateButtonStates(){const isRunning=running,isPaused=App.paused;if(btnStart)btnStart.disabled=isRunning;if(btnPause)btnPause.disabled=!isRunning||isPaused;if(btnWeiter)btnWeiter.disabled=!isRunning||!isPaused;if(btnSkip)btnSkip.disabled=!isRunning;if(btnSingle)btnSingle.disabled=isRunning;if(btnMulti)btnMulti.disabled=isRunning;if(btnStretch)btnStretch.disabled=isRunning;if(btnMinus)btnMinus.disabled=isRunning||App.module!=="multi";if(btnPlus)btnPlus.disabled=isRunning||App.module!=="multi";if(btnMode)btnMode.disabled=false;if(btnEnd)btnEnd.disabled=false;if(btnGentle){btnGentle.innerText=App.gentle?"Schonend AN":"Schonend AUS";btnGentle.classList.toggle('btnActive',App.gentle);btnGentle.disabled=isRunning}if(btnAudio){btnAudio.innerText=App.audio?"Audio AN":"Audio AUS";btnAudio.classList.toggle('btnActive',App.audio);btnAudio.disabled=false}if(btnDayForm){btnDayForm.innerText="Tagesform: "+getDayFormLabel();btnDayForm.classList.toggle('btnActive',App.dayForm!=="unset");btnDayForm.disabled=isRunning}if(btnPause)btnPause.classList.toggle('btnActive',isRunning&&isPaused);if(btnWeiter)btnWeiter.classList.toggle('btnActive',isRunning&&isPaused);if(btnStart)btnStart.classList.toggle('btnActive',!isRunning);if(btnSingle)btnSingle.classList.toggle('active',App.module==='single');if(btnMulti)btnMulti.classList.toggle('active',App.module==='multi');if(btnStretch)btnStretch.classList.toggle('active',App.module==='stretch');if(pausedBadge)pausedBadge.classList.toggle('show',isRunning&&isPaused);roundDisplay.innerText=App.module==='stretch'?"Nur Dehnen":`Runden: ${getTotalRounds()}`}
 
 /* =========================================================
    MODULES
    ========================================================= */
 function setModule(m){haptic(12);if(running)return;App.module=m;App.currentRound=1;current=0;resetWorkoutForToday();updateButtonStates()}
 function changeRounds(delta){haptic(10);if(running||App.module!=="multi")return;App.rounds=Math.max(2,Math.min(10,App.rounds+delta));resetWorkoutForToday();updateButtonStates()}
+function toggleGentleMode(){haptic(10);if(running)return;App.gentle=!App.gentle;resetWorkoutForToday();updateButtonStates()}
+function toggleAudio(){haptic(10);App.audio=!App.audio;if(!App.audio){try{speechSynthesis.cancel()}catch(e){}}updateButtonStates();saveWorkoutState()}
 function countByCategory(cat){return App.currentWorkout.filter(x=>x.category===cat).length}
 function getCurrentExercise(){return App.currentWorkout[current]||null}
 function getNextExercise(){return App.currentWorkout[current+1]||null}
@@ -415,8 +549,8 @@ function renderInfoPopup(){
   infoRecovery.innerText=countByCategory("Erholung");
   infoSubtitle.innerText=App.module==="stretch"?"Nur Dehnübungen":(App.module==="multi"?`Mehrere Runden · ${getTotalRounds()} Runden`:"Eine Runde");
   const nextEx=getNextExercise();
-  infoStatus.innerHTML=`<b>Live:</b> ${running?"Training läuft":"Bereit"} · Übung ${Math.min(current+1,total)} von ${total}${ex?` · Aktuell: ${ex.name}`:""}${nextEx?`<br><b>Danach:</b> ${nextEx.name}`:"<br><b>Danach:</b> Training beendet"}<br><b>Tagesziel:</b> ${getWorkoutGoalText()}<br><b>Generiert:</b> ${dateKey()}`;
-  const rules=App.module==="stretch"?["Nur Dehnübungen aus dem Dehnen-Pool.","Maximal 5 Dehnübungen.","Timer, Pause, Weiter, Skip und Sprache bleiben aktiv."]:["1 Warm-up-Übung nur am Anfang.","Maximal 5 Trainingsübungen pro Runde.","Bei mehreren Runden wird nur der Trainingsblock wiederholt.","Danach maximal 5 Dehnübungen und genau 1 Recovery-Übung."];
+  infoStatus.innerHTML=`<b>Live:</b> ${running?"Training läuft":"Bereit"} · Übung ${Math.min(current+1,total)} von ${total}${ex?` · Aktuell: ${ex.name}`:""}${nextEx?`<br><b>Danach:</b> ${nextEx.name}`:"<br><b>Danach:</b> Training beendet"}<br><b>Tagesform:</b> ${getDayFormLabel()}<br><b>Tagesziel:</b> ${getWorkoutGoalText()}<br><b>Generiert:</b> ${dateKey()}`;
+  const rules=App.module==="stretch"?["Nur Dehnübungen aus dem Dehnen-Pool.","Maximal 5 Dehnübungen.","Timer, Pause, Weiter, Skip und Sprache bleiben aktiv."]:["1 Warm-up-Übung nur am Anfang.","Intelligenter Generator: Übungen werden ausgewogen gemischt.","Maximal 5 Trainingsübungen pro Runde, bei Schmerzen weniger.","Bei mehreren Runden wird nur der Trainingsblock wiederholt.","Danach Dehnen und genau 1 Recovery-Übung.",`Tagesform: ${getDayFormLabel()}`];
   infoList.innerHTML=rules.map(r=>`<li>${r}</li>`).join("");
 }
 function openInfoPopup(){haptic(10);renderInfoPopup();infoOverlay.classList.add("show")}
@@ -443,13 +577,45 @@ function openFinishPopup(){
 function closeFinishPopup(ev){if(ev&&ev.target!==finishOverlay)return;if(finishOverlay)finishOverlay.classList.remove("show")}
 
 
+
+/* =========================================================
+   TAGESFORM / SCHMERZ CHECK
+   ========================================================= */
+function openDayFormPopup(force){
+  if(!dayFormOverlay)return;
+  if(dayFormCurrent)dayFormCurrent.innerText="Tagesform: "+getDayFormLabel();
+  dayFormOverlay.classList.add("show");
+}
+function closeDayFormPopup(ev){
+  if(ev&&ev.target!==dayFormOverlay)return;
+  if(dayFormOverlay)dayFormOverlay.classList.remove("show");
+}
+function setDayForm(form){
+  haptic(12);
+  App.dayForm=form||"good";
+  App.dayFormChecked=true;
+  if(App.dayForm==="pain")App.gentle=true;
+  if(App.dayForm==="good" && App.gentle && !running){/* Schonend bleibt manuell, wenn Nutzer es vorher aktiv gesetzt hat */}
+  if(!running){
+    App.currentWorkout=applyGentleWorkout(generateDailyWorkout());
+    current=0;
+    App.currentRound=1;
+    App.startedAt=Date.now();
+    load();
+  }
+  closeDayFormPopup();
+  updateButtonStates();
+  saveWorkoutState();
+}
+
 /* =========================================================
    LOAD
    ========================================================= */
 function load(){
   if(!App.currentWorkout.length) App.currentWorkout=generateDailyWorkout();
-  const ex=App.currentWorkout[current];
-  if(!ex){console.error("Keine Übung gefunden");return}
+  const rawEx=App.currentWorkout[current];
+  if(!rawEx){console.error("Keine Übung gefunden");return}
+  const ex=effectiveExercise(rawEx);
   const totalRounds=getTotalRounds();
   App.currentRound=ex.round||1;
   const modeText=App.module==='stretch'?'Nur Dehnen':(App.module==='multi'?'Mehrere Runden':'Eine Runde');
@@ -469,9 +635,11 @@ async function countdown(sec){setRingPulse('off');setRing(sec,sec);for(let i=sec
 function cancelRun(){App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}updateButtonStates()}
 async function start(){
   haptic(12); if(running) return;
+  if(!App.dayFormChecked || App.dayForm==="unset"){openDayFormPopup(true);return;}
   if(!App.currentWorkout.length) App.currentWorkout=generateDailyWorkout();
-  const ex=App.currentWorkout[current]; if(!ex){resetWorkoutForToday();return}
-  running=true; App.paused=false; App.state="running"; const myToken=++App.token; updateButtonStates(); load();
+  const rawEx=App.currentWorkout[current]; if(!rawEx){resetWorkoutForToday();return}
+  const ex=effectiveExercise(rawEx);
+  running=true; App.paused=false; App.state="running"; if(!App.startedAt)App.startedAt=Date.now(); const myToken=++App.token; updateButtonStates(); load(); saveWorkoutState();
   await speak(ex.name); if(myToken!==App.token)return;
   if(ex.subtitle) await speak(ex.subtitle); if(myToken!==App.token)return;
   if(ex.guide){for(const g of ex.guide){while(App.paused)await sleep(150);await speak(g);if(myToken!==App.token)return}}
@@ -481,14 +649,14 @@ function run(ex,myToken){switch(ex.type){case"time":runTime(ex,myToken);break;ca
 async function next(){
   running=false; current++;
   if(current>=App.currentWorkout.length){
-    updateProgress();update("FERTIG");resetRing();showSide("");updateNextPreview();App.state="idle";await speak("Training beendet",{interrupt:true});updateButtonStates();openFinishPopup();return;
+    updateProgress();update("FERTIG");resetRing();showSide("");updateNextPreview();App.state="idle";clearWorkoutState();await speak("Training beendet",{interrupt:true});updateButtonStates();openFinishPopup();return;
   }
-  load();await sleep(900);if(!App.paused)start();
+  load();saveWorkoutState();await sleep(900);if(!App.paused)start();
 }
-async function skip(){haptic(14);if(!running)return;App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}current++;if(current>=App.currentWorkout.length){await next();return}load();await sleep(250);start()}
-function pause(){haptic(10);if(!running)return;App.paused=true;try{speechSynthesis.cancel()}catch(e){}updateButtonStates()}
-function weiter(){haptic(10);if(!running)return;App.paused=false;try{speechSynthesis.resume()}catch(e){}updateButtonStates()}
-async function beenden(){haptic(18);cancelRun();App.paused=false;App.state="idle";App.currentRound=1;current=0;showSide("");update("0");resetRing();progress.style.width="0%";load();updateNextPreview();if(App.speakOnBeenden)await speak("Training beendet",{interrupt:true});updateButtonStates()}
+async function skip(){haptic(14);if(!running)return;App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}current++;if(current>=App.currentWorkout.length){await next();return}load();saveWorkoutState();await sleep(250);start()}
+function pause(){haptic(10);if(!running)return;App.paused=true;try{speechSynthesis.cancel()}catch(e){}updateButtonStates();saveWorkoutState()}
+function weiter(){haptic(10);if(!running)return;App.paused=false;try{speechSynthesis.resume()}catch(e){}updateButtonStates();saveWorkoutState()}
+async function beenden(){haptic(18);cancelRun();App.paused=false;App.state="idle";App.currentRound=1;current=0;showSide("");update("0");resetRing();progress.style.width="0%";load();updateNextPreview();clearWorkoutState();if(App.speakOnBeenden)await speak("Training beendet",{interrupt:true});updateButtonStates()}
 
 /* =========================================================
    RUN TYPES
@@ -613,8 +781,50 @@ async function runSideReps(ex,myToken){
   if(myToken===App.token)next();
 }
 
+/* =========================================================
+   RESUME POPUP
+   ========================================================= */
+let pendingResumeState=null;
+function showResumePopup(saved){
+  if(!resumeOverlay||!saved)return;
+  pendingResumeState=safeClone(saved);
+  const total=(saved.currentWorkout||[]).length;
+  const idx=Math.min((saved.current||0)+1,total||1);
+  resumeText.innerText="Es wurde ein Trainingsstand gefunden.";
+  resumeSummary.innerHTML=`<b>Stand:</b> Übung ${idx} von ${total}<br><b>Modus:</b> ${saved.module==="stretch"?"Nur Dehnen":(saved.module==="multi"?`Mehrere Runden (${saved.rounds})`:"Eine Runde")}<br><b>Gespeichert:</b> ${formatSavedTime(saved.savedAt)}<br><b>Audio:</b> ${saved.audio===false?"AUS":"AN"} · <b>Schonend:</b> ${saved.gentle?"AN":"AUS"}`;
+  resumeOverlay.classList.add("show");
+}
+function closeResumePopup(ev){if(ev&&ev.target!==resumeOverlay)return;if(resumeOverlay)resumeOverlay.classList.remove("show")}
+function restoreSavedTraining(){
+  const saved=pendingResumeState||getSavedWorkoutState();
+  if(!saved||!saved.currentWorkout||!saved.currentWorkout.length){closeResumePopup();resetWorkoutForToday();return}
+  App.module=saved.module||"single";App.rounds=saved.rounds||2;App.audio=saved.audio!==false;App.gentle=!!saved.gentle;App.dayForm=saved.dayForm||"unset";App.dayFormChecked=!!saved.dayFormChecked;App.currentWorkout=saved.currentWorkout;App.startedAt=saved.startedAt||Date.now();current=Math.max(0,Math.min(saved.current||0,App.currentWorkout.length-1));App.currentRound=saved.currentRound||1;App.paused=false;running=false;App.state="idle";closeResumePopup();load();updateButtonStates();saveWorkoutState();
+}
+function discardSavedTraining(){pendingResumeState=null;clearWorkoutState();closeResumePopup();resetWorkoutForToday()}
+
 /* INIT */
-resetWorkoutForToday();
+const savedState=getSavedWorkoutState();
+if(savedState&&savedState.currentWorkout&&savedState.currentWorkout.length&&(savedState.current||0)<savedState.currentWorkout.length){
+  App.module=savedState.module||"single";
+  App.rounds=savedState.rounds||2;
+  App.audio=savedState.audio!==false;
+  App.gentle=!!savedState.gentle;
+  App.dayForm=savedState.dayForm||"unset";
+  App.dayFormChecked=!!savedState.dayFormChecked;
+  App.currentWorkout=savedState.currentWorkout;
+  App.startedAt=savedState.startedAt||Date.now();
+  current=Math.max(0,Math.min(savedState.current||0,App.currentWorkout.length-1));
+  App.currentRound=savedState.currentRound||1;
+  running=false;
+  App.paused=false;
+  App.state="idle";
+  load();
+  showResumePopup(savedState);
+}else{
+  resetWorkoutForToday();
+}
+setTimeout(()=>{if(!App.dayFormChecked||App.dayForm==="unset")openDayFormPopup(true)},450);
+
 </script>
 </body>
 </html>
