@@ -14,7 +14,7 @@
       --strokeBg:rgba(255,255,255,.12); --shadow:0 14px 40px rgba(0,0,0,.35);
       --shadow2:0 8px 18px rgba(0,0,0,.25); --accent1:#a855f7; --accent2:#ec4899;
       --good:#22c55e; --bad:#ef4444; --warn:#f59e0b; --btn:#334155; --btn2:#475569;
-      --barBg:rgba(15,23,42,.66); --barStroke:rgba(255,255,255,.10); --bottomBarH:315px;
+      --barBg:rgba(15,23,42,.66); --barStroke:rgba(255,255,255,.10); --bottomBarH:335px;
     }
     body.light{
       --bg:#f5f7fb; --panel:rgba(255,255,255,.78); --text:#0b1220;
@@ -34,9 +34,9 @@
     .app{max-width:860px;margin:0 auto;padding:14px 12px 24px;padding-bottom:calc(var(--bottomBarH) + env(safe-area-inset-bottom));height:calc(100dvh - var(--bottomBarH) - env(safe-area-inset-bottom));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;scrollbar-width:none;touch-action:pan-y}
     .app::-webkit-scrollbar{width:0;height:0}
     .topRow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-items:center;justify-content:center;margin:6px 0 10px}
-    .topRow2{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:8px 0 0}
+    .topRow2{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:8px 0 0}
     .roundRow{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin:8px 0 0;align-items:center}
-    @media(max-width:520px){:root{--bottomBarH:355px}.topRow{grid-template-columns:repeat(3,minmax(0,1fr))}.topRow2,.roundRow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:520px){:root{--bottomBarH:380px}.topRow{grid-template-columns:repeat(3,minmax(0,1fr))}.topRow2,.roundRow{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .card{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
     .headerCard{padding:14px;text-align:left;position:relative}
     #phaseTitle{margin:0;font-size:14px;color:var(--muted2);font-weight:700;letter-spacing:.2px}
@@ -53,6 +53,21 @@
     button{padding:14px 10px;margin:0;border:none;border-radius:18px;color:#fff;font-weight:900;font-size:16px;box-shadow:var(--shadow2);cursor:pointer;min-height:50px;transition:transform .06s,filter .2s,background .2s,color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent;user-select:none}button:active{transform:scale(.98)}button:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.15)}.btnActive{box-shadow:0 0 0 2px rgba(168,85,247,.55),var(--shadow2)}
     .start{background:var(--good)}.pause{background:var(--bad)}.continue{background:#e5e7eb;color:#0b1220}body.light .continue{background:#0b1220;color:#fff}.skip{background:var(--warn)}.mode{background:#374151}body.light .mode{background:#94a3b8;color:#0b1220}.stop{background:#0f172a}body.light .stop{background:#111827;color:#fff}.phase{background:var(--btn2);color:#fff}body.light .phase{background:var(--btn);color:#0b1220}.phase.active{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff}.roundDisplay{display:flex;align-items:center;justify-content:center;border-radius:18px;min-height:50px;background:rgba(255,255,255,.10);font-weight:900;color:var(--text)}
     .bottomBar{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--barBg);border-top:1px solid var(--barStroke);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:999}.bottomBar .inner{max-width:860px;margin:0 auto}.bottomBar .topRow{margin:0 0 8px}.bottomBar .topRow2{margin:0}.barSpacer{height:8px}
+    /* Info Popup */
+    .infoOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;display:none;align-items:flex-end;justify-content:center;padding:18px}
+    .infoOverlay.show{display:flex}
+    .infoSheet{width:min(860px,100%);max-height:86dvh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:26px 26px 18px 18px;box-shadow:0 22px 70px rgba(0,0,0,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:18px;text-align:left}
+    .infoHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .infoHead h3{margin:0;font-size:22px;line-height:1.1}.infoHead p{margin:6px 0 0;color:var(--muted);font-weight:700}
+    .infoClose{background:rgba(255,255,255,.12);min-height:44px;min-width:44px;border-radius:999px;padding:0}
+    .infoGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+    .infoChip{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:12px;text-align:center}
+    .infoChip b{display:block;font-size:22px;margin-bottom:3px}.infoChip span{font-size:12px;color:var(--muted);font-weight:800}
+    .infoStatus{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:12px;margin:10px 0;color:var(--muted);font-weight:700}
+    .infoList{margin:10px 0 0;padding-left:18px;color:var(--muted);line-height:1.45}.infoList li{margin:5px 0}
+    .infoActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    @media(max-width:520px){.infoOverlay{padding:0;align-items:flex-end}.infoSheet{border-radius:26px 26px 0 0;max-height:88dvh}.infoGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
   </style>
 </head>
 <body>
@@ -70,10 +85,35 @@
   </div>
   <div class="bottomBar"><div class="inner">
     <div class="topRow"><button id="btnStart" class="start" onclick="start()">Start</button><button id="btnPause" class="pause" onclick="pause()">Pause</button><button id="btnWeiter" class="continue" onclick="weiter()">Weiter</button><button id="btnSkip" class="skip" onclick="skip()">Skip</button><button id="btnMode" class="mode" onclick="toggleMode()">Mode</button></div>
-    <div class="topRow2"><button id="btnSingle" class="phase active" onclick="setModule('single')">Eine Runde</button><button id="btnMulti" class="phase" onclick="setModule('multi')">Mehrere Runden</button><button id="btnEnd" class="stop" onclick="beenden()">Beenden</button><button id="btnNew" class="mode" onclick="newDailyPreview()">Heute neu</button></div>
-    <div class="roundRow"><button id="btnMinus" class="mode" onclick="changeRounds(-1)">− Runde</button><div id="roundDisplay" class="roundDisplay">Runden: 2</div><button id="btnPlus" class="mode" onclick="changeRounds(1)">+ Runde</button><button id="btnInfo" class="mode" onclick="speakWorkoutInfo()">Info</button></div>
+    <div class="topRow2"><button id="btnSingle" class="phase active" onclick="setModule('single')">Eine Runde</button><button id="btnMulti" class="phase" onclick="setModule('multi')">Mehrere Runden</button><button id="btnStretch" class="phase" onclick="setModule('stretch')">Nur Dehnen</button><button id="btnEnd" class="stop" onclick="beenden()">Beenden</button><button id="btnNew" class="mode" onclick="newDailyPreview()">Heute neu</button></div>
+    <div class="roundRow"><button id="btnMinus" class="mode" onclick="changeRounds(-1)">− Runde</button><div id="roundDisplay" class="roundDisplay">Runden: 2</div><button id="btnPlus" class="mode" onclick="changeRounds(1)">+ Runde</button><button id="btnInfo" class="mode" onclick="openInfoPopup()">Info</button></div>
     <div class="barSpacer"></div>
   </div></div>
+
+
+  <div id="infoOverlay" class="infoOverlay" onclick="closeInfoPopup(event)">
+    <div class="infoSheet" onclick="event.stopPropagation()">
+      <div class="infoHead">
+        <div>
+          <h3>Trainingsübersicht</h3>
+          <p id="infoSubtitle">Live-Status</p>
+        </div>
+        <button class="infoClose" onclick="closeInfoPopup()">×</button>
+      </div>
+      <div class="infoGrid">
+        <div class="infoChip"><b id="infoWarmup">1</b><span>Warm-up</span></div>
+        <div class="infoChip"><b id="infoTraining">5</b><span>Training</span></div>
+        <div class="infoChip"><b id="infoStretching">0</b><span>Dehnen</span></div>
+        <div class="infoChip"><b id="infoRecovery">1</b><span>Recovery</span></div>
+      </div>
+      <div id="infoStatus" class="infoStatus"></div>
+      <ul id="infoList" class="infoList"></ul>
+      <div class="infoActions">
+        <button class="mode" onclick="speakWorkoutInfo()">Vorlesen</button>
+        <button class="start" onclick="closeInfoPopup(); if(!running) start();">Start</button>
+      </div>
+    </div>
+  </div>
 
 <script>
 /* =========================================================
@@ -162,9 +202,18 @@ const btnMode = document.getElementById("btnMode");
 const btnEnd = document.getElementById("btnEnd");
 const btnSingle = document.getElementById("btnSingle");
 const btnMulti = document.getElementById("btnMulti");
+const btnStretch = document.getElementById("btnStretch");
 const btnMinus = document.getElementById("btnMinus");
 const btnPlus = document.getElementById("btnPlus");
 const roundDisplay = document.getElementById("roundDisplay");
+const infoOverlay = document.getElementById("infoOverlay");
+const infoSubtitle = document.getElementById("infoSubtitle");
+const infoWarmup = document.getElementById("infoWarmup");
+const infoTraining = document.getElementById("infoTraining");
+const infoStretching = document.getElementById("infoStretching");
+const infoRecovery = document.getElementById("infoRecovery");
+const infoStatus = document.getElementById("infoStatus");
+const infoList = document.getElementById("infoList");
 
 function haptic(ms){try{if(App.haptics && navigator.vibrate) navigator.vibrate(ms||12)}catch(e){}}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
@@ -180,10 +229,27 @@ function dateKey(){const d=new Date();return d.getFullYear()+"-"+String(d.getMon
 function seedFromString(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function seededRandom(seed){let s=seed>>>0;return function(){s+=0x6D2B79F5;let t=s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
 function shuffled(arr,rnd){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function take(pool,count,rnd){const s=shuffled(pool,rnd);return s.slice(0,Math.min(count,s.length)).map(x=>Object.assign({},x))}
-function generateDailyWorkout(){const rnd=seededRandom(seedFromString(dateKey()+"-psoas-ultra-pro"));return [...take(POOLS.warmup,2,rnd),...take(POOLS.training,7,rnd),...take(POOLS.stretching,3,rnd),...take(POOLS.recovery,1,rnd)]}
+function take(pool,count,rnd,category,round){const s=shuffled(pool,rnd);return s.slice(0,Math.min(count,s.length)).map(x=>Object.assign({},x,{category:category,round:round||1}))}
+function generateDailyWorkout(){
+  const rnd=seededRandom(seedFromString(dateKey()+"-psoas-ultra-pro-"+App.module+"-"+App.rounds));
+  if(App.module==="stretch"){
+    return take(POOLS.stretching, Math.min(8, POOLS.stretching.length), rnd, "Dehnen", 1);
+  }
+  const rounds=getTotalRounds();
+  const workout=[];
+  // Genau 1 Warm-up, immer nur ganz am Anfang.
+  workout.push(...take(POOLS.warmup,1,rnd,"Erwärmen",1));
+  // Pro Runde maximal 5 Trainingsübungen. Bei mehreren Runden wird nur der Trainingsblock wiederholt.
+  for(let r=1;r<=rounds;r++){
+    workout.push(...take(POOLS.training,5,rnd,"Training",r));
+  }
+  // Danach Dehnen und genau 1 Recovery-Übung.
+  workout.push(...take(POOLS.stretching,3,rnd,"Dehnen",rounds));
+  workout.push(...take(POOLS.recovery,1,rnd,"Erholung",rounds));
+  return workout;
+}
 function resetWorkoutForToday(){App.currentWorkout=generateDailyWorkout();current=0;App.currentRound=1;load()}
-function newDailyPreview(){haptic(12);if(running)return;resetWorkoutForToday();speakWorkoutInfo()}
+function newDailyPreview(){haptic(12);if(running)return;resetWorkoutForToday();openInfoPopup()}
 function getTotalRounds(){return App.module==="multi"?App.rounds:1}
 
 /* =========================================================
@@ -216,15 +282,38 @@ function setRingPulse(mode){if(!ringEl)return;ringEl.classList.remove('pulse','p
 function update(v){timerEl.innerText=v;const n=Number(v);if(!isNaN(n)&&App.ringTotal)setRing(App.ringTotal,n)}
 function showSetLabel(text){if(!setLabelWrap||!setLabelBadge)return;if(text){setLabelBadge.innerText=text;setLabelWrap.style.display='block'}else{setLabelWrap.style.display='none';setLabelBadge.innerText=''}}
 function showSide(s){const text=(s||"").toString();if(!text){side.innerText="";showSetLabel("");return}const m=text.match(/Satz\s*(\d+)\s*\/\s*(\d+)/i);if(m){showSetLabel(`Satz ${m[1]}/${m[2]}`);let rest=text.replace(m[0],"").replace(/\(\s*\)/g,"").replace(/\s*·\s*/g," · ").replace(/\s{2,}/g," ").replace(/^\s*·\s*/g,"").replace(/\s*·\s*$/g,"").trim();side.innerText=rest}else{showSetLabel("");side.innerText=text}}
-function updateProgress(){const total=App.currentWorkout.length*getTotalRounds();const done=(App.currentRound-1)*App.currentWorkout.length+current;progress.style.width=total?Math.min(100,(done/total)*100)+"%":"0%"}
-function updateButtonStates(){const isRunning=running,isPaused=App.paused;if(btnStart)btnStart.disabled=isRunning;if(btnPause)btnPause.disabled=!isRunning||isPaused;if(btnWeiter)btnWeiter.disabled=!isRunning||!isPaused;if(btnSkip)btnSkip.disabled=!isRunning;if(btnSingle)btnSingle.disabled=isRunning;if(btnMulti)btnMulti.disabled=isRunning;if(btnMinus)btnMinus.disabled=isRunning||App.module!=="multi";if(btnPlus)btnPlus.disabled=isRunning||App.module!=="multi";if(btnMode)btnMode.disabled=false;if(btnEnd)btnEnd.disabled=false;if(btnPause)btnPause.classList.toggle('btnActive',isRunning&&isPaused);if(btnWeiter)btnWeiter.classList.toggle('btnActive',isRunning&&isPaused);if(btnStart)btnStart.classList.toggle('btnActive',!isRunning);if(btnSingle)btnSingle.classList.toggle('active',App.module==='single');if(btnMulti)btnMulti.classList.toggle('active',App.module==='multi');if(pausedBadge)pausedBadge.classList.toggle('show',isRunning&&isPaused);roundDisplay.innerText=`Runden: ${getTotalRounds()}`}
+function updateProgress(){const total=App.currentWorkout.length;progress.style.width=total?Math.min(100,(current/total)*100)+"%":"0%"}
+function updateButtonStates(){const isRunning=running,isPaused=App.paused;if(btnStart)btnStart.disabled=isRunning;if(btnPause)btnPause.disabled=!isRunning||isPaused;if(btnWeiter)btnWeiter.disabled=!isRunning||!isPaused;if(btnSkip)btnSkip.disabled=!isRunning;if(btnSingle)btnSingle.disabled=isRunning;if(btnMulti)btnMulti.disabled=isRunning;if(btnStretch)btnStretch.disabled=isRunning;if(btnMinus)btnMinus.disabled=isRunning||App.module!=="multi";if(btnPlus)btnPlus.disabled=isRunning||App.module!=="multi";if(btnMode)btnMode.disabled=false;if(btnEnd)btnEnd.disabled=false;if(btnPause)btnPause.classList.toggle('btnActive',isRunning&&isPaused);if(btnWeiter)btnWeiter.classList.toggle('btnActive',isRunning&&isPaused);if(btnStart)btnStart.classList.toggle('btnActive',!isRunning);if(btnSingle)btnSingle.classList.toggle('active',App.module==='single');if(btnMulti)btnMulti.classList.toggle('active',App.module==='multi');if(btnStretch)btnStretch.classList.toggle('active',App.module==='stretch');if(pausedBadge)pausedBadge.classList.toggle('show',isRunning&&isPaused);roundDisplay.innerText=App.module==='stretch'?"Nur Dehnen":`Runden: ${getTotalRounds()}`}
 
 /* =========================================================
    MODULES
    ========================================================= */
-function setModule(m){haptic(12);if(running)return;App.module=m;App.currentRound=1;current=0;load();updateButtonStates()}
-function changeRounds(delta){haptic(10);if(running||App.module!=="multi")return;App.rounds=Math.max(2,Math.min(10,App.rounds+delta));updateButtonStates();load()}
-function speakWorkoutInfo(){const txt=`Heutiges Training: ${App.currentWorkout.length} Übungen, ${getTotalRounds()} Runde${getTotalRounds()>1?'n':''}. Start mit Erwärmen, danach Training und Dehnen, Ende mit Erholung.`;speak(txt,{interrupt:true})}
+function setModule(m){haptic(12);if(running)return;App.module=m;App.currentRound=1;current=0;resetWorkoutForToday();updateButtonStates()}
+function changeRounds(delta){haptic(10);if(running||App.module!=="multi")return;App.rounds=Math.max(2,Math.min(10,App.rounds+delta));resetWorkoutForToday();updateButtonStates()}
+function countByCategory(cat){return App.currentWorkout.filter(x=>x.category===cat).length}
+function getCurrentExercise(){return App.currentWorkout[current]||null}
+function renderInfoPopup(){
+  if(!App.currentWorkout.length) App.currentWorkout=generateDailyWorkout();
+  const ex=getCurrentExercise();
+  const total=App.currentWorkout.length;
+  infoWarmup.innerText=countByCategory("Erwärmen");
+  infoTraining.innerText=countByCategory("Training");
+  infoStretching.innerText=countByCategory("Dehnen");
+  infoRecovery.innerText=countByCategory("Erholung");
+  infoSubtitle.innerText=App.module==="stretch"?"Nur Dehnübungen":(App.module==="multi"?`Mehrere Runden · ${getTotalRounds()} Runden`:"Eine Runde");
+  infoStatus.innerHTML=`<b>Live:</b> ${running?"Training läuft":"Bereit"} · Übung ${Math.min(current+1,total)} von ${total}${ex?` · ${ex.name}`:""}`;
+  const rules=App.module==="stretch"?["Nur Dehnübungen aus dem Dehnen-Pool.","Timer, Pause, Weiter, Skip und Sprache bleiben aktiv."]:["1 Warm-up-Übung nur am Anfang.","Maximal 5 Trainingsübungen pro Runde.","Bei mehreren Runden wird nur der Trainingsblock wiederholt.","Nach dem Training folgen Dehnen und genau 1 Recovery-Übung."];
+  infoList.innerHTML=rules.map(r=>`<li>${r}</li>`).join("");
+}
+function openInfoPopup(){haptic(10);renderInfoPopup();infoOverlay.classList.add("show")}
+function closeInfoPopup(ev){if(ev&&ev.target!==infoOverlay)return;infoOverlay.classList.remove("show")}
+function speakWorkoutInfo(){
+  if(!App.currentWorkout.length) App.currentWorkout=generateDailyWorkout();
+  const txt=App.module==="stretch"
+    ? `Nur Dehnen: ${App.currentWorkout.length} Dehnübungen.`
+    : `Heutiges Training: eine Aufwärmübung, maximal fünf Trainingsübungen pro Runde, danach Dehnen und eine Recovery Übung. Insgesamt ${App.currentWorkout.length} Übungen.`;
+  speak(txt,{interrupt:true});
+}
 
 /* =========================================================
    LOAD
@@ -234,12 +323,15 @@ function load(){
   const ex=App.currentWorkout[current];
   if(!ex){console.error("Keine Übung gefunden");return}
   const totalRounds=getTotalRounds();
-  phaseTitle.innerText=`${dateKey()} · ${App.module==='multi'?'Mehrere Runden':'Eine Runde'} · Runde ${App.currentRound}/${totalRounds} · ${ex.subtitle||''}`;
+  App.currentRound=ex.round||1;
+  const modeText=App.module==='stretch'?'Nur Dehnen':(App.module==='multi'?'Mehrere Runden':'Eine Runde');
+  const roundText=App.module==='multi' && ex.category==='Training'?` · Runde ${App.currentRound}/${totalRounds}`:'';
+  phaseTitle.innerText=`${dateKey()} · ${modeText}${roundText} · ${ex.category||ex.subtitle||''}`;
   exerciseTitle.innerText=ex.name;
   exerciseImage.onerror=function(){this.onerror=null;this.src="images/fallback.jpg"};
   exerciseImage.src=ex.img||"images/fallback.jpg";
   guide.innerHTML=Array.isArray(ex.guide)?"<ul>"+ex.guide.map(g=>`<li>${g}</li>`).join("")+"</ul>":"";
-  const base=ex.time||ex.reps||0;showSide("");update(base);setRingPulse('off');setRing(base,base);updateProgress();updateButtonStates();
+  const base=ex.time||ex.reps||0;showSide("");update(base);setRingPulse('off');setRing(base,base);updateProgress();updateButtonStates();if(infoOverlay&&infoOverlay.classList.contains("show"))renderInfoPopup();
 }
 
 /* =========================================================
@@ -261,8 +353,7 @@ function run(ex,myToken){switch(ex.type){case"time":runTime(ex,myToken);break;ca
 async function next(){
   running=false; current++;
   if(current>=App.currentWorkout.length){
-    if(App.currentRound<getTotalRounds()){App.currentRound++;current=0;load();await sleep(900);start();return}
-    updateProgress();update("FERTIG");resetRing();showSide("");App.state="idle";await speak("Training beendet",{interrupt:true});updateButtonStates();return;
+    updateProgress();update("FERTIG");resetRing();showSide("");App.state="idle";await speak("Training beendet",{interrupt:true});updateButtonStates();renderInfoPopup();return;
   }
   load();await sleep(900);if(!App.paused)start();
 }
