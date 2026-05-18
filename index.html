@@ -4,8 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Psoas Ultra PRO</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
-  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/icon.png?v=1.6.0">
+  <link rel="manifest" href="manifest.json?v=1.6.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <style>
     :root{
@@ -105,11 +108,20 @@
     .infoChip b{display:block;font-size:22px;margin-bottom:3px}.infoChip span{font-size:12px;color:var(--muted);font-weight:800}
     .infoStatus{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:12px;margin:10px 0;color:var(--muted);font-weight:700}
     .infoList{margin:10px 0 0;padding-left:18px;color:var(--muted);line-height:1.45}.infoList li{margin:5px 0}
-    .infoActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .infoActions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
     .finishOverlay{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:2100;display:none;align-items:flex-end;justify-content:center;padding:18px}.finishOverlay.show{display:flex}.finishSheet{width:min(860px,100%);max-height:86dvh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:26px 26px 18px 18px;box-shadow:0 22px 70px rgba(0,0,0,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:18px;text-align:left}.finishTitle{margin:0;font-size:24px;line-height:1.1}.finishText{margin:8px 0 0;color:var(--muted);font-weight:800}.finishGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.finishChip{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:12px;text-align:center}.finishChip b{display:block;font-size:22px;margin-bottom:3px}.finishChip span{font-size:12px;color:var(--muted);font-weight:800}.finishActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 
     .dayFormOverlay{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:2300;display:none;align-items:flex-end;justify-content:center;padding:18px}.dayFormOverlay.show{display:flex}.dayFormSheet{width:min(860px,100%);max-height:88dvh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:26px 26px 18px 18px;box-shadow:0 22px 70px rgba(0,0,0,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:18px;text-align:left}.dayFormOptions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.dayFormOptions button{min-height:72px}.dayFormHint{margin:10px 0 0;color:var(--muted);font-weight:700;line-height:1.4}.dayFormBadge{display:inline-block;margin-top:8px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.10);font-weight:900;color:var(--muted)}
     @media(max-width:520px){.infoOverlay,.finishOverlay,.resumeOverlay,.dayFormOverlay{padding:0;align-items:flex-end}.infoSheet,.finishSheet,.resumeSheet,.dayFormSheet{border-radius:26px 26px 0 0;max-height:88dvh}.infoGrid,.finishGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.dayFormOptions{grid-template-columns:1fr}}
+
+    /* Version / Fehler / Cache */
+    .versionBadge{margin:8px auto 0;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);color:var(--muted);font-weight:900;font-size:12px}
+    .errorBox{display:none;margin:10px 0 0;padding:10px 12px;border-radius:14px;background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.45);color:#fff;text-align:left;font-size:13px;line-height:1.35;font-weight:700;white-space:pre-wrap}
+    .errorBox.show{display:block}
+    .cacheHint{margin-top:8px;color:var(--muted2);font-size:12px;font-weight:800;line-height:1.35}
+    .cacheButton{background:#475569}
+    body.light .errorBox{color:#0b1220;background:rgba(239,68,68,.10)}
+    @media(max-width:520px){.versionBadge{font-size:11px;padding:5px 8px}.errorBox{font-size:12px}}
 
   </style>
 </head>
@@ -155,6 +167,7 @@
       <ul id="infoList" class="infoList"></ul>
       <div class="infoActions">
         <button class="mode" onclick="speakWorkoutInfo()">Vorlesen</button>
+        <button class="cacheButton" onclick="clearAppCacheAndReload()">Cache neu laden</button>
         <button class="start" onclick="closeInfoPopup(); if(!running) start();">Start</button>
       </div>
     </div>
@@ -205,6 +218,66 @@
   </div>
 
 <script>
+
+const APP_VERSION = "1.6.0";
+const APP_CACHE_KEY = "psoasUltraAppVersion";
+function showAppError(message){
+  try{
+    const box=document.getElementById("errorBox");
+    if(!box)return;
+    box.classList.add("show");
+    box.textContent="Fehler gefunden:
+"+String(message||"Unbekannter Fehler");
+  }catch(e){}
+}
+window.addEventListener("error",function(e){
+  showAppError((e.message||"Scriptfehler")+(e.filename?"
+Datei: "+e.filename:"")+(e.lineno?"
+Zeile: "+e.lineno:""));
+});
+window.addEventListener("unhandledrejection",function(e){
+  showAppError(e.reason&&e.reason.message?e.reason.message:e.reason);
+});
+function updateVersionBadge(){
+  try{
+    const badge=document.getElementById("versionBadge");
+    if(badge)badge.textContent="Psoas Ultra PRO · Version "+APP_VERSION;
+  }catch(e){}
+}
+async function clearAppCacheAndReload(){
+  try{
+    localStorage.setItem(APP_CACHE_KEY,APP_VERSION);
+    if("serviceWorker" in navigator){
+      const regs=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r=>r.unregister()));
+    }
+    if("caches" in window){
+      const names=await caches.keys();
+      await Promise.all(names.map(n=>caches.delete(n)));
+    }
+  }catch(e){
+    showAppError("Cache konnte nicht vollständig gelöscht werden: "+(e.message||e));
+  }
+  location.reload();
+}
+function checkVersionAndCache(){
+  try{
+    updateVersionBadge();
+    const old=localStorage.getItem(APP_CACHE_KEY);
+    if(old!==APP_VERSION){
+      localStorage.setItem(APP_CACHE_KEY,APP_VERSION);
+      if(old){
+        const box=document.getElementById("errorBox");
+        if(box){
+          box.classList.add("show");
+          box.textContent="Neue Version geladen: "+APP_VERSION+"
+Falls iPhone/iPad noch alte Inhalte zeigt: Info → Cache neu laden.";
+        }
+      }
+    }
+  }catch(e){}
+}
+
 /* =========================================================
    POOLS: Erwärmen / Training / Dehnen / Erholung
    ========================================================= */
@@ -547,7 +620,7 @@ function renderInfoPopup(){
   infoTraining.innerText=countByCategory("Training");
   infoStretching.innerText=countByCategory("Dehnen");
   infoRecovery.innerText=countByCategory("Erholung");
-  infoSubtitle.innerText=App.module==="stretch"?"Nur Dehnübungen":(App.module==="multi"?`Mehrere Runden · ${getTotalRounds()} Runden`:"Eine Runde");
+  infoSubtitle.innerText=(App.module==="stretch"?"Nur Dehnübungen":(App.module==="multi"?`Mehrere Runden · ${getTotalRounds()} Runden`:"Eine Runde"))+` · Version ${APP_VERSION}`;
   const nextEx=getNextExercise();
   infoStatus.innerHTML=`<b>Live:</b> ${running?"Training läuft":"Bereit"} · Übung ${Math.min(current+1,total)} von ${total}${ex?` · Aktuell: ${ex.name}`:""}${nextEx?`<br><b>Danach:</b> ${nextEx.name}`:"<br><b>Danach:</b> Training beendet"}<br><b>Tagesform:</b> ${getDayFormLabel()}<br><b>Tagesziel:</b> ${getWorkoutGoalText()}<br><b>Generiert:</b> ${dateKey()}`;
   const rules=App.module==="stretch"?["Nur Dehnübungen aus dem Dehnen-Pool.","Maximal 5 Dehnübungen.","Timer, Pause, Weiter, Skip und Sprache bleiben aktiv."]:["1 Warm-up-Übung nur am Anfang.","Intelligenter Generator: Übungen werden ausgewogen gemischt.","Maximal 5 Trainingsübungen pro Runde, bei Schmerzen weniger.","Bei mehreren Runden wird nur der Trainingsblock wiederholt.","Danach Dehnen und genau 1 Recovery-Übung.",`Tagesform: ${getDayFormLabel()}`];
