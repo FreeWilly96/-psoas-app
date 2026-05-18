@@ -226,14 +226,15 @@ function showAppError(message){
     const box=document.getElementById("errorBox");
     if(!box)return;
     box.classList.add("show");
-    box.textContent="Fehler gefunden:
-"+String(message||"Unbekannter Fehler");
+    box.textContent = "Fehler gefunden:\n" + String(message || "Unbekannter Fehler");
   }catch(e){}
 }
 window.addEventListener("error",function(e){
-  showAppError((e.message||"Scriptfehler")+(e.filename?"
-Datei: "+e.filename:"")+(e.lineno?"
-Zeile: "+e.lineno:""));
+ showAppError(
+  (e.message || "Scriptfehler") +
+  (e.filename ? "\nDatei: " + e.filename : "") +
+  (e.lineno ? "\nZeile: " + e.lineno : "")
+);
 });
 window.addEventListener("unhandledrejection",function(e){
   showAppError(e.reason&&e.reason.message?e.reason.message:e.reason);
@@ -270,8 +271,9 @@ function checkVersionAndCache(){
         const box=document.getElementById("errorBox");
         if(box){
           box.classList.add("show");
-          box.textContent="Neue Version geladen: "+APP_VERSION+"
-Falls iPhone/iPad noch alte Inhalte zeigt: Info → Cache neu laden.";
+          box.textContent =
+  "Neue Version geladen: " + APP_VERSION +
+  "\nFalls iPhone/iPad noch alte Inhalte zeigt: Info → Cache neu laden.";
         }
       }
     }
