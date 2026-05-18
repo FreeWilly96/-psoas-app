@@ -3,421 +3,145 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
   <title>Psoas Ultra PRO</title>
-
-  <!-- FIX: richtige Links (die zwei reinen Textzeilen aus der vorherigen Version bleiben als Kommentar erhalten) -->
-  <!-- images/icon.png -->
-  <!-- manifest.json -->
   <link rel="apple-touch-icon" sizes="180x180" href="images/icon.png">
   <link rel="manifest" href="manifest.json">
 
   <style>
-    /* =========================================================
-       THEME (Dark/Light) – FIXED
-       ========================================================= */
     :root{
-      --bg: #0b1a2f;
-      --panel: rgba(18, 27, 45, .72);
-      --panelSolid: #111c2f;
-      --text: #ffffff;
-      --muted: rgba(255,255,255,.70);
-      --muted2: rgba(255,255,255,.55);
-      --strokeBg: rgba(255,255,255,.12);
-      --shadow: 0 14px 40px rgba(0,0,0,.35);
-      --shadow2: 0 8px 18px rgba(0,0,0,.25);
-      --accent1: #a855f7;
-      --accent2: #ec4899;
-      --good: #22c55e;
-      --bad: #ef4444;
-      --warn: #f59e0b;
-      --btn: #334155;
-      --btn2: #475569;
+      --bg:#0b1a2f; --panel:rgba(18,27,45,.72); --text:#fff;
+      --muted:rgba(255,255,255,.70); --muted2:rgba(255,255,255,.55);
+      --strokeBg:rgba(255,255,255,.12); --shadow:0 14px 40px rgba(0,0,0,.35);
+      --shadow2:0 8px 18px rgba(0,0,0,.25); --accent1:#a855f7; --accent2:#ec4899;
+      --good:#22c55e; --bad:#ef4444; --warn:#f59e0b; --btn:#334155; --btn2:#475569;
+      --barBg:rgba(15,23,42,.66); --barStroke:rgba(255,255,255,.10); --bottomBarH:315px;
     }
     body.light{
-      --bg: #f5f7fb;
-      --panel: rgba(255,255,255,.78);
-      --panelSolid: #ffffff;
-      --text: #0b1220;
-      --muted: rgba(11,18,32,.70);
-      --muted2: rgba(11,18,32,.55);
-      --strokeBg: rgba(11,18,32,.12);
-      --shadow: 0 14px 40px rgba(2,8,20,.15);
-      --shadow2: 0 8px 18px rgba(2,8,20,.10);
-      --btn: #e5e7eb;
-      --btn2: #cbd5e1;
+      --bg:#f5f7fb; --panel:rgba(255,255,255,.78); --text:#0b1220;
+      --muted:rgba(11,18,32,.70); --muted2:rgba(11,18,32,.55); --strokeBg:rgba(11,18,32,.12);
+      --shadow:0 14px 40px rgba(2,8,20,.15); --shadow2:0 8px 18px rgba(2,8,20,.10);
+      --btn:#e5e7eb; --btn2:#cbd5e1; --barBg:rgba(255,255,255,.70); --barStroke:rgba(11,18,32,.10);
     }
-
-    *{box-sizing:border-box;}
+    *{box-sizing:border-box} html,body{height:100%}
     body{
-      margin:0;
-      font-family: Arial, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      text-align:center;
-      background: radial-gradient(1200px 800px at 50% -200px, rgba(168,85,247,.35), transparent 60%),
-                  radial-gradient(900px 700px at 90% 20%, rgba(236,72,153,.18), transparent 55%),
-                  var(--bg);
-      color: var(--text);
-      transition: background .3s, color .3s;
-      padding:
-        env(safe-area-inset-top)
-        env(safe-area-inset-right)
-        env(safe-area-inset-bottom)
-        env(safe-area-inset-left);
+      margin:0; font-family:Arial,system-ui,-apple-system,Segoe UI,Roboto,sans-serif; text-align:center;
+      background:radial-gradient(1200px 800px at 50% -200px,rgba(168,85,247,.35),transparent 60%),
+                 radial-gradient(900px 700px at 90% 20%,rgba(236,72,153,.18),transparent 55%),var(--bg);
+      color:var(--text); transition:background .3s,color .3s;
+      padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      overflow:hidden; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
     }
-
-    /* =========================================================
-       LAYOUT – iPhone friendly
-       ========================================================= */
-    .app{
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 14px 12px 24px;
-    }
-
-    .topRow{
-      display:grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap:10px;
-      align-items:center;
-      justify-content:center;
-      margin: 6px 0 10px;
-    }
-    .topRow2{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:10px;
-      margin: 8px 0 14px;
-    }
-
-    @media (max-width: 520px){
-      .topRow{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .topRow2{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    .card{
-      background: var(--panel);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-
-    .headerCard{
-      padding: 14px 14px 12px;
-      text-align:left;
-    }
-    #phaseTitle{
-      margin:0;
-      font-size: 14px;
-      color: var(--muted2);
-      font-weight: 700;
-      letter-spacing: .2px;
-    }
-    #exerciseTitle{
-      margin: 6px 0 0;
-      font-size: 28px;
-      font-weight: 900;
-      line-height: 1.05;
-      color: var(--text);
-    }
-
-    .side{
-      font-size: 16px;
-      height: 22px;
-      margin-top: 10px;
-      color: var(--muted);
-      font-weight: 700;
-      letter-spacing: .2px;
-      text-align:left;
-    }
-
-    .imageCard{
-      margin-top: 12px;
-      padding: 12px;
-    }
-    img{
-      width: 100%;
-      height: min(38vh, 360px);
-      object-fit: contain;
-      border-radius: 14px;
-      background: rgba(0,0,0,.12);
-      border: 1px solid rgba(255,255,255,.06);
-    }
-
-    .guide{
-      margin-top: 12px;
-      padding: 12px 14px;
-      text-align:left;
-      color: var(--text);
-      font-size: 16px;
-      line-height: 1.35;
-    }
-    .guide ul{ margin: 0; padding-left: 18px; }
-    .guide li{ margin: 6px 0; color: var(--muted); }
-
-    /* =========================================================
-       GLOW RING TIMER
-       ========================================================= */
-    .timerWrap{
-      margin: 14px auto 6px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .ring{
-      width: 220px;
-      height: 220px;
-      position: relative;
-      display:grid;
-      place-items:center;
-      filter: drop-shadow(0 0 22px rgba(168,85,247,.32))
-              drop-shadow(0 0 18px rgba(236,72,153,.22));
-    }
-    @media (max-width: 420px){
-      .ring{ width: 190px; height: 190px; }
-    }
-    .ring svg{
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg);
-    }
-    .ring .bg{
-      stroke: var(--strokeBg);
-      stroke-width: 12;
-      fill: transparent;
-    }
-    .ring .fg{
-      stroke: url(#grad);
-      stroke-width: 12;
-      stroke-linecap: round;
-      fill: transparent;
-      filter: url(#glow);
-      transition: stroke-dashoffset .25s linear;
-    }
-    .ringNumber{
-      position:absolute;
-      inset:0;
-      display:grid;
-      place-items:center;
-      font-weight: 900;
-      font-size: 64px;
-      letter-spacing: .5px;
-      background: linear-gradient(90deg, var(--accent1), var(--accent2));
-      -webkit-background-clip:text;
-      background-clip:text;
-      color: transparent;
-      user-select:none;
-    }
-    @media (max-width: 420px){
-      .ringNumber{ font-size: 56px; }
-    }
-
-    /* NEW: Pulse for reps/hold (keine Flow-Änderung, nur Visual) */
-    .ring.pulse{
-      animation: ringPulse 1.15s ease-in-out infinite;
-    }
-    .ring.pulseStrong{
-      animation: ringPulseStrong 0.95s ease-in-out infinite;
-    }
-    @keyframes ringPulse{
-      0%{ transform: scale(1); filter: drop-shadow(0 0 18px rgba(168,85,247,.26)) drop-shadow(0 0 14px rgba(236,72,153,.18)); }
-      50%{ transform: scale(1.02); filter: drop-shadow(0 0 28px rgba(168,85,247,.38)) drop-shadow(0 0 22px rgba(236,72,153,.28)); }
-      100%{ transform: scale(1); filter: drop-shadow(0 0 18px rgba(168,85,247,.26)) drop-shadow(0 0 14px rgba(236,72,153,.18)); }
-    }
-    @keyframes ringPulseStrong{
-      0%{ transform: scale(1); filter: drop-shadow(0 0 22px rgba(168,85,247,.34)) drop-shadow(0 0 18px rgba(236,72,153,.24)); }
-      50%{ transform: scale(1.035); filter: drop-shadow(0 0 34px rgba(168,85,247,.46)) drop-shadow(0 0 28px rgba(236,72,153,.34)); }
-      100%{ transform: scale(1); filter: drop-shadow(0 0 22px rgba(168,85,247,.34)) drop-shadow(0 0 18px rgba(236,72,153,.24)); }
-    }
-
-    /* Keep existing progressBar (not removed) */
-    #progressBar{
-      width: 92%;
-      height: 10px;
-      background: rgba(255,255,255,.10);
-      margin: 10px auto 4px;
-      border-radius: 10px;
-      overflow:hidden;
-    }
-    #progress{
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent1), var(--accent2));
-    }
-
-    /* =========================================================
-       BUTTONS
-       ========================================================= */
-    button{
-      padding: 14px 10px;
-      margin: 0;
-      border: none;
-      border-radius: 18px;
-      color: white;
-      font-weight: 900;
-      font-size: 16px;
-      box-shadow: var(--shadow2);
-      cursor:pointer;
-      min-height: 50px;
-      transition: transform .06s, filter .2s, background .2s, color .2s;
-      -webkit-tap-highlight-color: transparent;
-      user-select:none;
-    }
-    button:active{ transform: scale(.98); }
-    button:disabled{
-      opacity:.55;
-      cursor:not-allowed;
-      filter: grayscale(.15);
-    }
-
-    .start{ background: var(--good); }
-    .pause{ background: var(--bad); }
-    .continue{ background: #e5e7eb; color:#0b1220; }
-    body.light .continue{ background:#0b1220; color:#fff; }
-    .skip{ background: var(--warn); }
-    .mode{ background: #374151; }
-    body.light .mode{ background: #94a3b8; color:#0b1220; }
-
-    .stop{ background: #0f172a; }
-    body.light .stop{ background:#111827; color:#fff; }
-
-    .phase{ background: var(--btn2); color: white; }
-    body.light .phase{ background: var(--btn); color:#0b1220; }
-
-    .phase.active{
-      background: linear-gradient(90deg, var(--accent1), var(--accent2));
-      color:#fff;
-    }
-
-    .dividerSpace{ height: 6px; }
-
+    .app{max-width:860px;margin:0 auto;padding:14px 12px 24px;padding-bottom:calc(var(--bottomBarH) + env(safe-area-inset-bottom));height:calc(100dvh - var(--bottomBarH) - env(safe-area-inset-bottom));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;scrollbar-width:none;touch-action:pan-y}
+    .app::-webkit-scrollbar{width:0;height:0}
+    .topRow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-items:center;justify-content:center;margin:6px 0 10px}
+    .topRow2{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:8px 0 0}
+    .roundRow{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin:8px 0 0;align-items:center}
+    @media(max-width:520px){:root{--bottomBarH:355px}.topRow{grid-template-columns:repeat(3,minmax(0,1fr))}.topRow2,.roundRow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+    .headerCard{padding:14px;text-align:left;position:relative}
+    #phaseTitle{margin:0;font-size:14px;color:var(--muted2);font-weight:700;letter-spacing:.2px}
+    #exerciseTitle{margin:6px 0 0;font-size:clamp(22px,4.2vw,30px);font-weight:900;line-height:1.05;color:var(--text)}
+    #setLabel{display:none;margin-top:8px;text-align:left}.badge{display:inline-block;padding:7px 10px;border-radius:999px;font-weight:900;font-size:12.5px;letter-spacing:.4px;color:var(--text);background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.16);box-shadow:0 10px 22px rgba(0,0,0,.14)}
+    .pausedBadge{position:absolute;top:12px;right:12px;padding:8px 10px;border-radius:999px;font-weight:900;font-size:12px;letter-spacing:.6px;color:#fff;background:rgba(239,68,68,.86);border:1px solid rgba(255,255,255,.18);box-shadow:0 10px 22px rgba(0,0,0,.25);opacity:0;transform:translateY(-6px);pointer-events:none;transition:.18s ease}.pausedBadge.show{opacity:1;transform:translateY(0)}
+    .side{font-size:16px;min-height:22px;margin-top:10px;color:var(--muted);font-weight:700;letter-spacing:.2px;text-align:left}
+    .imageCard{margin-top:12px;padding:12px 14px}.mediaRow{display:flex;gap:12px;align-items:flex-start}#exerciseImage{width:150px;height:150px;object-fit:contain;border-radius:14px;background:rgba(0,0,0,.12);border:1px solid rgba(255,255,255,.06);flex:0 0 auto}
+    @media(max-width:520px){.mediaRow{flex-direction:column}#exerciseImage{width:100%;height:min(28vh,240px)}}
+    .guide{margin:0;padding:0;text-align:left;color:var(--text);font-size:15.5px;line-height:1.35;flex:1 1 auto}.guide ul{margin:0;padding-left:18px}.guide li{margin:6px 0;color:var(--muted)}
+    .timerWrap{margin:14px auto 8px;display:flex;align-items:center;justify-content:center}.ring{width:clamp(170px,42vw,220px);height:clamp(170px,42vw,220px);position:relative;display:grid;place-items:center;filter:drop-shadow(0 0 22px rgba(168,85,247,.32)) drop-shadow(0 0 18px rgba(236,72,153,.22))}.ring svg{width:100%;height:100%;transform:rotate(-90deg)}.ring .bg{stroke:var(--strokeBg);stroke-width:12;fill:transparent}.ring .fg{stroke:url(#grad);stroke-width:12;stroke-linecap:round;fill:transparent;filter:url(#glow);transition:stroke-dashoffset .25s linear}.ringNumber{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:clamp(46px,11vw,64px);letter-spacing:.5px;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;user-select:none}
+    .ring.pulse{animation:ringPulse 1.15s ease-in-out infinite}.ring.pulseStrong{animation:ringPulseStrong .95s ease-in-out infinite}@keyframes ringPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}@keyframes ringPulseStrong{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+    #progressBar{width:92%;height:10px;background:rgba(255,255,255,.10);margin:10px auto 4px;border-radius:10px;overflow:hidden}#progress{height:100%;width:0%;background:linear-gradient(90deg,var(--accent1),var(--accent2))}
+    button{padding:14px 10px;margin:0;border:none;border-radius:18px;color:#fff;font-weight:900;font-size:16px;box-shadow:var(--shadow2);cursor:pointer;min-height:50px;transition:transform .06s,filter .2s,background .2s,color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent;user-select:none}button:active{transform:scale(.98)}button:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.15)}.btnActive{box-shadow:0 0 0 2px rgba(168,85,247,.55),var(--shadow2)}
+    .start{background:var(--good)}.pause{background:var(--bad)}.continue{background:#e5e7eb;color:#0b1220}body.light .continue{background:#0b1220;color:#fff}.skip{background:var(--warn)}.mode{background:#374151}body.light .mode{background:#94a3b8;color:#0b1220}.stop{background:#0f172a}body.light .stop{background:#111827;color:#fff}.phase{background:var(--btn2);color:#fff}body.light .phase{background:var(--btn);color:#0b1220}.phase.active{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff}.roundDisplay{display:flex;align-items:center;justify-content:center;border-radius:18px;min-height:50px;background:rgba(255,255,255,.10);font-weight:900;color:var(--text)}
+    .bottomBar{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--barBg);border-top:1px solid var(--barStroke);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:999}.bottomBar .inner{max-width:860px;margin:0 auto}.bottomBar .topRow{margin:0 0 8px}.bottomBar .topRow2{margin:0}.barSpacer{height:8px}
   </style>
 </head>
-
 <body>
   <div class="app">
-
-    <!-- HEADER -->
     <div class="card headerCard">
       <h2 id="phaseTitle"></h2>
       <h3 id="exerciseTitle"></h3>
+      <div id="setLabel"><span class="badge"></span></div>
+      <div id="pausedBadge" class="pausedBadge">PAUSIERT</div>
       <div id="side" class="side"></div>
     </div>
-
-    <!-- IMAGE + GUIDE -->
-    <div class="card imageCard">
-      <img id="exerciseImage" alt="Übung" />
-      <div id="guide" class="guide"></div>
-    </div>
-
-    <!-- GLOW RING TIMER -->
-    <div class="timerWrap">
-      <div id="ring" class="ring" aria-label="Timer">
-        <svg viewBox="0 0 120 120" role="img">
-          <defs>
-            <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#a855f7"></stop>
-              <stop offset="100%" stop-color="#ec4899"></stop>
-            </linearGradient>
-            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2.2" result="blur"></feGaussianBlur>
-              <feMerge>
-                <feMergeNode in="blur"></feMergeNode>
-                <feMergeNode in="SourceGraphic"></feMergeNode>
-              </feMerge>
-            </filter>
-          </defs>
-
-          <circle class="bg" cx="60" cy="60" r="46"></circle>
-          <circle id="ringFg" class="fg" cx="60" cy="60" r="46"></circle>
-        </svg>
-        <div id="timer" class="ringNumber">0</div>
-      </div>
-    </div>
-
-    <!-- keep original progress bar (not deleted) -->
+    <div class="card imageCard"><div class="mediaRow"><img id="exerciseImage" alt="Übung"><div id="guide" class="guide"></div></div></div>
+    <div class="timerWrap"><div id="ring" class="ring" aria-label="Timer"><svg viewBox="0 0 120 120" role="img"><defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#a855f7"></stop><stop offset="100%" stop-color="#ec4899"></stop></linearGradient><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter></defs><circle class="bg" cx="60" cy="60" r="46"></circle><circle id="ringFg" class="fg" cx="60" cy="60" r="46"></circle></svg><div id="timer" class="ringNumber">0</div></div></div>
     <div id="progressBar"><div id="progress"></div></div>
-
-    <!-- CONTROL BUTTONS -->
-    <div class="topRow">
-      <button class="start" onclick="start()">Start</button>
-      <button class="pause" onclick="pause()">Pause</button>
-      <button class="continue" onclick="weiter()">Weiter</button>
-      <button class="skip" onclick="skip()">Skip</button>
-      <button class="mode" onclick="toggleMode()">Mode</button>
-    </div>
-
-    <div class="topRow2">
-      <button id="btnP1" class="phase" onclick="setPhase(1)">Training 1</button>
-      <button id="btnP2" class="phase" onclick="setPhase(2)">Training 2</button>
-      <button id="btnP3" class="phase" onclick="setPhase(3)">Training 3</button>
-      <button class="stop" onclick="beenden()">Beenden</button>
-    </div>
-
-    <div class="dividerSpace"></div>
-
-    <div class="topRow2">
-      <button class="mode" onclick="nextPhase()">Nächstes Training</button>
-      <div></div><div></div><div></div>
-    </div>
-
   </div>
+  <div class="bottomBar"><div class="inner">
+    <div class="topRow"><button id="btnStart" class="start" onclick="start()">Start</button><button id="btnPause" class="pause" onclick="pause()">Pause</button><button id="btnWeiter" class="continue" onclick="weiter()">Weiter</button><button id="btnSkip" class="skip" onclick="skip()">Skip</button><button id="btnMode" class="mode" onclick="toggleMode()">Mode</button></div>
+    <div class="topRow2"><button id="btnSingle" class="phase active" onclick="setModule('single')">Eine Runde</button><button id="btnMulti" class="phase" onclick="setModule('multi')">Mehrere Runden</button><button id="btnEnd" class="stop" onclick="beenden()">Beenden</button><button id="btnNew" class="mode" onclick="newDailyPreview()">Heute neu</button></div>
+    <div class="roundRow"><button id="btnMinus" class="mode" onclick="changeRounds(-1)">− Runde</button><div id="roundDisplay" class="roundDisplay">Runden: 2</div><button id="btnPlus" class="mode" onclick="changeRounds(1)">+ Runde</button><button id="btnInfo" class="mode" onclick="speakWorkoutInfo()">Info</button></div>
+    <div class="barSpacer"></div>
+  </div></div>
 
 <script>
 /* =========================================================
-   NOTE: phases missing in snippet -> safe fallback.
-   If you already have phases defined elsewhere, this will not overwrite.
+   POOLS: Erwärmen / Training / Dehnen / Erholung
    ========================================================= */
-if(typeof window.phases === "undefined"){
-  window.phases = [
-    [
-      { name:"Bauchatmung", subtitle:"Nervensystem beruhigen", img:"images/1.jpg", type:"time", time:120,
-        guide:["Rückenlage, Füße aufgestellt","Eine Hand auf Bauch, eine auf Brust","Langsam in den Bauch atmen","5 Sekunden einatmen, 7 Sekunden ausatmen"] }
-    ],
-    [
-      { name:"Beispiel Übung", subtitle:"Training 2 Demo", img:"images/1.jpg", type:"reps", reps:10, rest:1,
-        guide:["Demo – bitte deine echten phases einfügen."] }
-    ],
-    [
-      { name:"Beispiel Übung", subtitle:"Training 3 Demo", img:"images/1.jpg", type:"time", time:60,
-        guide:["Demo – bitte deine echten phases einfügen."] }
-    ]
-  ];
-}
-let phases = window.phases;
-
-/* =========================================================
-   CORE STATE (kept)
-   ========================================================= */
-const App = {
-  paused: false,
-  state: "idle",
-  session: 0,
-
-  /* NEW: stable cancellation token (fix for parallel timers / skip / end) */
-  token: 0,
-
-  /* NEW: ring state */
-  ringTotal: 0,
-  ringValue: 0,
-
-  /* NEW: voice flags for Side switch */
-  speakSideSwitch: false,
-
-  /* NEW: Beenden speak toggle (default: mit Ansage) */
-  speakOnBeenden: true
+const POOLS = {
+  warmup: [
+    {name:"Knieheben",subtitle:"Aufwärmen",img:"images/einbeinigesStandknieheben.jpg",type:"sideHoldReps",reps:10,guide:["Aufrecht stehen","Bauchnabel einziehen","Knie abwechselnd kontrolliert heben","Hüfte bleibt stabil"]},
+    {name:"Hampelmann",subtitle:"Aufwärmen",img:"images/hampelmann.jpg",type:"time",time:60,guide:["Stelle dich aufrecht hin, Arme am Körper","Springe und öffne gleichzeitig Beine und schließe Arme über den Kopf","Springe zurück, Beine schließen und Arme liegen wieder am Körper"]},
+    {name:"High Knees",subtitle:"Aufwärmen",img:"images/hoheknie.jpg",type:"time",time:60,guide:["Laufe auf der Stelle","Ziehe die Knie aktiv nach oben bis auf Hüfthöhe","Arme im Wechsel mitführen"]},
+    {name:"Kniebeuge",subtitle:"Aufwärmen",img:"images/kniebeuge.jpg",type:"time",time:60,guide:["Hüftbreit aufstellen","Senke das Gesäß nach hinten und beuge die Knie, gehe so tief wie es gut für dich ist","Rücken bleibt gerade, Knie Richtung Fußspitzen, Gewicht auf den Fersen","Drücke dich über die Fersen wieder nach oben"]},
+    {name:"Armkreisen",subtitle:"Aufwärmen",img:"images/warmup.jpg",type:"time",time:60,guide:["Locker auf der Stelle gehen","Schultern kreisen mit Richtungswechsel"]}
+  ],
+  training: [
+    {name:"Glute Bridge",subtitle:"Training",img:"images/gluteBridge.jpg",type:"holdReps",reps:15,holdTime:5000,guide:["Rückenlage, Füße hüftbreit aufstellen","Hüfte nach oben drücken, Gesäß anspannen","5 Sekunden halten","Stabil bleiben","Langsam wieder absenken"]},
+    {name:"Dynamische Hüftöffnung",subtitle:"Training",img:"images/dynamischeHüftöffnung.jpg",type:"sideHoldReps",reps:10,guide:["Ausfallschritt nach vorne","Hüfte langsam nach vorne schieben","Oberkörper aufrecht, kein Hohlkreuz","Gesäß leicht anspannen, Spannung halten","Bewegung kontrolliert ausführen"]},
+    {name:"Glute Bridge einbeinig",subtitle:"Training",img:"images/gluteBridgeeinbeinig.jpg",type:"sideHoldReps",reps:10,guide:["Rückenlage, ein Knie gebeugt, anderes Bein anheben","Hüfte anheben bis der Körper eine Linie bildet","Gesäß anspannen und 4 Sekunden halten","Stabil bleiben","Langsam wieder absenken"]},
+    {name:"Dead Bug",subtitle:"Training",img:"images/deadBug.jpg",type:"reps",reps:24,rest:1,guide:["Rückenlage","Arme nach oben und Knie 90 Grad gebeugt","Gleichzeitig ein Bein ausstrecken und den gegenüberliegenden Arm nach hinten führen","Rumpf stabil halten und langsam wieder in die Ausgangsposition","Wechseln ohne das der untere Rücken vom Boden abhebt"]},
+    {name:"Seitliche Ausfallschritte",subtitle:"Training",img:"images/seitlicheAusfallschritte.jpg",type:"reps",reps:20,rest:1,guide:["Schritt weit zur Seite machen","Hüfte nach hinten schieben und das Bein beugen","Das andere Bein bleibt gestreckt und locker","Zurück in die Mitte und das Bein wechseln"]},
+    {name:"Seitliche Plank kurz",subtitle:"Training",img:"images/seitenplankkurz.jpg",type:"side",time:45,guide:["Lege dich auf die Seite und stütze dich auf deinen Unterarm","Knie leicht angewinkelt","Becken nicht nach vorn oder hinten kippen","Bauch und Gesäß fest anspannen","Halte die Position"]},
+    {name:"Seitliche Plank",subtitle:"Training",img:"images/seitenplank.jpg",type:"side",time:45,guide:["Lege dich auf die Seite und stütze dich auf deinen Unterarm","Hebe die Hüfte vom Boden ab, Körper bildet eine Linie","Becken nicht nach vorn oder hinten kippen","Bauch und Gesäß fest anspannen","Halte die Position"]},
+    {name:"Plank",subtitle:"Training",img:"images/plank.jpg",type:"time",time:30,guide:["Bauchlage, Ellenbogen unter den Schultern","Füße hüftbreit auseinander","Körper anheben – gerade Linie","Kopf in Verlängerung der Wirbelsäule, Blick nach unten","Bauchnabel einziehen"]},
+    {name:"Adduktor Kräftigung",subtitle:"Training",img:"images/adduktorkräftigungsl.jpg",type:"sideHoldReps",reps:10,guide:["Seitlich liegend","Körper bildet eine Linie","Becken nicht nach vorn oder hinten kippen","Stabil bleiben","Bein langsam heben und senken"]},
+    {name:"Liegendes Beinheben",subtitle:"Training",img:"images/liegendesBeinheben.jpg",type:"sideHoldReps",reps:12,guide:["Rückenlage","Lendenwirbelsäule bleibt am Boden","Bein langsam heben, kurz halten","Bein langsam wieder absenken aber nicht ablegen"]},
+    {name:"Beinkreisen",subtitle:"Training",img:"images/beinkreisen.jpg",type:"side",time:45,guide:["Aufrecht stehen","Bein kontrolliert anheben","Das ausgestreckte Bein kreisen","Werde mit der Bewegung immer größer"]},
+    {name:"Bird Dog",subtitle:"Training",img:"images/birddog.jpg",type:"holdReps",reps:8,holdTime:3500,guide:["Vierfüßerstand einnehmen","Hände sind unter den Schultern","Arm und das gegensätzliche Bein diagonal strecken","Halte die Position kurz, Rücken bleibt gerade","Zurück in die Mitte und Seite wechseln"]},
+    {name:"Bizeps Curls",subtitle:"Training",img:"images/bizepsmitFlaschen.jpg",type:"reps",reps:15,rest:1,guide:["Aufrecht stehen, in jeder Hand eine Flasche oder Hantel","Beuge die Ellenbogen und führe das Gewicht nach oben","Senke sie kontrolliert wieder ab"]},
+    {name:"Liegestütz leicht",subtitle:"Training",img:"images/liegestützleicht.jpg",type:"reps",reps:10,rest:1,guide:["Gehe in die Liegestützposition mit den Knien am Boden","Hände etwas breiter als Schulterbreit aufsetzen","Beuge die Ellenbogen und senke den Oberkörper ab","Drücke dich wieder nach oben"]},
+    {name:"Mountain Climber",subtitle:"Training",img:"images/mountainclimber.jpg",type:"time",time:45,guide:["Gehe in die Liegestützposition","Ziehe abwechselnd die Knie schnell in Richtung Brust","Halte den Rücken gerade und den Bauch angespannt"]},
+    {name:"Rückenstrecker",subtitle:"Training",img:"images/rückenstrecker.jpg",type:"holdReps",reps:15,holdTime:5000,guide:["Lege dich auf den Bauch, Hände neben den Kopf","Hebe den Oberkörper leicht vom Boden ab","Halte kurz und senke kontrolliert wieder ab"]},
+    {name:"Rudern",subtitle:"Training",img:"images/rudern.jpg",type:"reps",reps:15,guide:["Aufrecht stehen, in jeder Hand eine Flasche oder Hantel","Beuge den Oberkörper leicht nach vorne","Ziehe die Gewichte entlang deines Körpers nach oben","Senke die Gewichte kontrolliert wieder ab"]},
+    {name:"Russian Twist",subtitle:"Training",img:"images/russianTwist.jpg",type:"sideHoldReps",reps:20,guide:["Setze dich hin, Beine angewinkelt","Oberkörper leicht nach hinten lehnen, Hände vor der Brust halten","Bauch anspannen, den Oberkörper abwechselnd nach rechts und links drehen"]},
+    {name:"Situps gerade Bauchmuskulatur",subtitle:"Training",img:"images/situpsgeradeBM.jpg",type:"reps",reps:30,guide:["Lege dich auf den Rücken, Knie angewinkelt","Hände an den Kopf oder vor die Brust","Spanne den Bauch an und hebe den Oberkörper nach oben","Senke den Oberkörper kontrolliert ab"]},
+    {name:"Situps seitliche Bauchmuskulatur",subtitle:"Training",img:"images/situpsseitlicheBM.jpg",type:"sideHoldReps",reps:30,guide:["Lege dich auf den Rücken, Knie angewinkelt, Hände an den Kopf","Hebe den Oberkörper an, so dass die Schultern den Boden nicht berühren","Drehe den Oberkörper zur Seite und führe den Ellenbogen zum gegenüberliegenden Knie","Zurück zur Mitte, und Seitenwechsel"]},
+    {name:"Superman",subtitle:"Training",img:"images/superman.jpg",type:"holdReps",reps:15,holdTime:5000,guide:["Lege dich auf den Bauch, Arme nach vorne strecken","Hebe gleichzeitig Arme, Brust und Beine vom Boden ab","Spanne den Bauch und das Gesäß an","Halte die Position kurz und senke dich wieder ab"]},
+    {name:"Trizeps Dips",subtitle:"Training",img:"images/Trizepsamstuhl.jpg",type:"reps",reps:10,guide:["Setze dich auf die Kante eines stabilen Stuhls","Hände neben die Hüfte auf die Stuhlfläche setzen","Ellenbogen nach hinten beugen und den Körper absenken","Drücke dich wieder nach oben"]},
+    {name:"Wadenheben",subtitle:"Training",img:"images/wadenheben.jpg",type:"reps",reps:15,guide:["Stelle dich hüftbreit hin, halte dich an einem Stuhl fest","Hebe die Fersen und gehe auf die Zehenspitzen","Senke die Fersen langsam wieder ab"]},
+    {name:"Wandsitz",subtitle:"Training",img:"images/wandsitz.jpg",type:"time",time:60,guide:["Stelle dich mit dem Rücken an eine Wand","Gehe in die Sitzposition, Knie etwa 90 Grad","Halte die Position"]}
+  ],
+  stretching: [
+    {name:"Knie zur Brust",subtitle:"Dehnen",img:"images/kniezurBrust.jpg",type:"side",time:45,guide:["Rückenlage","Ein Knie zur Brust ziehen und mit Händen halten","Das andere Bein bleibt gestreckt und locker","Tief weiteratmen und entspannen"]},
+    {name:"Hüftbeuger Dehnung im knien",subtitle:"Dehnen",img:"images/hüftbeugerDehnungimknien.jpg",type:"side",time:40,guide:["Halbkniestand","Gesäßmuskel anspannen und Becken leicht nach vorne kippen","Oberkörper aufrecht, kein Hohlkreuz","Dehnung vorne in der Hüfte spüren"]},
+    {name:"Adduktor Dehnung",subtitle:"Dehnen",img:"images/adduktorDehnung.jpg",type:"side",time:45,guide:["Breiten Stand einnehmen","Gewicht zur Seite verlagern","Andere Seite bleibt gestreckt","Rücken gerade halten","Dehnung innen spüren"]},
+    {name:"Adduktor und Hüfte Kombination",subtitle:"Dehnen",img:"images/adduktorHüfteKombi.jpg",type:"side",time:40,guide:["In die seitliche Dehnung gehen","Leichte Spannung in der Leiste spüren","Ruhig und kontrolliert atmen","Aus der Dehnung leichte Wipp Bewegungen nach oben und unten machen","8 bis 10 Wipp Bewegungen"]},
+    {name:"Oberschenkelrückseite",subtitle:"Dehnen",img:"images/Dehnen.jpg",type:"side",time:60,guide:["Lege dich auf den Rücken","Ziehe ein Bein gestreckt zu dir heran","Das andere Bein bleibt lang am Boden liegen"]},
+    {name:"Gesäßdehnung",subtitle:"Dehnen",img:"images/Dehnen.jpg",type:"side",time:60,guide:["Lege dich auf den Rücken","Lege einen Fuß auf das andere angewinkelte Knie","Ziehe das untere Knie in Richtung Brust","Spüre die Dehnung im Gesäß"]},
+    {name:"Innenoberschenkel",subtitle:"Dehnen",img:"images/Dehnen.jpg",type:"time",time:60,guide:["Setze dich aufrecht hin, bringe die Fußsohlen zusammen","Lass die Knie nach außen sinken"]},
+    {name:"Seitendehnung",subtitle:"Dehnen",img:"images/Dehnen.jpg",type:"side",time:60,guide:["Setze dich in den Schneidersitz","Strecke den Arm über den Kopf und neige dich zur gegenüberliegenden Seite","Halte die andere Hand am Boden"]},
+    {name:"Wadendehnung",subtitle:"Dehnen",img:"images/Dehnen.jpg",type:"side",time:60,guide:["Stelle dich an eine Wand","Stelle einen Fuß nach hinten und drücke die Ferse in den Boden","Beuge das vordere Knie und lehne dich leicht nach vorne"]},
+    {name:"Brustdehnung",subtitle:"Dehnen",img:"images/Dehnen.jpg",type:"time",time:60,guide:["Stelle dich in einen Türrahmen","Lege die Unterarme an die Seiten","Mache einen kleinen Schritt nach vorne und öffne die Brust"]},
+    {name:"Frosch",subtitle:"Dehnen",img:"images/Dehnen.jpg",type:"time",time:60,guide:["Gehe in den Vierfüßlerstand und öffne die Knie weit nach außen","Senke dein Becken nach hinten und lehne dich auf die Unterarme"]},
+    {name:"Bauchdehnung",subtitle:"Dehnen",img:"images/Dehnen.jpg",type:"time",time:60,guide:["Lege dich auf den Bauch","Stütze dich auf deinen Händen ab","Hebe den Oberkörper an und spüre die Dehnung im Bauchbereich"]}
+  ],
+  recovery: [
+    {name:"Bauchatmung",subtitle:"Erholung",img:"images/bauchatmung.jpg",type:"time",time:120,guide:["Rückenlage, Füße aufgestellt","Eine Hand auf dem Bauch, eine auf der Brust","Langsam in den Bauch atmen","5 Sekunden einatmen, 7 Sekunden ausatmen"]},
+    {name:"Mini Becken Kippung",subtitle:"Erholung",img:"images/miniBeckenKippung.jpg",type:"reps",reps:15,rest:1,guide:["Rückenlage, Füße aufgestellt","Unterer Rücken leicht in den Boden drücken","Becken kippt nach vorne","Spannung kurz halten und wieder lösen","Kleine ruhige Bewegung"]},
+    {name:"Rückendehnung",subtitle:"Erholung",img:"images/Dehnen.jpg",type:"time",time:60,guide:["Setze dich auf deine Fersen","Strecke die Arme nach vorne aus","Lasse den Oberkörper locker sinken"]},
+    {name:"Fersensitz",subtitle:"Erholung",img:"images/Dehnen.jpg",type:"time",time:60,guide:["Setze dich auf deine Fersen","Oberkörper aufrecht","Atme ruhig und locker"]}
+  ]
 };
 
-let phaseIndex = 0;
+/* =========================================================
+   APP STATE
+   ========================================================= */
+const App = {paused:false,state:"idle",token:0,ringTotal:0,ringValue:0,speakSideSwitch:true,speakOnBeenden:true,haptics:true,setsDefault:3,setPauseSec:5,speakSetCountdown:true,setCountdownSeconds:3,announceNextSet:true,module:"single",rounds:2,currentRound:1,currentWorkout:[]};
 let current = 0;
-let timer = null;  // kept (not removed)
 let running = false;
 
-/* =========================================================
-   ELEMENTS (kept)
-   ========================================================= */
 const phaseTitle = document.getElementById("phaseTitle");
 const exerciseTitle = document.getElementById("exerciseTitle");
 const exerciseImage = document.getElementById("exerciseImage");
@@ -425,874 +149,141 @@ const guide = document.getElementById("guide");
 const timerEl = document.getElementById("timer");
 const side = document.getElementById("side");
 const progress = document.getElementById("progress");
-
-/* NEW: ring elements */
 const ringFg = document.getElementById("ringFg");
 const ringEl = document.getElementById("ring");
+const pausedBadge = document.getElementById("pausedBadge");
+const setLabelWrap = document.getElementById("setLabel");
+const setLabelBadge = setLabelWrap ? setLabelWrap.querySelector('.badge') : null;
+const btnStart = document.getElementById("btnStart");
+const btnPause = document.getElementById("btnPause");
+const btnWeiter = document.getElementById("btnWeiter");
+const btnSkip = document.getElementById("btnSkip");
+const btnMode = document.getElementById("btnMode");
+const btnEnd = document.getElementById("btnEnd");
+const btnSingle = document.getElementById("btnSingle");
+const btnMulti = document.getElementById("btnMulti");
+const btnMinus = document.getElementById("btnMinus");
+const btnPlus = document.getElementById("btnPlus");
+const roundDisplay = document.getElementById("roundDisplay");
+
+function haptic(ms){try{if(App.haptics && navigator.vibrate) navigator.vibrate(ms||12)}catch(e){}}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function toggleMode(){haptic(10);document.body.classList.toggle("light");try{localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark")}catch(e){} updateButtonStates()}
+(function(){try{if(localStorage.getItem("theme")==="light")document.body.classList.add("light")}catch(e){}})();
+function getSets(ex){const s=Number(ex&&ex.sets);return(!isNaN(s)&&s>0)?Math.floor(s):App.setsDefault}
+function getSetPause(ex){const p=Number(ex&&ex.setPause);return(!isNaN(p)&&p>=0)?p:App.setPauseSec}
 
 /* =========================================================
-   THEME (FIXED)
+   DAILY WORKOUT GENERATOR
    ========================================================= */
-function toggleMode(){
-  document.body.classList.toggle("light");
-  try{
-    localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
-  }catch(e){}
-}
-
-(function(){
-  try{
-    const t = localStorage.getItem("theme");
-    if(t === "light") document.body.classList.add("light");
-  }catch(e){}
-})();
+function dateKey(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function seedFromString(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function seededRandom(seed){let s=seed>>>0;return function(){s+=0x6D2B79F5;let t=s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+function shuffled(arr,rnd){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function take(pool,count,rnd){const s=shuffled(pool,rnd);return s.slice(0,Math.min(count,s.length)).map(x=>Object.assign({},x))}
+function generateDailyWorkout(){const rnd=seededRandom(seedFromString(dateKey()+"-psoas-ultra-pro"));return [...take(POOLS.warmup,2,rnd),...take(POOLS.training,7,rnd),...take(POOLS.stretching,3,rnd),...take(POOLS.recovery,1,rnd)]}
+function resetWorkoutForToday(){App.currentWorkout=generateDailyWorkout();current=0;App.currentRound=1;load()}
+function newDailyPreview(){haptic(12);if(running)return;resetWorkoutForToday();speakWorkoutInfo()}
+function getTotalRounds(){return App.module==="multi"?App.rounds:1}
 
 /* =========================================================
-   HELPERS (kept)
+   SPEECH
    ========================================================= */
-function sleep(ms){
-  return new Promise(r=>setTimeout(r,ms));
-}
-
-/* =========================================================
-   SPEECH – stabilized (no overlap)
-   ========================================================= */
-let Speech = {
-  chain: Promise.resolve(),
-  lastText: "",
-  lastAt: 0
-};
-
-function speak(text, opts){
-  const o = Object.assign({ interrupt:true, dedupeMs: 250 }, opts || {});
-  const now = Date.now();
-
-  if(text === Speech.lastText && (now - Speech.lastAt) < o.dedupeMs){
-    return Promise.resolve();
-  }
-  Speech.lastText = text;
-  Speech.lastAt = now;
-
-  if(o.interrupt){
-    speechSynthesis.cancel();
-    Speech.chain = Promise.resolve();
-  }
-
-  Speech.chain = Speech.chain.then(()=> new Promise(resolve=>{
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang = "de-DE";
-    msg.rate = 0.95;
-    msg.onend = () => setTimeout(resolve, 80);
-    msg.onerror = () => setTimeout(resolve, 80);
-    speechSynthesis.speak(msg);
+let Speech={chain:Promise.resolve(),lastText:"",lastAt:0};
+function speak(text,opts){
+  if(!text) return Promise.resolve();
+  const o=Object.assign({interrupt:true,dedupeMs:250},opts||{});
+  const now=Date.now();
+  if(text===Speech.lastText && (now-Speech.lastAt)<o.dedupeMs) return Promise.resolve();
+  Speech.lastText=text; Speech.lastAt=now;
+  if(o.interrupt){try{speechSynthesis.cancel()}catch(e){} Speech.chain=Promise.resolve()}
+  Speech.chain=Speech.chain.then(()=>new Promise(resolve=>{
+    let done=false; const finish=()=>{if(done)return;done=true;setTimeout(resolve,100)};
+    const msg=new SpeechSynthesisUtterance(String(text)); msg.lang="de-DE"; msg.rate=.92; msg.pitch=1; msg.volume=1;
+    msg.onend=finish; msg.onerror=finish;
+    try{speechSynthesis.speak(msg)}catch(e){finish()}
+    setTimeout(finish, Math.max(1800, String(text).length*95));
   }));
-
   return Speech.chain;
 }
 
 /* =========================================================
-   RING TIMER
+   RING / UI
    ========================================================= */
-function setRing(total, value){
-  total = Number(total) || 0;
-  value = Number(value);
-
-  App.ringTotal = total;
-  App.ringValue = value;
-
-  const r = 46;
-  const c = 2 * Math.PI * r;
-  ringFg.style.strokeDasharray = `${c} ${c}`;
-
-  if(!total || isNaN(value)){
-    ringFg.style.strokeDashoffset = `${c * 0.15}`;
-    return;
-  }
-
-  const clamped = Math.max(0, Math.min(total, value));
-  const progress01 = 1 - (clamped / total);
-  const offset = c * (1 - progress01);
-  ringFg.style.strokeDashoffset = `${offset}`;
-}
-
-/* NEW: ring pulse control (for reps/hold) */
-function setRingPulse(mode){
-  // mode: 'off' | 'pulse' | 'strong'
-  if(!ringEl) return;
-  ringEl.classList.remove('pulse');
-  ringEl.classList.remove('pulseStrong');
-  if(mode === 'pulse') ringEl.classList.add('pulse');
-  if(mode === 'strong') ringEl.classList.add('pulseStrong');
-}
+function setRing(total,value){total=Number(total)||0;value=Number(value);App.ringTotal=total;App.ringValue=value;const r=46,c=2*Math.PI*r;ringFg.style.strokeDasharray=`${c} ${c}`;if(!total||isNaN(value)){ringFg.style.strokeDashoffset=`${c}`;return}const clamped=Math.max(0,Math.min(total,value));ringFg.style.strokeDashoffset=`${c*(clamped/total)}`}
+function resetRing(){setRingPulse('off');App.ringTotal=0;App.ringValue=0;const r=46,c=2*Math.PI*r;ringFg.style.strokeDasharray=`${c} ${c}`;ringFg.style.strokeDashoffset=`${c}`}
+function setRingPulse(mode){if(!ringEl)return;ringEl.classList.remove('pulse','pulseStrong');if(mode==='pulse')ringEl.classList.add('pulse');if(mode==='strong')ringEl.classList.add('pulseStrong')}
+function update(v){timerEl.innerText=v;const n=Number(v);if(!isNaN(n)&&App.ringTotal)setRing(App.ringTotal,n)}
+function showSetLabel(text){if(!setLabelWrap||!setLabelBadge)return;if(text){setLabelBadge.innerText=text;setLabelWrap.style.display='block'}else{setLabelWrap.style.display='none';setLabelBadge.innerText=''}}
+function showSide(s){const text=(s||"").toString();if(!text){side.innerText="";showSetLabel("");return}const m=text.match(/Satz\s*(\d+)\s*\/\s*(\d+)/i);if(m){showSetLabel(`Satz ${m[1]}/${m[2]}`);let rest=text.replace(m[0],"").replace(/\(\s*\)/g,"").replace(/\s*·\s*/g," · ").replace(/\s{2,}/g," ").replace(/^\s*·\s*/g,"").replace(/\s*·\s*$/g,"").trim();side.innerText=rest}else{showSetLabel("");side.innerText=text}}
+function updateProgress(){const total=App.currentWorkout.length*getTotalRounds();const done=(App.currentRound-1)*App.currentWorkout.length+current;progress.style.width=total?Math.min(100,(done/total)*100)+"%":"0%"}
+function updateButtonStates(){const isRunning=running,isPaused=App.paused;if(btnStart)btnStart.disabled=isRunning;if(btnPause)btnPause.disabled=!isRunning||isPaused;if(btnWeiter)btnWeiter.disabled=!isRunning||!isPaused;if(btnSkip)btnSkip.disabled=!isRunning;if(btnSingle)btnSingle.disabled=isRunning;if(btnMulti)btnMulti.disabled=isRunning;if(btnMinus)btnMinus.disabled=isRunning||App.module!=="multi";if(btnPlus)btnPlus.disabled=isRunning||App.module!=="multi";if(btnMode)btnMode.disabled=false;if(btnEnd)btnEnd.disabled=false;if(btnPause)btnPause.classList.toggle('btnActive',isRunning&&isPaused);if(btnWeiter)btnWeiter.classList.toggle('btnActive',isRunning&&isPaused);if(btnStart)btnStart.classList.toggle('btnActive',!isRunning);if(btnSingle)btnSingle.classList.toggle('active',App.module==='single');if(btnMulti)btnMulti.classList.toggle('active',App.module==='multi');if(pausedBadge)pausedBadge.classList.toggle('show',isRunning&&isPaused);roundDisplay.innerText=`Runden: ${getTotalRounds()}`}
 
 /* =========================================================
-   COUNTDOWN (kept)
+   MODULES
    ========================================================= */
-async function countdown(sec){
-  setRingPulse('off');
-  setRing(sec, sec);
-
-  for(let i=sec;i>0;i--){
-    if(!running) return;
-    while(App.paused) await sleep(150);
-
-    update(i);
-    setRing(sec, i);
-    await speak(i.toString(), {interrupt:false});
-  }
-}
-
-/* =========================================================
-   CANCEL / RESET helper
-   ========================================================= */
-function cancelRun(){
-  App.token++;
-  App.session++;
-  running = false;
-  clearInterval(timer);
-  speechSynthesis.cancel();
-}
-
-/* =========================================================
-   START – Coach Flow bleibt unverändert
-   ========================================================= */
-async function start(){
-  if(running) return;
-
-  running = true;
-  App.state = "running";
-  App.session++;
-
-  const myToken = App.token;
-  let ex = phases[phaseIndex][current];
-
-  await speak(ex.name);
-  if(myToken !== App.token) return;
-
-  if(ex.subtitle) await speak(ex.subtitle);
-  if(myToken !== App.token) return;
-
-  if(ex.guide){
-    for(let g of ex.guide){
-      await speak(g);
-      if(myToken !== App.token) return;
-      while(App.paused) await sleep(150);
-    }
-  }
-
-  await sleep(1000);
-  if(myToken !== App.token) return;
-
-  await speak("Bereit machen");
-  if(myToken !== App.token) return;
-
-  await countdown(3);
-  if(myToken !== App.token) return;
-
-  run(ex);
-}
-
-/* =========================================================
-   RUN DISPATCH (kept)
-   ========================================================= */
-function run(ex){
-  if(ex.type==="time") runTime(ex);
-  if(ex.type==="reps") runReps(ex);
-  if(ex.type==="side") runSide(ex);
-  if(ex.type==="holdReps") runHoldReps(ex);
-  if(ex.type==="sideHoldReps") runSideHoldReps(ex);
-}
-
-/* =========================================================
-   TIME (kept name, improved)
-   ========================================================= */
-function runTime(ex){
-  (async ()=>{
-    setRingPulse('off');
-
-    const myToken = App.token;
-    const total = ex.time;
-    let t = total;
-
-    update(t);
-    setRing(total, t);
-
-    while(t > 0){
-      if(!running || myToken !== App.token) return;
-
-      while(App.paused){
-        await sleep(150);
-        if(!running || myToken !== App.token) return;
-      }
-
-      if(t <= 5 && t > 0){
-        await speak(t.toString(), {interrupt:false, dedupeMs: 50});
-        if(!running || myToken !== App.token) return;
-      }
-
-      await sleep(1000);
-      if(!running || myToken !== App.token) return;
-
-      t--;
-      update(t);
-      setRing(total, t);
-    }
-
-    if(myToken !== App.token) return;
-    next();
-  })();
-}
-
-/* =========================================================
-   REPS – pulse visual
-   ========================================================= */
-async function runReps(ex){
-  const myToken = App.token;
-  let reps = ex.reps;
-  const total = ex.reps || 0;
-
-  setRingPulse('pulse');
-  setRing(total, reps);
-
-  while(reps > 0 && running){
-    if(myToken !== App.token) return;
-
-    if(App.paused){
-      await sleep(150);
-      continue;
-    }
-
-    update(reps);
-    setRing(total, reps);
-    await speak(reps.toString(), {interrupt:false});
-    if(myToken !== App.token) return;
-
-    reps--;
-    await sleep((ex.rest || 0) * 1000);
-  }
-
-  setRingPulse('off');
-  if(myToken !== App.token) return;
-  next();
-}
-
-/* =========================================================
-   SIDE – Seitenwechsel intern, 5 Sek Übergang ohne Speak
-   ========================================================= */
-async function runSide(ex){
-  const myToken = App.token;
-  let sides = ["rechts","links"];
-  const total = ex.time || 0;
-
-  setRingPulse('off');
-
-  for(let i=0;i<sides.length;i++){
-    if(!running || myToken !== App.token) return;
-
-    let s = sides[i];
-
-    showSide("Seite " + s);
-    await speak("Seite " + s, {interrupt:false});
-    if(myToken !== App.token) return;
-
-    let t = ex.time;
-    update(t);
-    setRing(total, t);
-
-    while(t > 0 && running){
-      if(myToken !== App.token) return;
-
-      if(App.paused){
-        await sleep(150);
-        continue;
-      }
-
-      if(t <= 5 && t > 0){
-        await speak(t.toString(), {interrupt:false, dedupeMs: 50});
-        if(myToken !== App.token) return;
-      }
-
-      await sleep(1000);
-      if(!running || myToken !== App.token) return;
-
-      t--;
-      update(t);
-      setRing(total, t);
-    }
-
-    if(i < sides.length - 1){
-      // optional (standard aus): Seitenwechsel Speak
-      if(App.speakSideSwitch){
-        await speak("Seitenwechsel", {interrupt:false});
-      }
-
-      showSide("Wechsel...");
-      for(let k=5; k>0; k--){
-        if(!running || myToken !== App.token) return;
-        while(App.paused) await sleep(150);
-
-        update(k);
-        setRing(5, k);
-        await sleep(1000);
-      }
-    }
-  }
-
-  showSide("");
-  next();
-}
-
-/* =========================================================
-   HOLD REPS – strong pulse
-   ========================================================= */
-async function runHoldReps(ex){
-  const myToken = App.token;
-  let reps = ex.reps;
-  const total = ex.reps || 0;
-
-  setRingPulse('strong');
-  setRing(total, reps);
-
-  while(reps > 0 && running){
-    if(myToken !== App.token) return;
-
-    if(App.paused){
-      await sleep(150);
-      continue;
-    }
-
-    update("HALTEN");
-    setRing(total, reps);
-    await speak("Halten", {interrupt:false});
-    if(myToken !== App.token) return;
-
-    await sleep(ex.holdTime || 4000);
-    reps--;
-  }
-
-  setRingPulse('off');
-  if(myToken !== App.token) return;
-  next();
-}
-
-/* =========================================================
-   SIDE HOLD REPS – internal switch, pulse
-   ========================================================= */
-async function runSideHoldReps(ex){
-  const myToken = App.token;
-  let sides = ["rechts","links"];
-
-  for(let i=0;i<sides.length;i++){
-    if(!running || myToken !== App.token) return;
-
-    let s = sides[i];
-    showSide("Seite " + s);
-    await speak("Seite " + s, {interrupt:false});
-    if(myToken !== App.token) return;
-
-    let reps = ex.reps;
-    const total = ex.reps || 0;
-
-    setRingPulse('strong');
-    setRing(total, reps);
-
-    while(reps > 0 && running){
-      if(myToken !== App.token) return;
-
-      if(App.paused){
-        await sleep(150);
-        continue;
-      }
-
-      update(reps);
-      setRing(total, reps);
-
-      await speak("Halten", {interrupt:false});
-      if(myToken !== App.token) return;
-
-      await sleep(ex.holdTime || 4000);
-      reps--;
-    }
-
-    setRingPulse('off');
-
-    if(i < sides.length - 1){
-      if(App.speakSideSwitch){
-        await speak("Seitenwechsel", {interrupt:false});
-      }
-
-      showSide("Wechsel...");
-      for(let k=5; k>0; k--){
-        if(!running || myToken !== App.token) return;
-        while(App.paused) await sleep(150);
-
-        update(k);
-        setRing(5, k);
-        await sleep(1000);
-      }
-    }
-  }
-
-  showSide("");
-  next();
-}
-
-/* =========================================================
-   STOP (kept) – improved
-   ========================================================= */
-function stop(){
-  cancelRun();
-
-  App.paused = false;
-  App.state = "idle";
-
-  update("0");
-  setRingPulse('off');
-  setRing(0, 0);
-  showSide("");
-
-  current = 0;
-  updateProgress();
-}
-
-/* =========================================================
-   SKIP (kept) – safe
-   ========================================================= */
-function skip(){
-  cancelRun();
-
-  setTimeout(()=>{
-    next();
-  }, 80);
-}
-
-/* =========================================================
-   NEXT (kept)
-   ========================================================= */
-async function next(){
-  running = false;
-
-  current++;
-  updateProgress();
-
-  if(current >= phases[phaseIndex].length){
-    update("FERTIG");
-    setRingPulse('off');
-    setRing(0, 0);
-    await speak("Training beendet", {interrupt:true});
-    App.state = "idle";
-    return;
-  }
-
-  load();
-
-  await sleep(1500);
-  if(App.paused) return;
-
-  start();
-}
-
-/* =========================================================
-   PAUSE / RESUME->WEITER (kept resume alias)
-   ========================================================= */
-function pause(){
-  App.paused = true;
-  speechSynthesis.cancel();
-}
-
-function resume(){
-  weiter();
-}
-
-function weiter(){
-  App.paused = false;
-}
-
-/* =========================================================
-   PHASE NAV
-   ========================================================= */
-function nextPhase(){
-  cancelRun();
-  App.paused = false;
-
-  phaseIndex = (phaseIndex + 1) % phases.length;
-  current = 0;
-  load();
-}
-
-function setPhase(p){
-  cancelRun();
-  App.paused = false;
-
-  phaseIndex = p - 1;
-  current = 0;
-  load();
-}
-
-/* =========================================================
-   BEENDEN (improved) – kompletter Reset, optional Speak
-   ========================================================= */
-async function beenden(){
-  cancelRun();
-  App.paused = false;
-  App.state = "idle";
-
-  // optional: Ansage (default: mit Ansage)
-  if(App.speakOnBeenden){
-    // Wichtig: speak nach cancelRun(), aber ohne Flow-Änderung (nur Button-Aktion)
-    await speak("Training beendet", {interrupt:true});
-  }
-
-  phaseIndex = 0;
-  current = 0;
-
-  showSide("");
-  update("0");
-  setRingPulse('off');
-  setRing(0, 0);
-  progress.style.width = "0%";
-
-  load();
-}
+function setModule(m){haptic(12);if(running)return;App.module=m;App.currentRound=1;current=0;load();updateButtonStates()}
+function changeRounds(delta){haptic(10);if(running||App.module!=="multi")return;App.rounds=Math.max(2,Math.min(10,App.rounds+delta));updateButtonStates();load()}
+function speakWorkoutInfo(){const txt=`Heutiges Training: ${App.currentWorkout.length} Übungen, ${getTotalRounds()} Runde${getTotalRounds()>1?'n':''}. Start mit Erwärmen, danach Training und Dehnen, Ende mit Erholung.`;speak(txt,{interrupt:true})}
 
 /* =========================================================
    LOAD
    ========================================================= */
 function load(){
-  let ex = phases[phaseIndex][current];
+  if(!App.currentWorkout.length) App.currentWorkout=generateDailyWorkout();
+  const ex=App.currentWorkout[current];
+  if(!ex){console.error("Keine Übung gefunden");return}
+  const totalRounds=getTotalRounds();
+  phaseTitle.innerText=`${dateKey()} · ${App.module==='multi'?'Mehrere Runden':'Eine Runde'} · Runde ${App.currentRound}/${totalRounds} · ${ex.subtitle||''}`;
+  exerciseTitle.innerText=ex.name;
+  exerciseImage.onerror=function(){this.onerror=null;this.src="images/fallback.jpg"};
+  exerciseImage.src=ex.img||"images/fallback.jpg";
+  guide.innerHTML=Array.isArray(ex.guide)?"<ul>"+ex.guide.map(g=>`<li>${g}</li>`).join("")+"</ul>":"";
+  const base=ex.time||ex.reps||0;showSide("");update(base);setRingPulse('off');setRing(base,base);updateProgress();updateButtonStates();
+}
 
-  phaseTitle.innerText = "Training " + (phaseIndex + 1);
-  exerciseTitle.innerText = ex.name;
-  exerciseImage.src = ex.img;
-
-  if(ex.guide && Array.isArray(ex.guide)){
-    let html = "<ul>";
-    ex.guide.forEach(g=>{
-      html += "<li>" + g + "</li>";
-    });
-    html += "</ul>";
-    guide.innerHTML = html;
-  }else{
-    guide.innerHTML = "";
+/* =========================================================
+   CONTROL FLOW
+   ========================================================= */
+async function countdown(sec){setRingPulse('off');setRing(sec,sec);for(let i=sec;i>0;i--){if(!running)return;while(App.paused)await sleep(150);update(i);setRing(sec,i);await speak(i.toString(),{interrupt:false})}}
+function cancelRun(){App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}updateButtonStates()}
+async function start(){
+  haptic(12); if(running) return;
+  if(!App.currentWorkout.length) App.currentWorkout=generateDailyWorkout();
+  const ex=App.currentWorkout[current]; if(!ex){resetWorkoutForToday();return}
+  running=true; App.paused=false; App.state="running"; const myToken=++App.token; updateButtonStates(); load();
+  await speak(ex.name); if(myToken!==App.token)return;
+  if(ex.subtitle) await speak(ex.subtitle); if(myToken!==App.token)return;
+  if(ex.guide){for(const g of ex.guide){while(App.paused)await sleep(150);await speak(g);if(myToken!==App.token)return}}
+  await sleep(500); if(myToken!==App.token)return; await speak("Bereit machen"); if(myToken!==App.token)return; await countdown(3); if(myToken!==App.token)return; run(ex,myToken);
+}
+function run(ex,myToken){switch(ex.type){case"time":runTime(ex,myToken);break;case"reps":runReps(ex,myToken);break;case"side":runSide(ex,myToken);break;case"holdReps":runHoldReps(ex,myToken);break;case"sideHoldReps":runSideHoldReps(ex,myToken);break;case"sideReps":runSideReps(ex,myToken);break;default:console.error("Unbekannter Typ:",ex.type);next()}}
+async function next(){
+  running=false; current++;
+  if(current>=App.currentWorkout.length){
+    if(App.currentRound<getTotalRounds()){App.currentRound++;current=0;load();await sleep(900);start();return}
+    updateProgress();update("FERTIG");resetRing();showSide("");App.state="idle";await speak("Training beendet",{interrupt:true});updateButtonStates();return;
   }
-
-  const base = ex.time || ex.reps || 0;
-  update(base);
-  setRingPulse('off');
-  setRing(base, base);
-
-  updateProgress();
-  updatePhaseButtons();
+  load();await sleep(900);if(!App.paused)start();
 }
+async function skip(){haptic(14);if(!running)return;App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}current++;if(current>=App.currentWorkout.length){await next();return}load();await sleep(250);start()}
+function pause(){haptic(10);if(!running)return;App.paused=true;try{speechSynthesis.cancel()}catch(e){}updateButtonStates()}
+function weiter(){haptic(10);if(!running)return;App.paused=false;try{speechSynthesis.resume()}catch(e){}updateButtonStates()}
+async function beenden(){haptic(18);cancelRun();App.paused=false;App.state="idle";App.currentRound=1;current=0;showSide("");update("0");resetRing();progress.style.width="0%";load();if(App.speakOnBeenden)await speak("Training beendet",{interrupt:true});updateButtonStates()}
 
 /* =========================================================
-   UPDATE UI
+   RUN TYPES
    ========================================================= */
-function update(v){
-  timerEl.innerText = v;
+async function setPauseCountdown(sec,labelText){const myToken=App.token,total=sec;if(labelText)showSide(labelText);const speakFrom=Math.max(1,Math.min(Number(App.setCountdownSeconds)||3,sec));let announced=false;for(let k=sec;k>0;k--){if(!running||myToken!==App.token)return;while(App.paused)await sleep(150);update(k);setRing(total,k);if(App.speakSetCountdown&&k<=speakFrom){if(App.announceNextSet&&!announced&&k===speakFrom){await speak("Nächster Satz in",{interrupt:false,dedupeMs:50});announced=true}await speak(k.toString(),{interrupt:false,dedupeMs:50})}await sleep(1000)}}
+async function runTime(ex,myToken){setRingPulse('off');const total=ex.time;let t=total;update(t);setRing(total,t);while(t>0){if(!running||myToken!==App.token)return;while(App.paused){await sleep(150);if(!running||myToken!==App.token)return}if(t<=5)await speak(t.toString(),{interrupt:false,dedupeMs:50});await sleep(1000);if(!running||myToken!==App.token)return;t--;update(t);setRing(total,t)}if(myToken===App.token)next()}
+async function runReps(ex,myToken){const sets=getSets(ex),setPause=getSetPause(ex);setRingPulse('pulse');for(let s=1;s<=sets;s++){let reps=ex.reps,total=ex.reps||0;showSide(`Satz ${s}/${sets}`);while(reps>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}update(reps);setRing(total,reps);await speak(reps.toString(),{interrupt:false});reps--;await sleep((ex.rest||0)*1000)}if(s<sets&&setPause>0)await setPauseCountdown(setPause,`Pause · Satz ${s+1}/${sets}`)}showSide("");setRingPulse('off');if(myToken===App.token)next()}
+async function runHoldReps(ex,myToken){const sets=getSets(ex),setPause=getSetPause(ex);setRingPulse('strong');for(let s=1;s<=sets;s++){let reps=ex.reps,total=ex.reps||0;showSide(`Satz ${s}/${sets}`);while(reps>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}update("HALTEN");setRing(total,reps);await speak("Halten",{interrupt:false});await sleep(ex.holdTime||4000);reps--}if(s<sets&&setPause>0)await setPauseCountdown(setPause,`Pause · Satz ${s+1}/${sets}`)}showSide("");setRingPulse('off');if(myToken===App.token)next()}
+async function runSide(ex,myToken){const sides=["rechts","links"],total=ex.time||0;setRingPulse('off');for(let i=0;i<sides.length;i++){showSide("Seite "+sides[i]);await speak("Seite "+sides[i],{interrupt:false});let t=ex.time;update(t);setRing(total,t);while(t>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}if(t<=5)await speak(t.toString(),{interrupt:false,dedupeMs:50});await sleep(1000);if(!running||myToken!==App.token)return;t--;update(t);setRing(total,t)}if(i<sides.length-1){if(App.speakSideSwitch)await speak("Seitenwechsel",{interrupt:false});showSide("Wechsel...");for(let k=5;k>0;k--){if(!running||myToken!==App.token)return;while(App.paused)await sleep(150);update(k);setRing(5,k);await sleep(1000)}}}showSide("");if(myToken===App.token)next()}
+async function runSideHoldReps(ex,myToken){const sets=getSets(ex),setPause=getSetPause(ex),sides=["rechts","links"];for(let i=0;i<sides.length;i++){const sideName=sides[i];showSide("Seite "+sideName);await speak("Seite "+sideName,{interrupt:false});for(let s=1;s<=sets;s++){let reps=ex.reps,total=ex.reps||0;setRingPulse('strong');showSide(`Seite ${sideName} · Satz ${s}/${sets}`);while(reps>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}update(reps);setRing(total,reps);await speak("Halten",{interrupt:false});await sleep(ex.holdTime||4000);reps--}if(s<sets&&setPause>0){setRingPulse('off');await setPauseCountdown(setPause,`Seite ${sideName} · Pause (Satz ${s+1}/${sets})`)}}setRingPulse('off');if(i<sides.length-1){if(App.speakSideSwitch)await speak("Seitenwechsel",{interrupt:false});showSide("Wechsel...");for(let k=5;k>0;k--){if(!running||myToken!==App.token)return;while(App.paused)await sleep(150);update(k);setRing(5,k);await sleep(1000)}}}showSide("");if(myToken===App.token)next()}
+async function runSideReps(ex,myToken){const sets=getSets(ex),setPause=getSetPause(ex),sides=["rechts","links"];for(let i=0;i<sides.length;i++){const sideName=sides[i];showSide("Seite "+sideName);await speak("Seite "+sideName,{interrupt:false});for(let s=1;s<=sets;s++){let reps=ex.reps,total=ex.reps||0;setRingPulse('pulse');showSide(`Seite ${sideName} · Satz ${s}/${sets}`);while(reps>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}update(reps);setRing(total,reps);await speak(reps.toString(),{interrupt:false});reps--;await sleep((ex.rest||0)*1000)}if(s<sets&&setPause>0){setRingPulse('off');await setPauseCountdown(setPause,`Seite ${sideName} · Pause (Satz ${s+1}/${sets})`)}}setRingPulse('off');if(i<sides.length-1){if(App.speakSideSwitch)await speak("Seitenwechsel",{interrupt:false});showSide("Wechsel...");for(let k=5;k>0;k--){if(!running||myToken!==App.token)return;while(App.paused)await sleep(150);update(k);setRing(5,k);await sleep(1000)}}}showSide("");if(myToken===App.token)next()}
 
-  const n = Number(v);
-  if(!isNaN(n) && App.ringTotal){
-    setRing(App.ringTotal, n);
-  }
-}
-
-function showSide(s){
-  side.innerText = s;
-}
-
-/* =========================================================
-   PROGRESS
-   ========================================================= */
-function updateProgress(){
-  let total = phases[phaseIndex].length;
-  progress.style.width = ((current / total) * 100) + "%";
-}
-
-function updatePhaseButtons(){
-  const b1 = document.getElementById("btnP1");
-  const b2 = document.getElementById("btnP2");
-  const b3 = document.getElementById("btnP3");
-  [b1,b2,b3].forEach((b, idx)=>{
-    if(!b) return;
-    b.classList.toggle("active", idx === phaseIndex);
-  });
-}
-
-/* =========================================================
-   INIT
-   ========================================================= */
-load();
-updatePhaseButtons();
-    
-// =============================
-// 🔥 STABILE PHASEN
-window.phases = [
-/* ================= PHASE 1 ================= */
-[
-{
-name:"Bauchatmung",
-subtitle:"Nervensystem beruhigen",
-img:"images/bauchatmung.jpg",
-type:"time",
-time:120,
-guide:[
-"Rückenlage, Füße aufgestellt",
-"Eine Hand auf Bauch, eine auf Brust",
-"Langsam in den Bauch atmen",
-"5 Sekunden einatmen, 7 Sekunden ausatmen"
-]
-},
-
-{
-name:"Knie zur Brust",
-subtitle:"Psoas Entlastung",
-img:"images/phase3.jpg",
-type:"side",
-time:45,
-guide:[
-"Rückenlage",
-"Ein Knie zur Brust ziehen und mit Händen halten",
-"Anderes Bein bleibt gestreckt und locker",
-"Tief weiteratmen und entspannen"
-]
-},
-
-{
-name:"Mini-Becken-Kippung",
-subtitle:"Kontrolle und Entlastung",
-img:"images/phase3.jpg",
-type:"reps",
-reps:15,
-rest:3,
-guide:[
-"Rückenlage, Füße aufgestellt",
-"Unterer Rücken leicht in den Boden drücken",
-"Becken kippt nach vorne",
-"Spannung kurz halten und wieder lösen",
-"Kleine ruhige Bewegung"
-]
-},
-
-{
-name:"Hüftbeuger Dehnung",
-subtitle:"Psoas und Hüftbeuger dehnen",
-img:"images/phase3.jpg",
-type:"side",
-time:40,
-guide:[
-"Halbkniestand",
-"Gesäß der hinteren Seite anspannen",
-"Becken leicht nach vorne kippen",
-"Oberkörper aufrecht, kein Hohlkreuz",
-"Dehnung vorne in der Hüfte spüren"
-]
-},
-
-{
-name:"Glute Bridge",
-subtitle:"Gesäßmuskulatur stärken",
-img:"images/phase3.jpg",
-type:"holdReps",
-reps:15,
-guide:[
-"Rückenlage, Füße hüftbreit aufstellen",
-"Hüfte nach oben drücken, Gesäß anspannen",
-"Oben 5 Sekunden halten",
-"Langsam wieder absenken"
-]
-},
-
-{
-name:"Adduktor Dehnung",
-subtitle:"Leisten und Innenschenkel dehnen",
-img:"images/phase3.jpg",
-type:"side", // ✅ WAR "time"
-time:45,
-guide:[
-"Breiten Stand einnehmen",
-"Gewicht zur Seite verlagern",
-"Andere Seite bleibt gestreckt",
-"Rücken gerade halten",
-"Dehnung innen spüren"
-]
-}
-],
-
-/* ================= PHASE 2 ================= */
-[
-{
-name:"Bauchatmung Aktivierung",
-subtitle:"Rumpf aktivieren",
-img:"images/phase2.jpg",
-type:"time",
-time:60,
-guide:[
-"Ruhig atmen",
-"Spannung im Rumpf aufbauen",
-"Kontrollierte Atmung"
-]
-},
-
-{
-name:"Dynamische Hüftöffnung",
-subtitle:"Beweglichkeit und Kontrolle",
-img:"images/phase2.jpg",
-type:"sideHoldReps",
-reps:10,
-guide:[
-"Ausfallschritt nach vorne",
-"Hüfte vor und zurück bewegen",
-"Spannung halten",
-"Bewegung kontrolliert ausführen"
-]
-},
-
-{
-name:"Glute Bridge einbeinig",
-subtitle:"Stabilität und Kraft",
-img:"images/phase2.jpg",
-type:"sideHoldReps",
-reps:10,
-guide:[
-"Ein Bein anheben",
-"Hüfte nach oben drücken",
-"Spannung im Gesäß halten",
-"Stabil bleiben"
-]
-},
-
-{
-name:"Dead Bug",
-subtitle:"Rumpfstabilität",
-img:"images/phase2.jpg",
-type:"reps",
-reps:24,
-rest:3,
-guide:[
-"Rückenlage",
-"Arme und Beine anheben",
-"Gegengleich bewegen",
-"Rumpf stabil halten",
-"Unterer Rücken bleibt am Boden"
-]
-},
-
-{
-name:"Seitliche Ausfallschritte",
-subtitle:"Beweglichkeit Hüfte",
-img:"images/phase2.jpg",
-type:"reps",
-reps:20,
-rest:3,
-guide:[
-"Seitlich ausweichen",
-"Hüfte nach hinten schieben",
-"Gewicht von rechts nach links verlagern",
-"Spannung halten"
-]
-},
-
-{
-name:"Adduktor Hüfte Kombi",
-subtitle:"Mobilität und Dehnung",
-img:"images/phase2.jpg",
-type:"side", // ✅ WAR "time"
-time:40,
-guide:[
-"Dehnung halten",
-"Kleine Bewegungen ausführen",
-"Spannung ruhig halten"
-]
-}
-],
- /* ================= TRAINING 3 ================= */
-[
-{
-name:"Einbeiniges Standknieheben",
-subtitle:"Stabilität und Kontrolle",
-img:"images/training3.jpg",
-type:"sideHoldReps",
-reps:10,
-guide:[
-"Aufrecht stehen",
-"Bauchnabel einziehen",
-"Knie kontrolliert heben",
-"Hüfte bleibt stabil"
-]
-},
-
-{
-name:"Seitliche Plank kurz",
-subtitle:"Rumpfstabilität seitlich",
-img:"images/training3.jpg",
-type:"side",
-time:45,
-guide:[
-"Seitlich liegend",
-"Körper bildet eine Linie",
-"Knie leicht angewinkelt",
-"Becken nicht nach vorne oder hinten kippen",
-"Bauch und Gesäß aktiv",
-"Ruhig atmen"
-]
-},
-
-{
-name:"Plank",
-subtitle:"Ganzkörper Spannung",
-img:"images/training3.jpg",
-type:"time",
-time:30,
-guide:[
-"Bauchlage, Ellenbogen unter den Schultern",
-"Füße hüftbreit auseinander",
-"Körper anheben – gerade Linie",
-"Kopf in Verlängerung der Wirbelsäule",
-"Blick nach unten",
-"Bauchnabel einziehen"
-]
-},
-
-{
-name:"Adduktor Kräftigung",
-subtitle:"Innenschenkel aktivieren",
-img:"images/training3.jpg",
-type:"sideHoldReps",
-reps:10,
-guide:[
-"Seitlich liegend",
-"Körper bildet eine Linie",
-"Becken stabil halten",
-"Bauch und Gesäß aktiv",
-"Ruhig atmen"
-]
-},
-
-{
-name:"Liegendes Beinheben",
-subtitle:"Core Kontrolle",
-img:"images/training3.jpg",
-type:"sideHoldReps",
-reps:12,
-guide:[
-"Rückenlage",
-"Lendenwirbelsäule bleibt am Boden",
-"Bein langsam heben",
-"Kontrolliert absenken"
-]
-}
-]   
-
-];
-// ============================
-
-// 🔥 NEU
-phases = window.phases;
-load();
-updatePhaseButtons();
-
+/* INIT */
+resetWorkoutForToday();
 </script>
-
 </body>
 </html>
