@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Psoas Ultra PRO</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="images/icon.png?v=1.6.0">
-  <link rel="manifest" href="manifest.json?v=1.6.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/icon.png?v=1.6.1">
+  <link rel="manifest" href="manifest.json?v=1.6.1">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -138,6 +138,9 @@
     <div class="timerWrap"><div id="ring" class="ring" aria-label="Timer"><svg viewBox="0 0 120 120" role="img"><defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#a855f7"></stop><stop offset="100%" stop-color="#ec4899"></stop></linearGradient><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter></defs><circle class="bg" cx="60" cy="60" r="46"></circle><circle id="ringFg" class="fg" cx="60" cy="60" r="46"></circle></svg><div id="timer" class="ringNumber">0</div></div></div>
     <div id="progressBar"><div id="progress"></div></div>
     <div id="nextPreview" class="nextPreview">Danach: <b>—</b><span class="small">Nächste Übung wird hier angezeigt</span></div>
+    <div id="versionBadge" class="versionBadge">Psoas Ultra PRO · Version 1.6.1</div>
+    <div id="errorBox" class="errorBox"></div>
+    <div class="cacheHint">Bei Problemen: Info → Cache neu laden.</div>
   </div>
   <div class="bottomBar"><div class="inner">
     <div class="topRow"><button id="btnStart" class="start" onclick="start()">Start</button><button id="btnPause" class="pause" onclick="pause()">Pause</button><button id="btnWeiter" class="continue" onclick="weiter()">Weiter</button><button id="btnSkip" class="skip" onclick="skip()">Skip</button><button id="btnMode" class="mode" onclick="toggleMode()">Mode</button></div>
@@ -219,7 +222,7 @@
 
 <script>
 
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.6.1";
 const APP_CACHE_KEY = "psoasUltraAppVersion";
 function showAppError(message){
   try{
@@ -342,7 +345,7 @@ const POOLS = {
 /* =========================================================
    APP STATE
    ========================================================= */
-const App = {paused:false,state:"idle",token:0,ringTotal:0,ringValue:0,speakSideSwitch:true,speakOnBeenden:true,haptics:true,setsDefault:3,setPauseSec:5,speakSetCountdown:true,setCountdownSeconds:3,announceNextSet:true,module:"single",rounds:2,currentRound:1,currentWorkout:[],audio:true,gentle:false,dayForm:"unset",dayFormChecked:false,startedAt:null,lastSavedAt:null};
+const App = {paused:false,state:"idle",token:0,ringTotal:0,ringValue:0,speakSideSwitch:true,speakOnBeenden:true,haptics:true,setsDefault:3,setPauseSec:5,speakSetCountdown:true,setCountdownSeconds:3,announceNextSet:true,module:"single",rounds:2,currentRound:1,currentWorkout:[],audio:true,gentle:false,dayForm:"unset",dayFormChecked:false,startedAt:null,lastSavedAt:null,pendingStartAfterDayForm:false};
 let current = 0;
 let running = false;
 
@@ -405,7 +408,7 @@ function getSetPause(ex){const p=Number(ex&&ex.setPause);const base=(!isNaN(p)&&
 function getDayFormLabel(){return App.dayForm==="pain"?"Schmerzen":(App.dayForm==="medium"?"Mittel":(App.dayForm==="good"?"Gut":"Noch nicht gewählt"))}
 function getTrainingCountByForm(){if(App.module==="stretch")return 0;if(App.dayForm==="pain")return 3;if(App.dayForm==="medium")return 4;return 5}
 function getStretchCountByForm(){if(App.module==="stretch")return Math.min(5,POOLS.stretching.length);if(App.dayForm==="pain")return Math.min(5,POOLS.stretching.length);if(App.dayForm==="medium")return Math.min(4,POOLS.stretching.length);return Math.min(5,POOLS.stretching.length)}
-function getExerciseFamily(ex){const n=((ex&&ex.name)||""+" "+((ex&&ex.subtitle)||"")).toLowerCase();if(/plank|situp|dead bug|russian|bauch|mountain/.test(n))return "core";if(/glute|bridge|gesäß|bein|knie|waden|ausfallschritt|adduktor|hüft/.test(n))return "lower";if(/bizeps|trizeps|rudern|liegestütz|brust/.test(n))return "upper";if(/dehnung|stretch|frosch|fersensitz|rücken|bauchatmung/.test(n))return "mobility";return "general"}
+function getExerciseFamily(ex){const n=(((ex&&ex.name)||"")+" "+((ex&&ex.subtitle)||"")).toLowerCase();if(/plank|situp|dead bug|russian|bauch|mountain/.test(n))return "core";if(/glute|bridge|gesäß|bein|knie|waden|ausfallschritt|adduktor|hüft/.test(n))return "lower";if(/bizeps|trizeps|rudern|liegestütz|brust/.test(n))return "upper";if(/dehnung|stretch|frosch|fersensitz|rücken|bauchatmung/.test(n))return "mobility";return "general"}
 function isGentlePreferred(ex){return !isIntenseExercise(ex) && !/plank|situp|mountain|hampelmann|high knees|wandsitz/i.test((ex&&ex.name)||"")}
 function smartTake(pool,count,rnd,category,round,opts){
   opts=opts||{};
@@ -426,22 +429,26 @@ function smartTake(pool,count,rnd,category,round,opts){
   }
   return selected;
 }
+function roundToFiveSeconds(value){
+  return Math.max(5, Math.round(Number(value || 0) / 5) * 5);
+}
 function adaptExerciseToDayForm(ex){
   const out=Object.assign({},ex||{});
+
   if(App.dayForm==="pain"){
-    if(out.time)out.time=Math.max(20,Math.round(out.time*0.65));
+    if(out.time)out.time=Math.max(20,roundToFiveSeconds(out.time*0.65));
     if(out.reps)out.reps=Math.max(5,Math.round(out.reps*0.55));
-    if(out.holdTime)out.holdTime=Math.max(1800,Math.round(out.holdTime*0.55));
+    if(out.holdTime)out.holdTime=Math.max(2000,Math.round(out.holdTime*0.55));
     out.sets=1;
   }else if(App.dayForm==="medium"){
-    if(out.time)out.time=Math.max(25,Math.round(out.time*0.85));
+    if(out.time)out.time=Math.max(25,roundToFiveSeconds(out.time*0.85));
     if(out.reps)out.reps=Math.max(6,Math.round(out.reps*0.8));
-    if(out.holdTime)out.holdTime=Math.max(2200,Math.round(out.holdTime*0.8));
+    if(out.holdTime)out.holdTime=Math.max(2500,Math.round(out.holdTime*0.8));
     if(out.sets)out.sets=Math.max(1,Math.min(Number(out.sets)||1,2));
   }
+
   return out;
 }
-
 const STORAGE_KEY="psoasUltraProTrainingStateV1";
 function safeClone(obj){return JSON.parse(JSON.stringify(obj||{}))}
 function isIntenseExercise(ex){return /mountain|hampelmann|high knees|situps|wandsitz|liegestütz|russian/i.test((ex&&ex.name)||"")}
@@ -459,11 +466,14 @@ function applyGentleWorkout(workout){
 }
 function effectiveExercise(ex){
   const out=Object.assign({},ex||{});
+
   if(!App.gentle) return out;
-  if(out.time) out.time=Math.max(20,Math.round(out.time*0.75));
+
+  if(out.time) out.time=Math.max(20,roundToFiveSeconds(out.time*0.75));
   if(out.reps) out.reps=Math.max(6,Math.round(out.reps*0.65));
   if(out.holdTime) out.holdTime=Math.max(2000,Math.round(out.holdTime*0.65));
   if(out.sets) out.sets=Math.max(1,Math.min(Number(out.sets)||1,2));
+
   return out;
 }
 function saveWorkoutState(){
@@ -597,7 +607,16 @@ function setRingPulse(mode){if(!ringEl)return;ringEl.classList.remove('pulse','p
 function update(v){timerEl.innerText=v;const n=Number(v);if(!isNaN(n)&&App.ringTotal)setRing(App.ringTotal,n)}
 function showSetLabel(text){if(!setLabelWrap||!setLabelBadge)return;if(text){setLabelBadge.innerText=text;setLabelWrap.style.display='block'}else{setLabelWrap.style.display='none';setLabelBadge.innerText=''}}
 function showSide(s){const text=(s||"").toString();if(!text){side.innerText="";showSetLabel("");return}const m=text.match(/Satz\s*(\d+)\s*\/\s*(\d+)/i);if(m){showSetLabel(`Satz ${m[1]}/${m[2]}`);let rest=text.replace(m[0],"").replace(/\(\s*\)/g,"").replace(/\s*·\s*/g," · ").replace(/\s{2,}/g," ").replace(/^\s*·\s*/g,"").replace(/\s*·\s*$/g,"").trim();side.innerText=rest}else{showSetLabel("");side.innerText=text}}
-function updateProgress(){const total=App.currentWorkout.length;progress.style.width=total?Math.min(100,(current/total)*100)+"%":"0%"}
+function updateProgress(){
+  const total=App.currentWorkout.length;
+  if(!total){
+    progress.style.width="0%";
+    return;
+  }
+
+  const value=Math.min(100,((current+1)/total)*100);
+  progress.style.width=value+"%";
+}
 function updateButtonStates(){const isRunning=running,isPaused=App.paused;if(btnStart)btnStart.disabled=isRunning;if(btnPause)btnPause.disabled=!isRunning||isPaused;if(btnWeiter)btnWeiter.disabled=!isRunning||!isPaused;if(btnSkip)btnSkip.disabled=!isRunning;if(btnSingle)btnSingle.disabled=isRunning;if(btnMulti)btnMulti.disabled=isRunning;if(btnStretch)btnStretch.disabled=isRunning;if(btnMinus)btnMinus.disabled=isRunning||App.module!=="multi";if(btnPlus)btnPlus.disabled=isRunning||App.module!=="multi";if(btnMode)btnMode.disabled=false;if(btnEnd)btnEnd.disabled=false;if(btnGentle){btnGentle.innerText=App.gentle?"Schonend AN":"Schonend AUS";btnGentle.classList.toggle('btnActive',App.gentle);btnGentle.disabled=isRunning}if(btnAudio){btnAudio.innerText=App.audio?"Audio AN":"Audio AUS";btnAudio.classList.toggle('btnActive',App.audio);btnAudio.disabled=false}if(btnDayForm){btnDayForm.innerText="Tagesform: "+getDayFormLabel();btnDayForm.classList.toggle('btnActive',App.dayForm!=="unset");btnDayForm.disabled=isRunning}if(btnPause)btnPause.classList.toggle('btnActive',isRunning&&isPaused);if(btnWeiter)btnWeiter.classList.toggle('btnActive',isRunning&&isPaused);if(btnStart)btnStart.classList.toggle('btnActive',!isRunning);if(btnSingle)btnSingle.classList.toggle('active',App.module==='single');if(btnMulti)btnMulti.classList.toggle('active',App.module==='multi');if(btnStretch)btnStretch.classList.toggle('active',App.module==='stretch');if(pausedBadge)pausedBadge.classList.toggle('show',isRunning&&isPaused);roundDisplay.innerText=App.module==='stretch'?"Nur Dehnen":`Runden: ${getTotalRounds()}`}
 
 /* =========================================================
@@ -611,7 +630,20 @@ function countByCategory(cat){return App.currentWorkout.filter(x=>x.category===c
 function getCurrentExercise(){return App.currentWorkout[current]||null}
 function getNextExercise(){return App.currentWorkout[current+1]||null}
 function getWorkoutGoalText(){return App.module==="stretch"?"Maximal 5 Dehnübungen":"1 Warm-up · max. 5 Training pro Runde · max. 5 Dehnen · 1 Recovery"}
-function estimateExerciseSeconds(ex){if(!ex)return 0;if(ex.type==="time")return (ex.time||0)*(ex.type==="side"?2:1);if(ex.type==="side")return ((ex.time||0)*2)+5;if(ex.type==="reps")return (ex.reps||0)*((ex.rest||1)+1)*getSets(ex);if(ex.type==="holdReps")return ((ex.holdTime||4000)/1000)*(ex.reps||0)*getSets(ex);if(ex.type==="sideHoldReps")return (((ex.holdTime||4000)/1000)*(ex.reps||0)*2*getSets(ex))+(5*getSets(ex));if(ex.type==="sideReps")return ((ex.reps||0)*((ex.rest||1)+1)*2*getSets(ex))+(5*getSets(ex));return 30}
+function estimateExerciseSeconds(ex){
+  if(!ex)return 0;
+
+  const sets=getSets(ex);
+
+  if(ex.type==="time")return ex.time||0;
+  if(ex.type==="side")return ((ex.time||0)*2)+5;
+  if(ex.type==="reps")return (ex.reps||0)*((ex.rest||1)+1)*sets;
+  if(ex.type==="holdReps")return (((ex.holdTime||4000)/1000)*(ex.reps||0)*sets);
+  if(ex.type==="sideHoldReps")return (((ex.holdTime||4000)/1000)*(ex.reps||0)*2*sets)+(5*sets);
+  if(ex.type==="sideReps")return ((ex.reps||0)*((ex.rest||1)+1)*2*sets)+(5*sets);
+
+  return 30;
+}
 function estimateWorkoutMinutes(){const sec=App.currentWorkout.reduce((sum,ex)=>sum+estimateExerciseSeconds(ex),0);return Math.max(1,Math.round(sec/60))}
 function updateNextPreview(){if(!nextPreview)return;const nextEx=getNextExercise();if(nextEx){nextPreview.innerHTML=`Danach: <b>${nextEx.name}</b><span class="small">${nextEx.category||nextEx.subtitle||"Nächste Übung"}${App.module==='multi'&&nextEx.category==='Training'?` · Runde ${nextEx.round}/${getTotalRounds()}`:""}</span>`}else{nextPreview.innerHTML=`Danach: <b>Training beendet</b><span class="small">Letzte Übung</span>`}}
 function renderInfoPopup(){
@@ -669,8 +701,12 @@ function setDayForm(form){
   haptic(12);
   App.dayForm=form||"good";
   App.dayFormChecked=true;
+
   if(App.dayForm==="pain")App.gentle=true;
-  if(App.dayForm==="good" && App.gentle && !running){/* Schonend bleibt manuell, wenn Nutzer es vorher aktiv gesetzt hat */}
+  if(App.dayForm==="good" && App.gentle && !running){
+    /* Schonend bleibt manuell, wenn Nutzer es vorher aktiv gesetzt hat */
+  }
+
   if(!running){
     App.currentWorkout=applyGentleWorkout(generateDailyWorkout());
     current=0;
@@ -678,9 +714,15 @@ function setDayForm(form){
     App.startedAt=Date.now();
     load();
   }
+
   closeDayFormPopup();
   updateButtonStates();
   saveWorkoutState();
+
+  if(App.pendingStartAfterDayForm && !running){
+    App.pendingStartAfterDayForm=false;
+    setTimeout(()=>start(),250);
+  }
 }
 
 /* =========================================================
@@ -706,11 +748,15 @@ function load(){
 /* =========================================================
    CONTROL FLOW
    ========================================================= */
-async function countdown(sec){setRingPulse('off');setRing(sec,sec);for(let i=sec;i>0;i--){if(!running)return;while(App.paused)await sleep(150);update(i);setRing(sec,i);await speak(i.toString(),{interrupt:false})}}
+async function countdown(sec){setRingPulse('off');setRing(sec,sec);for(let i=sec;i>0;i--){if(!running)return;while(App.paused)await sleep(150);update(i);setRing(sec,i);speak(i.toString(),{interrupt:false})}}
 function cancelRun(){App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}updateButtonStates()}
 async function start(){
   haptic(12); if(running) return;
-  if(!App.dayFormChecked || App.dayForm==="unset"){openDayFormPopup(true);return;}
+ if(!App.dayFormChecked || App.dayForm==="unset"){
+  App.pendingStartAfterDayForm=true;
+  openDayFormPopup(true);
+  return;
+}
   if(!App.currentWorkout.length) App.currentWorkout=generateDailyWorkout();
   const rawEx=App.currentWorkout[current]; if(!rawEx){resetWorkoutForToday();return}
   const ex=effectiveExercise(rawEx);
@@ -721,30 +767,172 @@ async function start(){
   await sleep(500); if(myToken!==App.token)return; await speak("Bereit machen"); if(myToken!==App.token)return; await countdown(3); if(myToken!==App.token)return; run(ex,myToken);
 }
 function run(ex,myToken){switch(ex.type){case"time":runTime(ex,myToken);break;case"reps":runReps(ex,myToken);break;case"side":runSide(ex,myToken);break;case"holdReps":runHoldReps(ex,myToken);break;case"sideHoldReps":runSideHoldReps(ex,myToken);break;case"sideReps":runSideReps(ex,myToken);break;default:console.error("Unbekannter Typ:",ex.type);next()}}
+
 async function next(){
-  running=false; current++;
+  const nextToken=App.token;
+
+  running=false;
+  current++;
+
   if(current>=App.currentWorkout.length){
-    updateProgress();update("FERTIG");resetRing();showSide("");updateNextPreview();App.state="idle";clearWorkoutState();await speak("Training beendet",{interrupt:true});updateButtonStates();openFinishPopup();return;
+    updateProgress();
+    update("FERTIG");
+    resetRing();
+    showSide("");
+    updateNextPreview();
+    App.state="idle";
+    clearWorkoutState();
+    await speak("Training beendet",{interrupt:true});
+    updateButtonStates();
+    openFinishPopup();
+    return;
   }
-  load();saveWorkoutState();await sleep(900);if(!App.paused)start();
+
+  load();
+  saveWorkoutState();
+
+  await sleep(900);
+
+  if(nextToken!==App.token)return;
+  if(!App.paused && App.state!=="idle"){
+    start();
+  }
 }
-async function skip(){haptic(14);if(!running)return;App.token++;running=false;try{speechSynthesis.cancel()}catch(e){}current++;if(current>=App.currentWorkout.length){await next();return}load();saveWorkoutState();await sleep(250);start()}
+async function skip(){
+  haptic(14);
+  if(!running)return;
+
+  App.token++;
+  running=false;
+
+  try{speechSynthesis.cancel()}catch(e){}
+
+  current++;
+
+  if(current>=App.currentWorkout.length){
+    updateProgress();
+    update("FERTIG");
+    resetRing();
+    showSide("");
+    updateNextPreview();
+    App.state="idle";
+    clearWorkoutState();
+    await speak("Training beendet",{interrupt:true});
+    updateButtonStates();
+    openFinishPopup();
+    return;
+  }
+
+  load();
+  saveWorkoutState();
+
+  await sleep(250);
+
+  if(App.state!=="idle")start();
+}
 function pause(){haptic(10);if(!running)return;App.paused=true;try{speechSynthesis.cancel()}catch(e){}updateButtonStates();saveWorkoutState()}
 function weiter(){haptic(10);if(!running)return;App.paused=false;try{speechSynthesis.resume()}catch(e){}updateButtonStates();saveWorkoutState()}
-async function beenden(){haptic(18);cancelRun();App.paused=false;App.state="idle";App.currentRound=1;current=0;showSide("");update("0");resetRing();progress.style.width="0%";load();updateNextPreview();clearWorkoutState();if(App.speakOnBeenden)await speak("Training beendet",{interrupt:true});updateButtonStates()}
+async function beenden(){
+  haptic(18);
+  App.pendingStartAfterDayForm=false;
+  cancelRun();
+  App.paused=false;
+  App.state="idle";
+  App.currentRound=1;
+  current=0;
+  showSide("");
+  update("0");
+  resetRing();
+  progress.style.width="0%";
+  load();
+  updateNextPreview();
+  clearWorkoutState();
+  if(App.speakOnBeenden)await speak("Training beendet",{interrupt:true});
+  updateButtonStates();
+}
 
 /* =========================================================
    RUN TYPES
    ========================================================= */
 async function setPauseCountdown(sec,labelText){const myToken=App.token,total=sec;if(labelText)showSide(labelText);const speakFrom=Math.max(1,Math.min(Number(App.setCountdownSeconds)||3,sec));let announced=false;for(let k=sec;k>0;k--){if(!running||myToken!==App.token)return;while(App.paused)await sleep(150);update(k);setRing(total,k);if(App.speakSetCountdown&&k<=speakFrom){if(App.announceNextSet&&!announced&&k===speakFrom){await speak("Nächster Satz in",{interrupt:false,dedupeMs:50});announced=true}await speak(k.toString(),{interrupt:false,dedupeMs:50})}await sleep(1000)}}
-async function runTime(ex,myToken){setRingPulse('off');const total=ex.time;let t=total;update(t);setRing(total,t);while(t>0){if(!running||myToken!==App.token)return;while(App.paused){await sleep(150);if(!running||myToken!==App.token)return}if(t<=5)await speak(t.toString(),{interrupt:false,dedupeMs:50});await sleep(1000);if(!running||myToken!==App.token)return;t--;update(t);setRing(total,t)}if(myToken===App.token)next()}
+async function runTime(ex,myToken){setRingPulse('off');const total=ex.time;let t=total;update(t);setRing(total,t);while(t>0){if(!running||myToken!==App.token)return;while(App.paused){await sleep(150);if(!running||myToken!==App.token)return}if(t<=5)speak(t.toString(),{interrupt:false,dedupeMs:50});await sleep(1000);if(!running||myToken!==App.token)return;t--;update(t);setRing(total,t)}if(myToken===App.token)next()}
 async function runReps(ex,myToken){const sets=getSets(ex),setPause=getSetPause(ex);setRingPulse('pulse');for(let s=1;s<=sets;s++){let reps=ex.reps,total=ex.reps||0;showSide(`Satz ${s}/${sets}`);while(reps>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}update(reps);setRing(total,reps);await speak(reps.toString(),{interrupt:false});reps--;await sleep((ex.rest||0)*1000)}if(s<sets&&setPause>0)await setPauseCountdown(setPause,`Pause · Satz ${s+1}/${sets}`)}showSide("");setRingPulse('off');if(myToken===App.token)next()}
-async function runHoldReps(ex,myToken){const sets=getSets(ex),setPause=getSetPause(ex);setRingPulse('strong');for(let s=1;s<=sets;s++){let reps=ex.reps,total=ex.reps||0;showSide(`Satz ${s}/${sets}`);while(reps>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}update("HALTEN");setRing(total,reps);await speak("Halten",{interrupt:false});await sleep(ex.holdTime||4000);reps--}if(s<sets&&setPause>0)await setPauseCountdown(setPause,`Pause · Satz ${s+1}/${sets}`)}showSide("");setRingPulse('off');if(myToken===App.token)next()}
-async function runSide(ex,myToken){const sides=["rechts","links"],total=ex.time||0;setRingPulse('off');for(let i=0;i<sides.length;i++){showSide("Seite "+sides[i]);await speak("Seite "+sides[i],{interrupt:false});let t=ex.time;update(t);setRing(total,t);while(t>0&&running){if(myToken!==App.token)return;if(App.paused){await sleep(150);continue}if(t<=5)await speak(t.toString(),{interrupt:false,dedupeMs:50});await sleep(1000);if(!running||myToken!==App.token)return;t--;update(t);setRing(total,t)}if(i<sides.length-1){if(App.speakSideSwitch)await speak("Seitenwechsel",{interrupt:false});showSide("Wechsel...");for(let k=5;k>0;k--){if(!running||myToken!==App.token)return;while(App.paused)await sleep(150);update(k);setRing(5,k);await sleep(1000)}}}showSide("");if(myToken===App.token)next()}
+async function runHoldReps(ex,myToken){
+  const sets=getSets(ex);
+  const setPause=getSetPause(ex);
+  const holdMs=Number(ex.holdTime || 4000);
+  const holdSec=Math.max(1,Math.round(holdMs/1000));
+
+  setRingPulse('strong');
+
+  for(let s=1;s<=sets;s++){
+    let reps=Number(ex.reps || 0);
+    const totalReps=Number(ex.reps || 0);
+
+    showSide(`Satz ${s}/${sets}`);
+
+    while(reps>0&&running){
+      if(myToken!==App.token)return;
+
+      while(App.paused){
+        await sleep(150);
+        if(!running||myToken!==App.token)return;
+      }
+
+      const done=(totalReps-reps)+1;
+      showSide(`Satz ${s}/${sets} · Wiederholung ${done}/${totalReps}`);
+
+      await speak("Halten",{interrupt:false});
+
+      setRingPulse('strong');
+
+      for(let t=holdSec;t>0;t--){
+        if(!running||myToken!==App.token)return;
+
+        while(App.paused){
+          await sleep(150);
+          if(!running||myToken!==App.token)return;
+        }
+
+        update(t);
+        setRing(holdSec,t);
+
+        if(t<=3){
+          speak(t.toString(),{interrupt:false,dedupeMs:50});
+        }
+
+        await sleep(1000);
+      }
+
+      reps--;
+
+      if(reps>0){
+        update(reps);
+        setRing(totalReps||1,reps);
+        await sleep(350);
+      }
+    }
+
+    if(s<sets&&setPause>0){
+      setRingPulse('off');
+      await setPauseCountdown(setPause,`Pause · Satz ${s+1}/${sets}`);
+      setRingPulse('strong');
+    }
+  }
+
+  showSide("");
+  setRingPulse('off');
+  resetRing();
+
+  if(myToken===App.token)next();
+}
 async function runSideHoldReps(ex,myToken){
   const sets=getSets(ex);
   const setPause=getSetPause(ex);
   const sides=["rechts","links"];
+  const holdMs=Number(ex.holdTime || 4000);
+  const holdSec=Math.max(1,Math.round(holdMs/1000));
+  const totalReps=Number(ex.reps || 0);
 
   for(let s=1;s<=sets;s++){
     for(let i=0;i<sides.length;i++){
@@ -755,23 +943,52 @@ async function runSideHoldReps(ex,myToken){
       showSide(`Seite ${sideName} · Satz ${s}/${sets}`);
       await speak("Seite "+sideName,{interrupt:false});
 
-      let reps=ex.reps;
-      const total=ex.reps||0;
-
-      setRingPulse('strong');
+      let reps=totalReps;
 
       while(reps>0&&running){
         if(myToken!==App.token)return;
-        if(App.paused){await sleep(150);continue;}
 
-        update(reps);
-        setRing(total,reps);
+        while(App.paused){
+          await sleep(150);
+          if(!running||myToken!==App.token)return;
+        }
+
+        const done=(totalReps-reps)+1;
+        showSide(`Seite ${sideName} · Satz ${s}/${sets} · Wiederholung ${done}/${totalReps}`);
+
         await speak("Halten",{interrupt:false});
-        await sleep(ex.holdTime||4000);
+
+        setRingPulse('strong');
+
+        for(let t=holdSec;t>0;t--){
+          if(!running||myToken!==App.token)return;
+
+          while(App.paused){
+            await sleep(150);
+            if(!running||myToken!==App.token)return;
+          }
+
+          update(t);
+          setRing(holdSec,t);
+
+          if(t<=3){
+            speak(t.toString(),{interrupt:false,dedupeMs:50});
+          }
+
+          await sleep(1000);
+        }
+
         reps--;
+
+        if(reps>0){
+          update(reps);
+          setRing(totalReps||1,reps);
+          await sleep(350);
+        }
       }
 
       setRingPulse('off');
+      resetRing();
 
       if(i<sides.length-1){
         if(App.speakSideSwitch){
@@ -779,23 +996,35 @@ async function runSideHoldReps(ex,myToken){
         }
 
         showSide("Wechsel...");
+        setRingPulse('off');
+
         for(let k=5;k>0;k--){
           if(!running||myToken!==App.token)return;
-          while(App.paused)await sleep(150);
+
+          while(App.paused){
+            await sleep(150);
+            if(!running||myToken!==App.token)return;
+          }
+
           update(k);
           setRing(5,k);
           await sleep(1000);
         }
+
+        resetRing();
       }
     }
 
     if(s<sets&&setPause>0){
+      setRingPulse('off');
       await setPauseCountdown(setPause,`Pause · Satz ${s+1}/${sets}`);
     }
   }
 
   showSide("");
   setRingPulse('off');
+  resetRing();
+
   if(myToken===App.token)next();
 }
 async function runSideReps(ex,myToken){
@@ -898,6 +1127,8 @@ if(savedState&&savedState.currentWorkout&&savedState.currentWorkout.length&&(sav
 }else{
   resetWorkoutForToday();
 }
+checkVersionAndCache();
+updateButtonStates();
 setTimeout(()=>{if(!App.dayFormChecked||App.dayForm==="unset")openDayFormPopup(true)},450);
 
 </script>
